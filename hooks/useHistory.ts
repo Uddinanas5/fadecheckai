@@ -1,0 +1,85 @@
+import { useState, useEffect, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { HistoryItem, AnalysisResult } from '../types';
+
+const HISTORY_KEY = 'fadecheck_history';
+const MAX_HISTORY_ITEMS = 50;
+
+export function useHistory() {
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load history on mount
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  const loadHistory = async () => {
+    try {
+      setIsLoading(true);
+      const stored = await AsyncStorage.getItem(HISTORY_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as HistoryItem[];
+        // Sort by timestamp descending (newest first)
+        parsed.sort((a, b) => b.timestamp - a.timestamp);
+        setHistory(parsed);
+      }
+    } catch (error) {
+      console.error('Error loading history:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addToHistory = useCallback(async (imageUri: string, result: AnalysisResult) => {
+    try {
+      const newItem: HistoryItem = {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        imageUri,
+        result,
+        timestamp: Date.now(),
+      };
+
+      const updatedHistory = [newItem, ...history].slice(0, MAX_HISTORY_ITEMS);
+      setHistory(updatedHistory);
+      await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
+      return newItem.id;
+    } catch (error) {
+      console.error('Error saving to history:', error);
+      return null;
+    }
+  }, [history]);
+
+  const removeFromHistory = useCallback(async (id: string) => {
+    try {
+      const updatedHistory = history.filter(item => item.id !== id);
+      setHistory(updatedHistory);
+      await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
+    } catch (error) {
+      console.error('Error removing from history:', error);
+    }
+  }, [history]);
+
+  const clearHistory = useCallback(async () => {
+    try {
+      setHistory([]);
+      await AsyncStorage.removeItem(HISTORY_KEY);
+    } catch (error) {
+      console.error('Error clearing history:', error);
+    }
+  }, []);
+
+  const getHistoryItem = useCallback((id: string): HistoryItem | undefined => {
+    return history.find(item => item.id === id);
+  }, [history]);
+
+  return {
+    history,
+    isLoading,
+    addToHistory,
+    removeFromHistory,
+    clearHistory,
+    getHistoryItem,
+    refreshHistory: loadHistory,
+  };
+}

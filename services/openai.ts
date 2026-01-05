@@ -1,4 +1,4 @@
-import { readAsStringAsync } from 'expo-file-system';
+import { readAsStringAsync } from 'expo-file-system/legacy';
 import { AnalysisResult } from '../types';
 
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || '';
@@ -75,6 +75,18 @@ If the image doesn't clearly show a haircut or is unclear:
 }`;
 
 export async function analyzeHaircut(imageUri: string): Promise<AnalysisResult> {
+  // Validate API key before making request
+  if (!OPENAI_API_KEY) {
+    return {
+      overall_score: null,
+      scores: null,
+      score_label: null,
+      breakdown: 'API key not configured. Please set EXPO_PUBLIC_OPENAI_API_KEY in your environment.',
+      verdict: 'Configuration error.',
+      error: true,
+    };
+  }
+
   try {
     // Convert image to base64
     const base64Image = await readAsStringAsync(imageUri, {
@@ -120,9 +132,16 @@ export async function analyzeHaircut(imageUri: string): Promise<AnalysisResult> 
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenAI API Error:', errorData);
-      throw new Error(`API Error: ${response.status}`);
+      let errorMessage = `API Error: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        console.error('OpenAI API Error:', errorData);
+        errorMessage = errorData.error?.message || errorMessage;
+      } catch {
+        // Error response was not JSON
+        console.error('OpenAI API Error:', response.status, response.statusText);
+      }
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();

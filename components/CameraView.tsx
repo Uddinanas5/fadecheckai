@@ -90,6 +90,11 @@ export default function CameraView({ onCapture }: CameraViewProps) {
           <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
             <Text style={styles.permissionButtonText}>Enable Camera</Text>
           </TouchableOpacity>
+          <Text style={styles.orText}>or</Text>
+          <TouchableOpacity style={styles.galleryButton} onPress={pickImage}>
+            <Ionicons name="images-outline" size={20} color={Colors.accent.primary} />
+            <Text style={styles.galleryButtonText}>Choose from Gallery</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -249,6 +254,26 @@ const styles = StyleSheet.create({
   },
   permissionButtonText: {
     color: Colors.background.primary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  orText: {
+    marginVertical: spacing.md,
+    fontSize: 14,
+    color: Colors.text.tertiary,
+  },
+  galleryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: Colors.accent.primary,
+    gap: spacing.sm,
+  },
+  galleryButtonText: {
+    color: Colors.accent.primary,
     fontSize: 16,
     fontWeight: '600',
   },

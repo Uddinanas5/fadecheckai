@@ -29,8 +29,8 @@ export function useAnalyze(): UseAnalyzeResult {
 
       if (analysisResult.error) {
         setError(analysisResult.breakdown);
-        setResult(null);
-        return null;
+        setResult(analysisResult);
+        return analysisResult; // Return the error result so it can be displayed
       }
 
       setResult(analysisResult);

@@ -19,13 +19,22 @@ export function useHistory() {
       setIsLoading(true);
       const stored = await AsyncStorage.getItem(HISTORY_KEY);
       if (stored) {
-        const parsed = JSON.parse(stored) as HistoryItem[];
-        // Sort by timestamp descending (newest first)
-        parsed.sort((a, b) => b.timestamp - a.timestamp);
-        setHistory(parsed);
+        const parsed = JSON.parse(stored);
+        // Validate parsed data is an array
+        if (Array.isArray(parsed)) {
+          // Sort by timestamp descending (newest first)
+          parsed.sort((a, b) => b.timestamp - a.timestamp);
+          setHistory(parsed as HistoryItem[]);
+        } else {
+          // Corrupted data, reset history
+          console.error('Invalid history data format, resetting');
+          await AsyncStorage.removeItem(HISTORY_KEY);
+          setHistory([]);
+        }
       }
     } catch (error) {
       console.error('Error loading history:', error);
+      setHistory([]);
     } finally {
       setIsLoading(false);
     }
@@ -34,7 +43,7 @@ export function useHistory() {
   const addToHistory = useCallback(async (imageUri: string, result: AnalysisResult) => {
     try {
       const newItem: HistoryItem = {
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
         imageUri,
         result,
         timestamp: Date.now(),

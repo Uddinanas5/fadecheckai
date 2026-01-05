@@ -46,8 +46,9 @@ export default function ResultsDisplay({
           });
         } else {
           // Fallback to basic share
+          const scoreText = result.overall_score !== null ? `${result.overall_score}/10` : 'a rating';
           await Share.share({
-            message: `I got a ${result.overall_score}/10 on FadeCheck! "${result.verdict}"`,
+            message: `I got ${scoreText} on FadeCheck! "${result.verdict}"`,
           });
         }
       }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Colors, { getScoreColor } from '../constants/Colors';
 import { borderRadius, spacing } from '../constants/Styles';
 import { HistoryItem } from '../types';
@@ -27,12 +28,15 @@ export default function HistoryCard({ item, onPress }: HistoryCardProps) {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <Image source={{ uri: item.imageUri }} style={styles.image} />
-      <View style={styles.overlay}>
+      <LinearGradient
+        colors={['transparent', 'rgba(0,0,0,0.8)'] as const}
+        style={styles.overlay}
+      >
         <Text style={[styles.score, { color: scoreColor }]}>
           {score ?? '—'}/10
         </Text>
         <Text style={styles.date}>{formatDate(item.timestamp)}</Text>
-      </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
 }
@@ -42,9 +46,11 @@ const styles = StyleSheet.create({
     flex: 1,
     aspectRatio: 1,
     margin: spacing.xs,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.xl,
     overflow: 'hidden',
     backgroundColor: Colors.background.secondary,
+    borderWidth: 1,
+    borderColor: Colors.glass.border,
   },
   image: {
     width: '100%',
@@ -53,17 +59,23 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'flex-end',
-    padding: spacing.sm,
+    padding: spacing.md,
   },
   score: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
+    letterSpacing: -1,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   date: {
     fontSize: 12,
-    color: Colors.text.secondary,
+    color: 'rgba(255, 255, 255, 0.7)',
     marginTop: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 });

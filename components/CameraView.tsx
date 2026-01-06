@@ -9,9 +9,13 @@ import {
 import { CameraView as ExpoCameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
-import { spacing } from '../constants/Styles';
+import { spacing, borderRadius } from '../constants/Styles';
+
+const ACCENT_BLUE = '#0145F2';
+const CYAN_GLOW = '#38BDF8';
 
 interface CameraViewProps {
   onCapture: (uri: string) => void;
@@ -82,17 +86,30 @@ export default function CameraView({ onCapture }: CameraViewProps) {
     return (
       <View style={styles.container}>
         <View style={styles.permissionContainer}>
-          <Ionicons name="camera-outline" size={64} color={Colors.text.secondary} />
+          <View style={styles.permissionIconCircle}>
+            <Ionicons name="camera-outline" size={64} color={ACCENT_BLUE} />
+          </View>
           <Text style={styles.permissionTitle}>Camera Access Needed</Text>
           <Text style={styles.permissionText}>
             FadeCheck needs camera access to rate your haircut
           </Text>
-          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
-            <Text style={styles.permissionButtonText}>Enable Camera</Text>
+          <TouchableOpacity
+            onPress={requestPermission}
+            activeOpacity={0.9}
+            style={styles.permissionButton}
+          >
+            <LinearGradient
+              colors={[ACCENT_BLUE, '#2563EB'] as const}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.permissionButtonGradient}
+            >
+              <Text style={styles.permissionButtonText}>Enable Camera</Text>
+            </LinearGradient>
           </TouchableOpacity>
           <Text style={styles.orText}>or</Text>
           <TouchableOpacity style={styles.galleryButton} onPress={pickImage}>
-            <Ionicons name="images-outline" size={20} color={Colors.accent.primary} />
+            <Ionicons name="images-outline" size={20} color={ACCENT_BLUE} />
             <Text style={styles.galleryButtonText}>Choose from Gallery</Text>
           </TouchableOpacity>
         </View>
@@ -137,7 +154,7 @@ export default function CameraView({ onCapture }: CameraViewProps) {
               <Ionicons
                 name={flash ? 'flash' : 'flash-outline'}
                 size={24}
-                color={flash ? Colors.accent.secondary : Colors.text.primary}
+                color={flash ? CYAN_GLOW : Colors.text.primary}
               />
             </TouchableOpacity>
             <TouchableOpacity style={styles.sideButton} onPress={toggleFacing}>
@@ -167,9 +184,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: Colors.text.primary,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+    letterSpacing: -0.3,
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
   },
   guideContainer: {
     flex: 1,
@@ -180,17 +198,16 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH * 0.7,
     height: SCREEN_WIDTH * 0.7,
     borderRadius: SCREEN_WIDTH * 0.35,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    borderStyle: 'dashed',
+    borderWidth: 3,
+    borderColor: 'rgba(1, 69, 242, 0.35)',
   },
   guideText: {
     marginTop: spacing.lg,
     fontSize: 14,
-    color: Colors.text.secondary,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+    color: 'rgba(255, 255, 255, 0.7)',
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
   },
   controls: {
     flexDirection: 'row',
@@ -200,32 +217,36 @@ const styles = StyleSheet.create({
     paddingBottom: 50,
   },
   sideButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   rightControls: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: 10,
   },
   captureButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     borderWidth: 4,
-    borderColor: Colors.accent.primary,
+    borderColor: ACCENT_BLUE,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    shadowColor: ACCENT_BLUE,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
   },
   captureButtonInner: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: Colors.accent.primary,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: ACCENT_BLUE,
   },
   permissionContainer: {
     flex: 1,
@@ -233,48 +254,69 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.xl,
   },
+  permissionIconCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(1, 69, 242, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
   permissionTitle: {
-    fontSize: 22,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: '700',
     color: Colors.text.primary,
     marginTop: spacing.lg,
     marginBottom: spacing.sm,
+    letterSpacing: -1,
   },
   permissionText: {
     fontSize: 16,
     color: Colors.text.secondary,
     textAlign: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
+    lineHeight: 24,
   },
   permissionButton: {
-    backgroundColor: Colors.accent.primary,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    borderRadius: 12,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: ACCENT_BLUE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+  },
+  permissionButtonGradient: {
+    height: 56,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   permissionButtonText: {
-    color: Colors.background.primary,
-    fontSize: 16,
+    color: '#fff',
+    fontSize: 17,
     fontWeight: '600',
+    letterSpacing: -0.3,
   },
   orText: {
-    marginVertical: spacing.md,
+    marginVertical: spacing.lg,
     fontSize: 14,
     color: Colors.text.tertiary,
   },
   galleryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: Colors.accent.primary,
+    height: 56,
+    paddingHorizontal: spacing.xl,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(1, 69, 242, 0.3)',
     gap: spacing.sm,
   },
   galleryButtonText: {
-    color: Colors.accent.primary,
+    color: ACCENT_BLUE,
     fontSize: 16,
     fontWeight: '600',
+    letterSpacing: -0.3,
   },
 });

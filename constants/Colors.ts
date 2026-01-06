@@ -1,49 +1,96 @@
+// FadeCheck Design System v2: Liquid Glass + Electric Blue
+
 const Colors = {
+  // Background Hierarchy (darkest to lightest)
   background: {
-    primary: '#0D0D0D',
-    secondary: '#1A1A1A',
-    tertiary: '#262626',
-    overlay: 'rgba(0, 0, 0, 0.7)',
+    void: '#050508',         // Deepest black - behind modals
+    primary: '#0A0A0F',      // Surface - main screen backgrounds
+    secondary: '#12121A',    // Elevated - raised elements
+    tertiary: '#1A1A24',     // Card base
+    overlay: 'rgba(5, 5, 8, 0.85)',  // Modal overlays
+    card: '#1A1A24',
   },
+
+  // Accent Colors
   accent: {
-    primary: '#00D4AA',
-    secondary: '#FFD700',
-    tertiary: '#FF6B6B',
+    primary: '#0145F2',      // Electric Blue - main brand color
+    secondary: '#38BDF8',    // Cyan Glow - secondary accent
+    tertiary: '#FF6B6B',     // Coral - warnings/alerts
+    highlight: '#60A5FA',    // Light blue for highlights
   },
+
+  // Gradients
+  gradient: {
+    blue: ['#0145F2', '#38BDF8'] as const,
+    primary: ['#0145F2', '#38BDF8'] as const,
+    button: ['#0145F2', '#2563EB'] as const,    // Button gradient
+    header: ['#0145F2', '#3B82F6'] as const,    // Header accent
+    glow: ['rgba(1, 69, 242, 0.4)', 'rgba(56, 189, 248, 0.2)'] as const,
+    pro: ['#0145F2', '#38BDF8'] as const,
+  },
+
+  // Glass Effects
+  glass: {
+    border: 'rgba(255, 255, 255, 0.10)',        // Glass border
+    borderActive: 'rgba(255, 255, 255, 0.15)',  // Active glass border
+    surface: 'rgba(26, 26, 36, 0.60)',          // Glass surface
+    overlay: 'rgba(1, 69, 242, 0.05)',          // Blue tint overlay
+  },
+
+  // Glow Effects
+  glow: {
+    blue: 'rgba(1, 69, 242, 0.25)',
+    cyan: 'rgba(56, 189, 248, 0.20)',
+    ambient: 'rgba(1, 69, 242, 0.15)',
+  },
+
+  // Text Colors
   text: {
-    primary: '#FFFFFF',
-    secondary: '#A0A0A0',
-    tertiary: '#666666',
+    primary: '#EDF1F5',      // Canvas Cloud - primary text
+    secondary: '#9CA3AF',    // Muted text
+    tertiary: '#6B7280',     // Disabled/hint text
+    inverse: '#0A0A0F',      // Text on light backgrounds
   },
+
+  // Score Colors (based on score ranges)
   score: {
-    terrible: '#FF4444',
-    bad: '#FF6B6B',
-    below: '#FF8C00',
-    decent: '#FFD700',
-    good: '#9ACD32',
-    great: '#00D4AA',
-    perfect: '#00FF88',
+    elite: '#0145F2',        // 9-10: Electric Blue
+    fire: '#38BDF8',         // 8-8.9: Cyan Glow
+    clean: '#22C55E',        // 6.5-7.9: Emerald
+    decent: '#FBBF24',       // 5-6.4: Amber
+    mid: '#F97316',          // 3.5-4.9: Orange
+    botched: '#EF4444',      // 0-3.4: Red
   },
 };
 
+// Get score color based on score value
 export const getScoreColor = (score: number): string => {
-  if (score <= 2) return Colors.score.terrible;
-  if (score <= 3) return Colors.score.bad;
-  if (score <= 5) return Colors.score.below;
-  if (score <= 6) return Colors.score.decent;
-  if (score <= 7) return Colors.score.good;
-  if (score <= 9) return Colors.score.great;
-  return Colors.score.perfect;
+  if (score >= 9) return Colors.score.elite;
+  if (score >= 8) return Colors.score.fire;
+  if (score >= 6.5) return Colors.score.clean;
+  if (score >= 5) return Colors.score.decent;
+  if (score >= 3.5) return Colors.score.mid;
+  return Colors.score.botched;
 };
 
+// Get score label based on score value
 export const getScoreLabel = (score: number): string => {
-  if (score <= 3) return 'BOTCHED';
-  if (score <= 4) return 'MID';
-  if (score <= 5) return 'ACCEPTABLE';
-  if (score <= 6) return 'DECENT';
-  if (score <= 7) return 'CLEAN';
-  if (score <= 9) return 'FIRE';
-  return 'ELITE';
+  if (score >= 9) return 'ELITE';
+  if (score >= 8) return 'FIRE';
+  if (score >= 6.5) return 'CLEAN';
+  if (score >= 5) return 'DECENT';
+  if (score >= 3.5) return 'MID';
+  return 'BOTCHED';
+};
+
+// Get gradient colors for score
+export const getScoreGradient = (score: number): readonly [string, string] => {
+  if (score >= 9) return ['#0145F2', '#38BDF8'] as const;
+  if (score >= 8) return ['#38BDF8', '#22D3EE'] as const;
+  if (score >= 6.5) return ['#22C55E', '#4ADE80'] as const;
+  if (score >= 5) return ['#FBBF24', '#FCD34D'] as const;
+  if (score >= 3.5) return ['#F97316', '#FB923C'] as const;
+  return ['#EF4444', '#F87171'] as const;
 };
 
 export default Colors;

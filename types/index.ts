@@ -10,6 +10,7 @@ export interface AnalysisResult {
   overall_score: number | null;
   scores: HaircutScores | null;
   score_label: string | null;
+  defects_found?: string[] | null;
   breakdown: string;
   verdict: string;
   error?: boolean;

@@ -11,10 +11,12 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
-import { spacing } from '../../constants/Styles';
+import { spacing, borderRadius } from '../../constants/Styles';
 import { useHistory } from '../../hooks/useHistory';
 import HistoryCard from '../../components/HistoryCard';
 import { HistoryItem } from '../../types';
+
+const ACCENT_BLUE = '#0145F2';
 
 export default function HistoryScreen() {
   const router = useRouter();
@@ -104,11 +106,12 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     color: Colors.text.primary,
+    letterSpacing: -1,
   },
   clearButton: {
-    fontSize: 16,
-    color: Colors.accent.tertiary,
-    fontWeight: '500',
+    fontSize: 14,
+    color: '#FF6B6B',
+    fontWeight: '600',
   },
   listContent: {
     padding: spacing.sm,
@@ -127,11 +130,13 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     marginTop: spacing.lg,
     marginBottom: spacing.sm,
+    letterSpacing: -0.5,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 15,
     color: Colors.text.secondary,
     textAlign: 'center',
+    lineHeight: 22,
   },
   loadingContainer: {
     flex: 1,

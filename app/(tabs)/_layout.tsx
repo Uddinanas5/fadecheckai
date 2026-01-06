@@ -2,6 +2,8 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
 
+const ACCENT_BLUE = '#0145F2';
+
 export default function TabLayout() {
   return (
     <Tabs
@@ -9,26 +11,31 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: Colors.background.secondary,
-          borderTopColor: Colors.background.tertiary,
+          borderTopColor: Colors.glass.border,
           borderTopWidth: 1,
-          height: 85,
-          paddingBottom: 30,
-          paddingTop: 10,
+          height: 80,
+          paddingBottom: 28,
+          paddingTop: 8,
         },
-        tabBarActiveTintColor: Colors.accent.primary,
+        tabBarActiveTintColor: ACCENT_BLUE,
         tabBarInactiveTintColor: Colors.text.tertiary,
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
+          fontSize: 11,
+          fontWeight: '600',
+          letterSpacing: 0.3,
         },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Camera',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="camera" size={size} color={color} />
+          title: 'Scan',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "scan" : "scan-outline"}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -36,8 +43,25 @@ export default function TabLayout() {
         name="history"
         options={{
           title: 'History',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="time" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "time" : "time-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="debug"
+        options={{
+          title: 'Debug',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "bug" : "bug-outline"}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />

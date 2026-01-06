@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '../constants/Colors';
+
+const ACCENT_BLUE = '#0145F2';
+const CYAN_GLOW = '#38BDF8';
 
 interface AnalyzingOverlayProps {
   imageUri: string;
@@ -10,11 +14,11 @@ interface AnalyzingOverlayProps {
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const STATUS_MESSAGES = [
-  'Checking that lineup...',
-  'Analyzing the fade...',
-  'Rating the blend...',
-  'Evaluating the shape...',
-  'Almost done...',
+  'Checking that lineup',
+  'Analyzing the fade',
+  'Rating the blend',
+  'Evaluating the shape',
+  'Finalizing results',
 ];
 
 export default function AnalyzingOverlay({ imageUri, isVisible }: AnalyzingOverlayProps) {
@@ -90,13 +94,20 @@ export default function AnalyzingOverlay({ imageUri, isVisible }: AnalyzingOverl
         <Image source={{ uri: imageUri }} style={styles.image} />
         <View style={styles.overlay} />
 
-        {/* Scan line */}
+        {/* Scan line with gradient */}
         <Animated.View
           style={[
             styles.scanLine,
             { transform: [{ translateY: scanLineTranslateY }] },
           ]}
-        />
+        >
+          <LinearGradient
+            colors={[ACCENT_BLUE, CYAN_GLOW] as const}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.scanLineGradient}
+          />
+        </Animated.View>
       </Animated.View>
 
       <View style={styles.statusContainer}>
@@ -121,10 +132,14 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: SCREEN_WIDTH * 0.85,
     height: SCREEN_HEIGHT * 0.5,
-    borderRadius: 20,
+    borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: Colors.accent.primary,
+    borderColor: ACCENT_BLUE,
+    shadowColor: ACCENT_BLUE,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 24,
   },
   image: {
     width: '100%',
@@ -139,12 +154,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 3,
-    backgroundColor: Colors.accent.primary,
-    shadowColor: Colors.accent.primary,
+    height: 4,
+    overflow: 'hidden',
+  },
+  scanLineGradient: {
+    flex: 1,
+    shadowColor: ACCENT_BLUE,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
-    shadowRadius: 10,
+    shadowRadius: 12,
   },
   statusContainer: {
     marginTop: 40,
@@ -153,20 +171,21 @@ const styles = StyleSheet.create({
   loadingDots: {
     flexDirection: 'row',
     marginBottom: 16,
+    gap: 8,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.background.tertiary,
-    marginHorizontal: 4,
+    width: 24,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#252530',
   },
   dotActive: {
-    backgroundColor: Colors.accent.primary,
+    backgroundColor: ACCENT_BLUE,
   },
   statusText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '500',
     color: Colors.text.primary,
+    letterSpacing: -0.3,
   },
 });

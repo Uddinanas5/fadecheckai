@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import CameraView from '../../components/CameraView';
 import AnalyzingOverlay from '../../components/AnalyzingOverlay';
-import Colors from '../../constants/Colors';
 import { useAnalyze } from '../../hooks/useAnalyze';
 import { useHistory } from '../../hooks/useHistory';
+import { useFirstScan } from '../../hooks/useFirstScan';
 
 export default function CameraScreen() {
   const router = useRouter();
   const { analyze, isAnalyzing } = useAnalyze();
   const { addToHistory } = useHistory();
+  const { isProUser } = useFirstScan();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
   const handleCapture = async (uri: string) => {
@@ -20,15 +21,28 @@ export default function CameraScreen() {
 
     if (result && !result.error) {
       await addToHistory(uri, result);
-      router.push({
-        pathname: '/results',
-        params: {
-          imageUri: uri,
-          result: JSON.stringify(result),
-        },
-      });
+
+      // If not a pro user, show reveal screen first (paywall gate)
+      if (!isProUser) {
+        router.push({
+          pathname: '/reveal',
+          params: {
+            imageUri: uri,
+            result: JSON.stringify(result),
+          },
+        });
+      } else {
+        // Pro user, go directly to full results
+        router.push({
+          pathname: '/results',
+          params: {
+            imageUri: uri,
+            result: JSON.stringify(result),
+          },
+        });
+      }
     } else {
-      // Still navigate to results to show error
+      // Error case - show results with error
       router.push({
         pathname: '/results',
         params: {
@@ -61,6 +75,6 @@ export default function CameraScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background.primary,
+    backgroundColor: '#0D0D0D',
   },
 });

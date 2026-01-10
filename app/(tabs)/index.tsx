@@ -1,33 +1,68 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import CameraView from '../../components/CameraView';
+import MultiAngleCapture from '../../components/MultiAngleCapture';
 import AnalyzingOverlay from '../../components/AnalyzingOverlay';
+import AIConsentModal, { useAIConsent } from '../../components/AIConsentModal';
 import { useAnalyze } from '../../hooks/useAnalyze';
 import { useHistory } from '../../hooks/useHistory';
-import { useFirstScan } from '../../hooks/useFirstScan';
+import { useRevenueCat } from '../../contexts/RevenueCatContext';
+import { CapturedImages } from '../../types';
 
 export default function CameraScreen() {
   const router = useRouter();
   const { analyze, isAnalyzing } = useAnalyze();
   const { addToHistory } = useHistory();
-  const { isProUser } = useFirstScan();
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const { isProUser } = useRevenueCat();
+  const { needsConsent, hasConsent, updateConsent, recheckConsent } = useAIConsent();
+  const [capturedImages, setCapturedImages] = useState<CapturedImages | null>(null);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [pendingImages, setPendingImages] = useState<CapturedImages | null>(null);
 
-  const handleCapture = async (uri: string) => {
-    setCapturedImage(uri);
+  // Show consent modal on first use
+  useEffect(() => {
+    if (needsConsent) {
+      setShowConsentModal(true);
+    }
+  }, [needsConsent]);
 
-    const result = await analyze(uri);
+  const handleConsentAccept = () => {
+    updateConsent(true);
+    setShowConsentModal(false);
+    // If there were pending images, process them now
+    if (pendingImages) {
+      processImages(pendingImages);
+      setPendingImages(null);
+    }
+  };
+
+  const handleConsentDecline = () => {
+    updateConsent(false);
+    setShowConsentModal(false);
+    setPendingImages(null);
+    Alert.alert(
+      'AI Analysis Disabled',
+      'You can enable AI analysis anytime in Settings > Privacy & Data.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const processImages = async (images: CapturedImages) => {
+    setCapturedImages(images);
+
+    const result = await analyze(images);
 
     if (result && !result.error) {
-      await addToHistory(uri, result);
+      // Use front image as the primary for history
+      await addToHistory(images.front, result);
 
       // If not a pro user, show reveal screen first (paywall gate)
       if (!isProUser) {
         router.push({
           pathname: '/reveal',
           params: {
-            imageUri: uri,
+            imageUri: images.front,
+            images: JSON.stringify(images),
             result: JSON.stringify(result),
           },
         });
@@ -36,7 +71,8 @@ export default function CameraScreen() {
         router.push({
           pathname: '/results',
           params: {
-            imageUri: uri,
+            imageUri: images.front,
+            images: JSON.stringify(images),
             result: JSON.stringify(result),
           },
         });
@@ -46,7 +82,8 @@ export default function CameraScreen() {
       router.push({
         pathname: '/results',
         params: {
-          imageUri: uri,
+          imageUri: images.front,
+          images: JSON.stringify(images),
           result: JSON.stringify(result || {
             overall_score: null,
             scores: null,
@@ -58,15 +95,52 @@ export default function CameraScreen() {
       });
     }
 
-    setCapturedImage(null);
+    setCapturedImages(null);
+  };
+
+  const handleComplete = async (images: CapturedImages) => {
+    // Check if user has given AI consent
+    if (hasConsent === false) {
+      // User explicitly declined consent - show settings prompt
+      Alert.alert(
+        'AI Analysis Disabled',
+        'You need to enable AI analysis to rate your haircut. Would you like to enable it now?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Enable',
+            onPress: () => {
+              setPendingImages(images);
+              setShowConsentModal(true);
+            },
+          },
+        ]
+      );
+      return;
+    }
+
+    // If consent hasn't been given yet, show modal first
+    if (needsConsent || hasConsent === null) {
+      setPendingImages(images);
+      setShowConsentModal(true);
+      return;
+    }
+
+    // User has consent, proceed with analysis
+    processImages(images);
   };
 
   return (
     <View style={styles.container}>
-      <CameraView onCapture={handleCapture} />
+      <MultiAngleCapture onComplete={handleComplete} />
       <AnalyzingOverlay
-        imageUri={capturedImage || ''}
-        isVisible={isAnalyzing && !!capturedImage}
+        images={capturedImages}
+        isVisible={isAnalyzing && !!capturedImages}
+      />
+      <AIConsentModal
+        visible={showConsentModal}
+        onAccept={handleConsentAccept}
+        onDecline={handleConsentDecline}
       />
     </View>
   );

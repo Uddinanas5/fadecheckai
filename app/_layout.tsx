@@ -5,38 +5,31 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOnboarding } from '../hooks/useOnboarding';
 import { useFirstScan } from '../hooks/useFirstScan';
+import { RevenueCatProvider } from '../contexts/RevenueCatContext';
 import Onboarding from '../components/Onboarding';
 import BeginScan from '../components/BeginScan';
 
-type AppPhase = 'loading' | 'onboarding' | 'begin_scan' | 'main_app';
+// TEMPORARY: Set to true to reset app on next launch, then set back to false
+const RESET_APP_FOR_TESTING = true;
 
-// TEMPORARY: Set to true to reset all app state for testing
-// Set to false when done testing!
-const RESET_APP_FOR_TESTING = false;
+type AppPhase = 'loading' | 'onboarding' | 'begin_scan' | 'main_app';
 
 export default function RootLayout() {
   const [resetComplete, setResetComplete] = useState(!RESET_APP_FOR_TESTING);
+
+  useEffect(() => {
+    if (RESET_APP_FOR_TESTING) {
+      AsyncStorage.clear().then(() => {
+        setResetComplete(true);
+      });
+    }
+  }, []);
+
   const { hasCompletedOnboarding, isLoading: onboardingLoading, completeOnboarding } = useOnboarding();
   const { hasCompletedFirstScan, isLoading: firstScanLoading, completeFirstScan } = useFirstScan();
   const [showBeginScan, setShowBeginScan] = useState(true);
 
-  // Reset app state for testing (run once on app start)
-  useEffect(() => {
-    if (RESET_APP_FOR_TESTING && !resetComplete) {
-      const resetAll = async () => {
-        try {
-          await AsyncStorage.clear(); // Clear ALL storage for fresh start
-          console.log('🔄 App state reset for testing - restart app');
-        } catch (e) {
-          console.error('Reset error:', e);
-        }
-        setResetComplete(true);
-      };
-      resetAll();
-    }
-  }, [resetComplete]);
-
-  const isLoading = onboardingLoading || firstScanLoading || !resetComplete;
+  const isLoading = onboardingLoading || firstScanLoading;
 
   // Show loading screen while checking status
   if (isLoading) {
@@ -75,7 +68,7 @@ export default function RootLayout() {
 
   // Show main app
   return (
-    <>
+    <RevenueCatProvider>
       <StatusBar style="light" />
       <Stack
         screenOptions={{
@@ -106,8 +99,15 @@ export default function RootLayout() {
             animation: 'slide_from_bottom',
           }}
         />
+        <Stack.Screen
+          name="customer-center"
+          options={{
+            presentation: 'fullScreenModal',
+            animation: 'slide_from_bottom',
+          }}
+        />
       </Stack>
-    </>
+    </RevenueCatProvider>
   );
 }
 

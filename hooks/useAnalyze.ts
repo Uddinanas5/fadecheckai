@@ -1,12 +1,12 @@
 import { useState, useCallback } from 'react';
 import { analyzeHaircut } from '../services/openai';
-import { AnalysisResult } from '../types';
+import { AnalysisResult, CapturedImages } from '../types';
 
 interface UseAnalyzeResult {
   isAnalyzing: boolean;
   result: AnalysisResult | null;
   error: string | null;
-  analyze: (imageUri: string) => Promise<AnalysisResult | null>;
+  analyze: (images: CapturedImages) => Promise<AnalysisResult | null>;
   reset: () => void;
 }
 
@@ -15,7 +15,7 @@ export function useAnalyze(): UseAnalyzeResult {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const analyze = useCallback(async (imageUri: string): Promise<AnalysisResult | null> => {
+  const analyze = useCallback(async (images: CapturedImages): Promise<AnalysisResult | null> => {
     setIsAnalyzing(true);
     setError(null);
     setResult(null);
@@ -23,8 +23,8 @@ export function useAnalyze(): UseAnalyzeResult {
     try {
       // Add minimum delay for better UX (show animation)
       const [analysisResult] = await Promise.all([
-        analyzeHaircut(imageUri),
-        new Promise(resolve => setTimeout(resolve, 2500)), // Minimum 2.5s
+        analyzeHaircut(images),
+        new Promise(resolve => setTimeout(resolve, 3000)), // Minimum 3s for multi-image
       ]);
 
       if (analysisResult.error) {

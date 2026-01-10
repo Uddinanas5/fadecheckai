@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,12 +9,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
+// StoreReview removed - Apple prohibits requesting reviews during onboarding
 import Colors from '../constants/Colors';
+import { useAuth } from '../hooks/useAuth';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ACCENT_BLUE = '#0145F2';
@@ -37,6 +41,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('gender');
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [referralCode, setReferralCode] = useState('');
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const { signInWithGoogle, signInWithApple } = useAuth();
 
   const getStepIndex = (): number => {
     const steps: OnboardingStep[] = ['gender', 'social', 'referral', 'notifications', 'signin'];
@@ -65,6 +71,13 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     goToNextStep();
   };
 
+  const handleSocialContinue = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // Note: StoreReview removed - Apple prohibits requesting reviews during onboarding
+    // Move review requests to after user has completed 2+ scans
+    goToNextStep();
+  };
+
   const handleNotifications = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
@@ -78,10 +91,28 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     goToNextStep();
   };
 
-  const handleSignIn = (provider: 'google' | 'apple') => {
+  const handleSignIn = async (provider: 'google' | 'apple') => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // TODO: Implement actual sign-in
-    Alert.alert('Coming Soon', `${provider === 'google' ? 'Google' : 'Apple'} sign-in will be available soon!`);
+    setIsSigningIn(true);
+
+    try {
+      if (provider === 'apple') {
+        const { data, error } = await signInWithApple();
+        if (data || !error) {
+          // Success or user canceled (not an error)
+          onComplete();
+        }
+      } else {
+        const result = await signInWithGoogle();
+        // Google auth will complete via the useEffect in useAuth
+        // For now, just complete onboarding
+        onComplete();
+      }
+    } catch (error) {
+      console.error('Sign in error:', error);
+    } finally {
+      setIsSigningIn(false);
+    }
   };
 
   const renderProgressBar = () => (
@@ -136,48 +167,34 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           </LinearGradient>
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-        <Text style={styles.skipText}>skip</Text>
-      </TouchableOpacity>
     </View>
   );
 
   const renderSocialProofScreen = () => (
     <View style={styles.screenContainer}>
       {renderProgressBar()}
-      <Text style={styles.title}>Trusted by 100,000+{'\n'}people</Text>
+      <Text style={styles.title}>Rate your haircut{'\n'}instantly</Text>
 
-      {/* App Store Rating Card */}
-      <View style={styles.ratingCardContainer}>
-        <View style={styles.ratingCard}>
-          <View style={styles.appIconContainer}>
-            <Ionicons name="cut" size={28} color={ACCENT_BLUE} />
-          </View>
-          <Text style={styles.ratingTitle}>Enjoying FadeCheck?</Text>
-          <Text style={styles.ratingSubtitle}>Tap a star to rate it on the{'\n'}App Store.</Text>
-          <View style={styles.ratingStarsRow}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Ionicons key={star} name="star-outline" size={28} color={CYAN_GLOW} />
-            ))}
-          </View>
-          <TouchableOpacity style={styles.notNowButton}>
-            <Text style={styles.notNowText}>Not Now</Text>
-          </TouchableOpacity>
+      {/* App Logo */}
+      <View style={styles.logoContainer}>
+        <Image
+          source={require('../assets/images/Fadecheckailogo.png')}
+          style={styles.appLogo}
+          resizeMode="contain"
+        />
+
+        {/* 5 Gold Stars */}
+        <View style={styles.starsRow}>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Ionicons key={star} name="star" size={40} color="#FBBF24" />
+          ))}
         </View>
-      </View>
-
-      {/* Big Stars */}
-      <View style={styles.starsContainer}>
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Ionicons key={star} name="star" size={36} color="#FBBF24" />
-        ))}
       </View>
 
       <View style={styles.bottomButtonContainer}>
         <TouchableOpacity
           style={styles.continueButton}
-          onPress={goToNextStep}
+          onPress={handleSocialContinue}
           activeOpacity={0.8}
         >
           <LinearGradient
@@ -269,32 +286,40 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       <Text style={styles.title}>Create your account</Text>
 
       <View style={styles.signInContainer}>
-        <TouchableOpacity
-          style={styles.googleButton}
-          onPress={() => handleSignIn('google')}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.googleIcon}>G</Text>
-          <Text style={styles.googleButtonText}>Sign in with Google</Text>
-        </TouchableOpacity>
+        {isSigningIn ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={ACCENT_BLUE} />
+            <Text style={styles.loadingText}>Signing in...</Text>
+          </View>
+        ) : (
+          <>
+            <TouchableOpacity
+              style={styles.googleButton}
+              onPress={() => handleSignIn('google')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.googleIcon}>G</Text>
+              <Text style={styles.googleButtonText}>Sign in with Google</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.appleButton}
-          onPress={() => handleSignIn('apple')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="logo-apple" size={20} color="#fff" />
-          <Text style={styles.appleButtonText}>Sign in with Apple</Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.appleButton}
+              onPress={() => handleSignIn('apple')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="logo-apple" size={20} color="#fff" />
+              <Text style={styles.appleButtonText}>Sign in with Apple</Text>
+            </TouchableOpacity>
 
-        {/* Skip button for testing - REMOVE BEFORE APP STORE */}
-        <TouchableOpacity
-          style={styles.skipSignInButton}
-          onPress={onComplete}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.skipSignInText}>skip</Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.skipSignInButton}
+              onPress={onComplete}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.skipSignInText}>Continue without account</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </View>
   );
@@ -334,7 +359,7 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     flexDirection: 'row',
-    paddingTop: 60,
+    paddingTop: 100,
     gap: 6,
   },
   progressBar: {
@@ -365,95 +390,56 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   genderButtonGradient: {
-    height: 56,
+    height: 68,
     alignItems: 'center',
     justifyContent: 'center',
   },
   genderButtonText: {
     color: TEXT_PRIMARY,
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 19,
+    fontWeight: '700',
     letterSpacing: -0.3,
   },
   skipButton: {
     alignItems: 'center',
-    paddingBottom: 50,
+    paddingBottom: 60,
+    marginTop: -80,
   },
   skipText: {
     color: TEXT_TERTIARY,
     fontSize: 16,
     fontWeight: '500',
   },
-  // Rating card styles
-  ratingCardContainer: {
+  // Logo and stars styles
+  logoContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  ratingCard: {
-    backgroundColor: CARD_BG,
-    borderRadius: 24,
-    padding: 24,
+  logoCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#12121A',
+    justifyContent: 'center',
     alignItems: 'center',
-    width: '90%',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.10)',
+    marginBottom: 24,
   },
-  appIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
-    backgroundColor: 'rgba(1, 69, 242, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
+  appLogo: {
+    width: 200,
+    height: 200,
+    borderRadius: 40,
+    marginBottom: 32,
   },
-  appIcon: {
-    fontSize: 32,
-  },
-  ratingTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: TEXT_PRIMARY,
-    marginBottom: 8,
-    letterSpacing: -0.3,
-  },
-  ratingSubtitle: {
-    fontSize: 14,
-    color: TEXT_SECONDARY,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  ratingStarsRow: {
+  starsRow: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 16,
-  },
-  ratingStar: {
-    fontSize: 28,
-    color: CYAN_GLOW,
-  },
-  notNowButton: {
-    paddingVertical: 8,
-  },
-  notNowText: {
-    fontSize: 15,
-    color: CYAN_GLOW,
-    fontWeight: '500',
-  },
-  starsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 30,
-    marginBottom: 20,
-    gap: 8,
-  },
-  star: {
-    fontSize: 40,
   },
   bottomButtonContainer: {
-    paddingBottom: 50,
+    paddingBottom: 60,
+    marginTop: -80,
   },
   continueButton: {
     borderRadius: 16,
@@ -465,14 +451,14 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   continueButtonGradient: {
-    height: 56,
+    height: 68,
     alignItems: 'center',
     justifyContent: 'center',
   },
   continueButtonText: {
     color: TEXT_PRIMARY,
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 19,
+    fontWeight: '700',
     letterSpacing: -0.3,
   },
   inputContainer: {
@@ -521,27 +507,27 @@ const styles = StyleSheet.create({
   googleButton: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    height: 56,
+    height: 68,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
   },
   googleIcon: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#4285F4',
   },
   googleButtonText: {
     color: '#000',
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 19,
+    fontWeight: '700',
     letterSpacing: -0.3,
   },
   appleButton: {
     flexDirection: 'row',
     backgroundColor: '#000',
-    height: 56,
+    height: 68,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
@@ -551,17 +537,27 @@ const styles = StyleSheet.create({
   },
   appleButtonText: {
     color: '#fff',
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 19,
+    fontWeight: '700',
     letterSpacing: -0.3,
   },
   skipSignInButton: {
     alignItems: 'center',
-    marginTop: 20,
+    paddingVertical: 16,
   },
   skipSignInText: {
     color: TEXT_TERTIARY,
     fontSize: 16,
     fontWeight: '500',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  loadingText: {
+    color: TEXT_SECONDARY,
+    fontSize: 16,
   },
 });

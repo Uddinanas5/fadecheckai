@@ -2,26 +2,30 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '../constants/Colors';
+import { CapturedImages } from '../types';
 
 const ACCENT_BLUE = '#0145F2';
 const CYAN_GLOW = '#38BDF8';
 
 interface AnalyzingOverlayProps {
-  imageUri: string;
+  images: CapturedImages | null;
   isVisible: boolean;
 }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const STATUS_MESSAGES = [
-  'Checking that lineup',
-  'Analyzing the fade',
+  'Analyzing front view',
+  'Checking the sides',
+  'Inspecting the back',
   'Rating the blend',
-  'Evaluating the shape',
+  'Evaluating symmetry',
   'Finalizing results',
 ];
 
-export default function AnalyzingOverlay({ imageUri, isVisible }: AnalyzingOverlayProps) {
+const ANGLE_LABELS = ['Front', 'Left', 'Right', 'Back'];
+
+export default function AnalyzingOverlay({ images, isVisible }: AnalyzingOverlayProps) {
   const scanLineAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const [statusIndex, setStatusIndex] = useState(0);
@@ -34,7 +38,7 @@ export default function AnalyzingOverlay({ imageUri, isVisible }: AnalyzingOverl
       Animated.sequence([
         Animated.timing(scanLineAnim, {
           toValue: 1,
-          duration: 2000,
+          duration: 2500,
           useNativeDriver: true,
         }),
         Animated.timing(scanLineAnim, {
@@ -67,7 +71,7 @@ export default function AnalyzingOverlay({ imageUri, isVisible }: AnalyzingOverl
     // Status message rotation
     const statusInterval = setInterval(() => {
       setStatusIndex(prev => (prev + 1) % STATUS_MESSAGES.length);
-    }, 1500);
+    }, 1200);
 
     return () => {
       scanAnimation.stop();
@@ -76,23 +80,41 @@ export default function AnalyzingOverlay({ imageUri, isVisible }: AnalyzingOverl
     };
   }, [isVisible, scanLineAnim, pulseAnim]);
 
-  if (!isVisible) return null;
+  if (!isVisible || !images) return null;
+
+  const imageArray = [images.front, images.leftSide, images.rightSide, images.back];
+  const gridSize = SCREEN_WIDTH * 0.85;
+  const imageSize = (gridSize - 12) / 2; // 12px gap total
 
   const scanLineTranslateY = scanLineAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, SCREEN_HEIGHT * 0.5],
+    outputRange: [0, gridSize],
   });
 
   return (
     <View style={styles.container}>
       <Animated.View
         style={[
-          styles.imageContainer,
-          { transform: [{ scale: pulseAnim }] }
+          styles.gridContainer,
+          {
+            width: gridSize,
+            height: gridSize,
+            transform: [{ scale: pulseAnim }]
+          }
         ]}
       >
-        <Image source={{ uri: imageUri }} style={styles.image} />
-        <View style={styles.overlay} />
+        {/* 2x2 Grid of Images */}
+        <View style={styles.imageGrid}>
+          {imageArray.map((uri, index) => (
+            <View key={index} style={[styles.imageWrapper, { width: imageSize, height: imageSize }]}>
+              <Image source={{ uri }} style={styles.image} />
+              <View style={styles.imageOverlay} />
+              <View style={styles.labelContainer}>
+                <Text style={styles.labelText}>{ANGLE_LABELS[index]}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
 
         {/* Scan line with gradient */}
         <Animated.View
@@ -113,8 +135,8 @@ export default function AnalyzingOverlay({ imageUri, isVisible }: AnalyzingOverl
       <View style={styles.statusContainer}>
         <View style={styles.loadingDots}>
           <View style={[styles.dot, styles.dotActive]} />
-          <View style={[styles.dot, statusIndex > 0 && styles.dotActive]} />
-          <View style={[styles.dot, statusIndex > 2 && styles.dotActive]} />
+          <View style={[styles.dot, statusIndex > 1 && styles.dotActive]} />
+          <View style={[styles.dot, statusIndex > 3 && styles.dotActive]} />
         </View>
         <Text style={styles.statusText}>{STATUS_MESSAGES[statusIndex]}</Text>
       </View>
@@ -129,9 +151,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  imageContainer: {
-    width: SCREEN_WIDTH * 0.85,
-    height: SCREEN_HEIGHT * 0.5,
+  gridContainer: {
     borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 2,
@@ -141,14 +161,41 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 24,
   },
+  imageGrid: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+    padding: 2,
+  },
+  imageWrapper: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+  },
   image: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
-  overlay: {
+  imageOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+  },
+  labelContainer: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  labelText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#fff',
+    letterSpacing: 0.3,
   },
   scanLine: {
     position: 'absolute',

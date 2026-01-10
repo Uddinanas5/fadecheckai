@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const FIRST_SCAN_KEY = 'fadecheck_first_scan_completed';
-const PRO_USER_KEY = 'fadecheck_pro_user';
 
+/**
+ * Hook to track if the user has seen the BeginScan screen.
+ * Pro status is now handled by RevenueCat (useRevenueCat hook).
+ */
 export function useFirstScan() {
   const [hasCompletedFirstScan, setHasCompletedFirstScan] = useState<boolean | null>(null);
-  const [isProUser, setIsProUser] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -15,16 +17,11 @@ export function useFirstScan() {
 
   const loadStatus = async () => {
     try {
-      const [firstScanValue, proValue] = await Promise.all([
-        AsyncStorage.getItem(FIRST_SCAN_KEY),
-        AsyncStorage.getItem(PRO_USER_KEY),
-      ]);
+      const firstScanValue = await AsyncStorage.getItem(FIRST_SCAN_KEY);
       setHasCompletedFirstScan(firstScanValue === 'true');
-      setIsProUser(proValue === 'true');
     } catch (error) {
       console.error('Error loading first scan status:', error);
       setHasCompletedFirstScan(false);
-      setIsProUser(false);
     } finally {
       setIsLoading(false);
     }
@@ -39,15 +36,6 @@ export function useFirstScan() {
     }
   };
 
-  const setProStatus = async (isPro: boolean) => {
-    try {
-      await AsyncStorage.setItem(PRO_USER_KEY, isPro ? 'true' : 'false');
-      setIsProUser(isPro);
-    } catch (error) {
-      console.error('Error saving pro status:', error);
-    }
-  };
-
   const resetFirstScan = async () => {
     try {
       await AsyncStorage.removeItem(FIRST_SCAN_KEY);
@@ -59,10 +47,8 @@ export function useFirstScan() {
 
   return {
     hasCompletedFirstScan,
-    isProUser,
     isLoading,
     completeFirstScan,
-    setProStatus,
     resetFirstScan,
   };
 }

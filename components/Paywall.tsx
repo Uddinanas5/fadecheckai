@@ -8,166 +8,227 @@ import {
   ScrollView,
   Animated,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { useRevenueCat } from '../contexts/RevenueCatContext';
+import { PurchasesPackage, PACKAGE_TYPE } from 'react-native-purchases';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const SLIDE_GAP = 16;
+const SLIDE_WIDTH = SCREEN_WIDTH - 48;
+const CARD_HEIGHT = SCREEN_HEIGHT * 0.38;
+
 const ACCENT_BLUE = '#0145F2';
 const CYAN_GLOW = '#38BDF8';
 const BACKGROUND = '#0A0A0F';
-const CARD_BG = '#1A1A24';
-const TEXT_PRIMARY = '#EDF1F5';
-const TEXT_SECONDARY = '#9CA3AF';
-const TEXT_TERTIARY = '#6B7280';
+const CARD_BG = '#111118';
+const TEXT_PRIMARY = '#FFFFFF';
+const TEXT_SECONDARY = '#8E8E93';
 
 interface PaywallProps {
   onClose: () => void;
   onUnlock: () => void;
 }
 
-interface ScoreCardData {
-  label: string;
-  score: number;
-  color: readonly [string, string];
-}
-
-const SAMPLE_SCORES: ScoreCardData[] = [
-  { label: 'Overall', score: 68, color: ['#F59E0B', '#EF4444'] as const },
-  { label: 'Potential', score: 91, color: [ACCENT_BLUE, CYAN_GLOW] as const },
-  { label: 'Lineup', score: 56, color: ['#F59E0B', '#EF4444'] as const },
-  { label: 'Fade', score: 81, color: ['#22C55E', '#10B981'] as const },
-  { label: 'Blend', score: 65, color: ['#F59E0B', '#EF4444'] as const },
-  { label: 'Freshness', score: 76, color: ['#22C55E', '#10B981'] as const },
-];
-
 export default function Paywall({ onClose, onUnlock }: PaywallProps) {
+  const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [selectedPackage, setSelectedPackage] = useState<PurchasesPackage | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
 
+  const {
+    packages,
+    isPurchasing,
+    isLoading,
+    purchasePackage,
+    restorePurchases,
+  } = useRevenueCat();
+
+  // Select weekly by default if available
+  React.useEffect(() => {
+    if (packages.length > 0 && !selectedPackage) {
+      // Try to find weekly, otherwise use first package
+      const weeklyPkg = packages.find(p => p.packageType === PACKAGE_TYPE.WEEKLY);
+      setSelectedPackage(weeklyPkg || packages[0]);
+    }
+  }, [packages]);
+
   const handleScroll = (event: any) => {
-    const slideIndex = Math.round(event.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 48));
+    const slideIndex = Math.round(event.nativeEvent.contentOffset.x / (SLIDE_WIDTH + SLIDE_GAP));
     setCurrentSlide(slideIndex);
   };
 
-  const handleUnlock = () => {
+  const handleUnlock = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // TODO: Integrate RevenueCat
-    Alert.alert(
-      'FadeCheck Pro',
-      'Subscription will be available soon!\n\nFor now, enjoy all features for free.',
-      [{ text: 'Continue', onPress: onUnlock }]
-    );
+
+    if (!selectedPackage) {
+      Alert.alert('Error', 'Please select a subscription plan.');
+      return;
+    }
+
+    const success = await purchasePackage(selectedPackage);
+
+    if (success) {
+      onUnlock();
+    }
   };
 
-  const renderScoreCard = (item: ScoreCardData) => (
-    <View key={item.label} style={styles.scoreCard}>
-      <Text style={styles.scoreLabel}>{item.label}</Text>
-      <Text style={styles.scoreValue}>{item.score}</Text>
-      <View style={styles.scoreBarBg}>
-        <LinearGradient
-          colors={item.color}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[styles.scoreBar, { width: `${item.score}%` }]}
-        />
+  const handleRestore = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const success = await restorePurchases();
+
+    if (success) {
+      onUnlock();
+    }
+  };
+
+  // Get price string for display
+  const getPriceDisplay = () => {
+    if (!selectedPackage) return 'Loading...';
+
+    const price = selectedPackage.product.priceString;
+    const period = selectedPackage.packageType;
+
+    if (period === PACKAGE_TYPE.WEEKLY) return `${price}/week`;
+    if (period === PACKAGE_TYPE.MONTHLY) return `${price}/month`;
+    if (period === PACKAGE_TYPE.ANNUAL) return `${price}/year`;
+    if (period === PACKAGE_TYPE.LIFETIME) return `${price} forever`;
+
+    return price;
+  };
+
+  const handleTerms = () => {
+    onClose();
+    setTimeout(() => router.push('/terms-of-service'), 100);
+  };
+
+  const handlePrivacy = () => {
+    onClose();
+    setTimeout(() => router.push('/privacy-policy'), 100);
+  };
+
+  // Card 1: Get your ratings (2x3 grid like UMAX)
+  const renderRatingsCard = () => (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>Get your ratings</Text>
+
+      <View style={styles.ratingsGrid}>
+        {[
+          { label: 'Overall', score: 8.5, color: '#22C55E' },
+          { label: 'Lineup', score: 9.2, color: '#22C55E' },
+          { label: 'Fade', score: 7.8, color: '#F59E0B' },
+          { label: 'Blend', score: 8.1, color: '#22C55E' },
+          { label: 'Shape', score: 7.5, color: '#F59E0B' },
+          { label: 'Freshness', score: 9.0, color: '#22C55E' },
+        ].map((item, i) => (
+          <View key={i} style={styles.ratingBox}>
+            <Text style={styles.ratingLabel}>{item.label}</Text>
+            <Text style={styles.ratingScore}>{item.score.toFixed(1)}</Text>
+            <View style={styles.ratingBarBg}>
+              <View
+                style={[
+                  styles.ratingBar,
+                  {
+                    width: `${(item.score / 10) * 100}%`,
+                    backgroundColor: item.color
+                  }
+                ]}
+              />
+            </View>
+          </View>
+        ))}
       </View>
     </View>
   );
 
-  // Slide 1: Get your ratings (UMAX style)
-  const renderSlide1 = () => (
-    <View style={styles.slideContent}>
-      <Text style={styles.slideTitle}>Get your ratings</Text>
-      <View style={styles.scoresGrid}>
-        <View style={styles.scoresRow}>
-          {SAMPLE_SCORES.slice(0, 3).map(renderScoreCard)}
-        </View>
-        <View style={styles.scoresRow}>
-          {SAMPLE_SCORES.slice(3, 6).map(renderScoreCard)}
-        </View>
-      </View>
-    </View>
-  );
+  // Card 2: Improvement coach (chat style like UMAX)
+  const renderCoachCard = () => (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>Improvement coach</Text>
 
-  // Slide 2: Improvement coach (UMAX chat style)
-  const renderSlide2 = () => (
-    <View style={styles.slideContent}>
-      <Text style={styles.slideTitle}>Improvement coach</Text>
       <View style={styles.chatContainer}>
-        <View style={styles.chatBubbleLeft}>
-          <Text style={styles.chatText}>
-            What's up! I'm your personal barber coach. What are you looking to learn?
+        <View style={styles.chatBubbleAI}>
+          <Text style={styles.chatTextAI}>
+            What's up! I'm your personal barber coach. What are you looking to improve?
           </Text>
         </View>
-        <View style={styles.chatBubbleRight}>
+
+        <View style={styles.chatBubbleUser}>
           <Text style={styles.chatTextUser}>How do I get a better fade?</Text>
         </View>
-        <View style={styles.chatBubbleLeft}>
-          <Text style={styles.chatText}>
-            Getting a better fade includes a few different steps. You can start by...
+
+        <View style={styles.chatBubbleAI}>
+          <Text style={styles.chatTextAI}>
+            Getting a better fade starts with communication. You can start by...
           </Text>
         </View>
       </View>
     </View>
   );
 
-  // Slide 3: Learn about your cut (UMAX attributes style)
-  const renderSlide3 = () => (
-    <View style={styles.slideContent}>
-      <Text style={styles.slideTitle}>Learn about your cut</Text>
-      <View style={styles.attributesContainer}>
-        <View style={styles.attributeRow}>
-          <Text style={styles.attributeLabel}>Fade Type</Text>
-          <Text style={styles.attributeValue}>Mid Skin Fade</Text>
+  // Card 3: Learn about yourself (attribute rows like UMAX)
+  const renderLearnCard = () => (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>Learn about yourself</Text>
+
+      <View style={styles.attributeList}>
+        {[
+          { label: 'Hair Type', value: 'Type 3B' },
+          { label: 'Face Shape', value: 'Diamond' },
+          { label: 'Best Styles', value: 'Mid Fade' },
+        ].map((item, i) => (
+          <View key={i} style={styles.attributeRow}>
+            <Text style={styles.attributeLabel}>{item.label}</Text>
+            <Text style={styles.attributeValue}>{item.value}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+
+  // Card 4: Start improving (feature rows like UMAX)
+  const renderImprovingCard = () => (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>Start improving</Text>
+
+      <View style={styles.featureList}>
+        <View style={styles.featureRow}>
+          <View style={[styles.featureIcon, { backgroundColor: 'rgba(251, 191, 36, 0.15)' }]}>
+            <Text style={{ fontSize: 18 }}>✂️</Text>
+          </View>
+          <View style={styles.featureContent}>
+            <Text style={styles.featureTitle}>Talk to your barber</Text>
+            <Text style={styles.featureDesc}>Get personalized tips on what to ask for next visit.</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={TEXT_SECONDARY} />
         </View>
-        <View style={styles.attributeRow}>
-          <Text style={styles.attributeLabel}>Shape</Text>
-          <Text style={styles.attributeValue}>Round</Text>
-        </View>
-        <View style={styles.attributeRow}>
-          <Text style={styles.attributeLabel}>Freshness</Text>
-          <Text style={styles.attributeValue}>3 days old</Text>
+
+        <View style={styles.featureRow}>
+          <View style={[styles.featureIcon, { backgroundColor: 'rgba(139, 92, 246, 0.15)' }]}>
+            <Text style={{ fontSize: 18 }}>💎</Text>
+          </View>
+          <View style={styles.featureContent}>
+            <Text style={styles.featureTitle}>Style for your face</Text>
+            <Text style={styles.featureDesc}>You have a unique face shape... let's find your best cut!</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={TEXT_SECONDARY} />
         </View>
       </View>
     </View>
   );
 
-  // Slide 4: Start improving (UMAX tips style)
-  const renderSlide4 = () => (
-    <View style={styles.slideContent}>
-      <Text style={styles.slideTitle}>Start improving</Text>
-      <View style={styles.tipsContainer}>
-        <TouchableOpacity style={styles.tipCard} activeOpacity={0.7}>
-          <View style={[styles.tipIconContainer, { backgroundColor: 'rgba(1, 69, 242, 0.15)' }]}>
-            <Ionicons name="cut" size={20} color={ACCENT_BLUE} />
-          </View>
-          <View style={styles.tipContent}>
-            <Text style={styles.tipTitle}>Find a better barber</Text>
-            <Text style={styles.tipDescription}>
-              Your current cut has visible lines. Tap to find top-rated barbers near you.
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={ACCENT_BLUE} style={{ opacity: 0.6 }} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.tipCard} activeOpacity={0.7}>
-          <View style={[styles.tipIconContainer, { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
-            <Ionicons name="sparkles" size={20} color={CYAN_GLOW} />
-          </View>
-          <View style={styles.tipContent}>
-            <Text style={styles.tipTitle}>Maintenance tips</Text>
-            <Text style={styles.tipDescription}>
-              Learn how to maintain your fade between cuts.
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={CYAN_GLOW} style={{ opacity: 0.6 }} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const slideRenderers = [
+    renderRatingsCard,
+    renderCoachCard,
+    renderLearnCard,
+    renderImprovingCard,
+  ];
 
   return (
     <View style={styles.container}>
@@ -177,94 +238,146 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
         onPress={onClose}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <Ionicons name="close" size={24} color={TEXT_PRIMARY} />
+        <Ionicons name="close" size={22} color={TEXT_SECONDARY} />
       </TouchableOpacity>
 
-      {/* Header with gradient */}
-      <View style={styles.header}>
-        <LinearGradient
-          colors={[ACCENT_BLUE, CYAN_GLOW] as const}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.headerGradientBg}
-        >
-          <Text style={styles.levelUpText}>LEVEL UP</Text>
-        </LinearGradient>
-        <Text style={styles.subtitle}>Proven to help you level up your cut.</Text>
+      {/* Main Content */}
+      <View style={styles.mainContent}>
+        {/* Header */}
+        <View style={styles.header}>
+          <LinearGradient
+            colors={[ACCENT_BLUE, CYAN_GLOW] as const}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.proBadge}
+          >
+            <Text style={styles.proBadgeText}>PRO</Text>
+          </LinearGradient>
+          <Text style={styles.headerTitle}>Unlock Everything</Text>
+          <Text style={styles.headerSubtitle}>Get the full picture of your cut</Text>
+        </View>
+
+        {/* Slides */}
+        <View style={styles.slidesWrapper}>
+          <ScrollView
+            ref={scrollViewRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: false, listener: handleScroll }
+            )}
+            scrollEventThrottle={16}
+            contentContainerStyle={styles.slidesContent}
+            decelerationRate="fast"
+            snapToInterval={SLIDE_WIDTH + SLIDE_GAP}
+          >
+            {slideRenderers.map((render, index) => (
+              <View key={index} style={styles.slide}>
+                {render()}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Dots */}
+        <View style={styles.dotsContainer}>
+          {slideRenderers.map((_, index) => (
+            <View
+              key={index}
+              style={[styles.dot, currentSlide === index && styles.dotActive]}
+            />
+          ))}
+        </View>
       </View>
 
-      {/* Slides */}
-      <ScrollView
-        ref={scrollViewRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false, listener: handleScroll }
+      {/* Bottom */}
+      <View style={styles.bottomSection}>
+        {/* Package Selection */}
+        {packages.length > 0 && (
+          <View style={styles.packageSelector}>
+            {packages.map((pkg) => {
+              const isSelected = selectedPackage?.identifier === pkg.identifier;
+              const isWeekly = pkg.packageType === PACKAGE_TYPE.WEEKLY;
+
+              return (
+                <TouchableOpacity
+                  key={pkg.identifier}
+                  style={[
+                    styles.packageOption,
+                    isSelected && styles.packageOptionSelected,
+                  ]}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setSelectedPackage(pkg);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  {isWeekly && (
+                    <View style={styles.popularBadge}>
+                      <Text style={styles.popularBadgeText}>POPULAR</Text>
+                    </View>
+                  )}
+                  <Text style={[styles.packagePeriod, isSelected && styles.packagePeriodSelected]}>
+                    {pkg.packageType === PACKAGE_TYPE.WEEKLY && 'Weekly'}
+                    {pkg.packageType === PACKAGE_TYPE.MONTHLY && 'Monthly'}
+                    {pkg.packageType === PACKAGE_TYPE.ANNUAL && 'Yearly'}
+                    {pkg.packageType === PACKAGE_TYPE.LIFETIME && 'Lifetime'}
+                  </Text>
+                  <Text style={[styles.packagePrice, isSelected && styles.packagePriceSelected]}>
+                    {pkg.product.priceString}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         )}
-        scrollEventThrottle={16}
-        style={styles.slidesContainer}
-        contentContainerStyle={styles.slidesContent}
-      >
-        <View style={styles.slide}>{renderSlide1()}</View>
-        <View style={styles.slide}>{renderSlide2()}</View>
-        <View style={styles.slide}>{renderSlide3()}</View>
-        <View style={styles.slide}>{renderSlide4()}</View>
-      </ScrollView>
 
-      {/* Dots */}
-      <View style={styles.dotsContainer}>
-        {[0, 1, 2, 3].map((index) => (
-          <View
-            key={index}
-            style={[
-              styles.dot,
-              {
-                backgroundColor: currentSlide === index ? ACCENT_BLUE : '#252530',
-                width: currentSlide === index ? 20 : 8,
-              },
-            ]}
-          />
-        ))}
-      </View>
-
-      {/* Social Proof */}
-      <View style={styles.socialProofContainer}>
-        <Ionicons name="checkmark-circle" size={16} color="#22C55E" />
-        <Text style={styles.socialProof}>100,000+ haircuts rated</Text>
-      </View>
-
-      {/* Unlock Button */}
-      <TouchableOpacity
-        style={styles.unlockButton}
-        onPress={handleUnlock}
-        activeOpacity={0.8}
-      >
-        <LinearGradient
-          colors={[ACCENT_BLUE, '#2563EB'] as const}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.unlockButtonGradient}
+        <TouchableOpacity
+          style={[styles.unlockButton, isPurchasing && styles.unlockButtonDisabled]}
+          onPress={handleUnlock}
+          activeOpacity={0.8}
+          disabled={isPurchasing || isLoading}
         >
-          <Text style={styles.unlockButtonText}>Unlock Now</Text>
-        </LinearGradient>
-      </TouchableOpacity>
+          <LinearGradient
+            colors={[ACCENT_BLUE, '#2563EB'] as const}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.unlockButtonGradient}
+          >
+            {isPurchasing ? (
+              <ActivityIndicator color={TEXT_PRIMARY} />
+            ) : (
+              <Text style={styles.unlockButtonText}>
+                {selectedPackage ? `Subscribe ${getPriceDisplay()}` : 'Loading...'}
+              </Text>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
 
-      {/* Price */}
-      <Text style={styles.priceText}>$4.99 per week</Text>
+        {/* Subscription Disclosure - Required by Apple */}
+        <Text style={styles.subscriptionDisclosure}>
+          Payment will be charged to your Apple ID account at confirmation of purchase.
+          Subscription automatically renews unless canceled at least 24 hours before the end of the current period.
+          Manage subscriptions in Settings {'>'} Apple ID {'>'} Subscriptions.
+        </Text>
 
-      {/* Footer Links */}
-      <View style={styles.footerLinks}>
-        <TouchableOpacity>
-          <Text style={styles.footerLink}>Terms of Use</Text>
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Text style={styles.footerLink}>Restore Purchase</Text>
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Text style={styles.footerLink}>Privacy Policy</Text>
-        </TouchableOpacity>
+        <View style={styles.footerLinks}>
+          <TouchableOpacity onPress={handleRestore} disabled={isPurchasing} style={styles.restoreButton}>
+            <Text style={styles.restoreLink}>Restore Purchases</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.legalLinks}>
+          <TouchableOpacity onPress={handleTerms}>
+            <Text style={styles.legalLink}>Terms of Service</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalDot}>·</Text>
+          <TouchableOpacity onPress={handlePrivacy}>
+            <Text style={styles.legalLink}>Privacy Policy</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -274,245 +387,341 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: BACKGROUND,
+    paddingTop: 54,
   },
   closeButton: {
     position: 'absolute',
-    top: 50,
+    top: 54,
     left: 20,
     zIndex: 10,
-    padding: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mainContent: {
+    flex: 1,
   },
   header: {
     alignItems: 'center',
-    paddingTop: 80,
-    paddingBottom: 16,
+    paddingTop: 40,
+    paddingBottom: 28,
   },
-  headerGradientBg: {
+  proBadge: {
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 5,
     borderRadius: 6,
+    marginBottom: 12,
   },
-  levelUpText: {
-    fontSize: 42,
+  proBadgeText: {
+    fontSize: 12,
     fontWeight: '800',
-    fontStyle: 'italic',
     color: TEXT_PRIMARY,
-    letterSpacing: 2,
-    textShadowColor: 'rgba(1, 69, 242, 0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
+    letterSpacing: 1.5,
   },
-  subtitle: {
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: TEXT_PRIMARY,
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
     fontSize: 14,
     color: TEXT_SECONDARY,
-    marginTop: 10,
+    marginTop: 4,
   },
-  slidesContainer: {
+  slidesWrapper: {
     flex: 1,
   },
   slidesContent: {
     paddingHorizontal: 24,
   },
   slide: {
-    width: SCREEN_WIDTH - 48,
+    width: SLIDE_WIDTH,
+    marginRight: SLIDE_GAP,
   },
-  slideContent: {
+  card: {
+    height: CARD_HEIGHT,
     backgroundColor: CARD_BG,
     borderRadius: 24,
-    padding: 20,
-    minHeight: 300,
+    padding: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.10)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
-  slideTitle: {
+  cardTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: TEXT_PRIMARY,
     marginBottom: 20,
-    letterSpacing: -0.5,
   },
-  // Scores grid (Slide 1)
-  scoresGrid: {
-    gap: 12,
-  },
-  scoresRow: {
+
+  // Card 1: Ratings Grid
+  ratingsGrid: {
+    flex: 1,
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignContent: 'center',
     gap: 10,
   },
-  scoreCard: {
-    flex: 1,
-    backgroundColor: '#252530',
-    borderRadius: 16,
+  ratingBox: {
+    width: '31%',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 14,
     padding: 12,
+    alignItems: 'center',
   },
-  scoreLabel: {
-    fontSize: 11,
+  ratingLabel: {
+    fontSize: 10,
     color: TEXT_SECONDARY,
     marginBottom: 4,
   },
-  scoreValue: {
-    fontSize: 28,
+  ratingScore: {
+    fontSize: 24,
     fontWeight: '700',
     color: TEXT_PRIMARY,
-    marginBottom: 8,
-    letterSpacing: -1,
+    marginBottom: 6,
   },
-  scoreBarBg: {
+  ratingBarBg: {
     width: '100%',
     height: 4,
-    backgroundColor: '#333',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 2,
-    overflow: 'hidden',
   },
-  scoreBar: {
+  ratingBar: {
     height: '100%',
     borderRadius: 2,
   },
-  // Chat container (Slide 2)
+
+  // Card 2: Chat
   chatContainer: {
-    gap: 12,
+    flex: 1,
+    justifyContent: 'center',
+    gap: 10,
   },
-  chatBubbleLeft: {
-    backgroundColor: '#252530',
+  chatBubbleAI: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 16,
-    borderBottomLeftRadius: 4,
-    padding: 14,
-    maxWidth: '85%',
-    alignSelf: 'flex-start',
+    borderTopLeftRadius: 4,
+    padding: 12,
+    maxWidth: '90%',
   },
-  chatBubbleRight: {
+  chatTextAI: {
+    fontSize: 13,
+    color: TEXT_PRIMARY,
+    lineHeight: 18,
+  },
+  chatBubbleUser: {
     backgroundColor: ACCENT_BLUE,
     borderRadius: 16,
-    borderBottomRightRadius: 4,
-    padding: 14,
-    maxWidth: '85%',
+    borderTopRightRadius: 4,
+    padding: 12,
     alignSelf: 'flex-end',
-  },
-  chatText: {
-    fontSize: 14,
-    color: TEXT_PRIMARY,
-    lineHeight: 20,
+    maxWidth: '75%',
   },
   chatTextUser: {
-    fontSize: 14,
+    fontSize: 13,
     color: TEXT_PRIMARY,
-    lineHeight: 20,
+    lineHeight: 18,
   },
-  // Attributes container (Slide 3)
-  attributesContainer: {
-    gap: 12,
+
+  // Card 3: Attributes
+  attributeList: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 10,
   },
   attributeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#252530',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
   },
   attributeLabel: {
-    fontSize: 15,
+    fontSize: 14,
     color: TEXT_SECONDARY,
   },
   attributeValue: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: TEXT_PRIMARY,
   },
-  // Tips container (Slide 4)
-  tipsContainer: {
+
+  // Card 4: Features
+  featureList: {
+    flex: 1,
+    justifyContent: 'center',
     gap: 12,
   },
-  tipCard: {
+  featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#252530',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 14,
+    padding: 14,
     gap: 12,
   },
-  tipIconContainer: {
+  featureIcon: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  tipContent: {
+  featureContent: {
     flex: 1,
   },
-  tipTitle: {
-    fontSize: 15,
+  featureTitle: {
+    fontSize: 14,
     fontWeight: '600',
     color: TEXT_PRIMARY,
-    marginBottom: 4,
+    marginBottom: 2,
   },
-  tipDescription: {
-    fontSize: 13,
+  featureDesc: {
+    fontSize: 12,
     color: TEXT_SECONDARY,
-    lineHeight: 18,
+    lineHeight: 16,
   },
+
   // Dots
   dotsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    marginTop: 16,
+    paddingVertical: 20,
   },
   dot: {
+    width: 8,
     height: 8,
     borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
-  socialProofContainer: {
+  dotActive: {
+    width: 24,
+    backgroundColor: ACCENT_BLUE,
+  },
+
+  // Bottom
+  bottomSection: {
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    paddingBottom: 40,
+  },
+  packageSelector: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 16,
+    gap: 10,
+    marginBottom: 16,
   },
-  socialProof: {
+  packageOption: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 14,
+    padding: 14,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    position: 'relative',
+  },
+  packageOptionSelected: {
+    borderColor: ACCENT_BLUE,
+    backgroundColor: 'rgba(1, 69, 242, 0.1)',
+  },
+  popularBadge: {
+    position: 'absolute',
+    top: -8,
+    backgroundColor: ACCENT_BLUE,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  popularBadgeText: {
+    fontSize: 9,
+    fontWeight: '700',
     color: TEXT_PRIMARY,
-    fontSize: 14,
-    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  packagePeriod: {
+    fontSize: 12,
+    color: TEXT_SECONDARY,
+    marginBottom: 4,
+  },
+  packagePeriodSelected: {
+    color: TEXT_PRIMARY,
+  },
+  packagePrice: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: TEXT_PRIMARY,
+  },
+  packagePriceSelected: {
+    color: ACCENT_BLUE,
   },
   unlockButton: {
-    marginHorizontal: 24,
-    marginTop: 16,
     borderRadius: 16,
     overflow: 'hidden',
     shadowColor: ACCENT_BLUE,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  unlockButtonDisabled: {
+    opacity: 0.7,
   },
   unlockButtonGradient: {
-    height: 56,
+    height: 68,
     alignItems: 'center',
     justifyContent: 'center',
   },
   unlockButtonText: {
     color: TEXT_PRIMARY,
-    fontSize: 17,
-    fontWeight: '600',
-    letterSpacing: -0.3,
+    fontSize: 19,
+    fontWeight: '700',
   },
-  priceText: {
-    textAlign: 'center',
+  subscriptionDisclosure: {
+    fontSize: 11,
     color: TEXT_SECONDARY,
-    fontSize: 14,
-    marginTop: 12,
+    textAlign: 'center',
+    lineHeight: 16,
+    marginTop: 16,
+    paddingHorizontal: 8,
   },
   footerLinks: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 24,
-    marginTop: 16,
-    marginBottom: 40,
+    alignItems: 'center',
+    marginTop: 12,
   },
-  footerLink: {
+  restoreButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  restoreLink: {
+    fontSize: 14,
+    color: ACCENT_BLUE,
+    fontWeight: '600',
+  },
+  legalLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  legalLink: {
     fontSize: 12,
-    color: TEXT_TERTIARY,
+    color: TEXT_SECONDARY,
+    textDecorationLine: 'underline',
+  },
+  legalDot: {
+    fontSize: 12,
+    color: TEXT_SECONDARY,
   },
 });

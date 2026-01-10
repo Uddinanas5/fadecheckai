@@ -53,6 +53,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "person" : "person-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="debug"
         options={{
           title: 'Debug',
@@ -63,6 +76,8 @@ export default function TabLayout() {
               color={color}
             />
           ),
+          // Hide debug tab in production (can be accessed via settings)
+          href: __DEV__ ? undefined : null,
         }}
       />
     </Tabs>

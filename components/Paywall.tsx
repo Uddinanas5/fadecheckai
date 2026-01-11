@@ -93,14 +93,7 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
     if (!selectedPackage) return 'Loading...';
 
     const price = selectedPackage.product.priceString;
-    const period = selectedPackage.packageType;
-
-    if (period === PACKAGE_TYPE.WEEKLY) return `${price}/week`;
-    if (period === PACKAGE_TYPE.MONTHLY) return `${price}/month`;
-    if (period === PACKAGE_TYPE.ANNUAL) return `${price}/year`;
-    if (period === PACKAGE_TYPE.LIFETIME) return `${price} forever`;
-
-    return price;
+    return `${price} per week`;
   };
 
   const handleTerms = () => {
@@ -147,26 +140,42 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
     </View>
   );
 
-  // Card 2: Improvement coach (chat style like UMAX)
-  const renderCoachCard = () => (
+  // Card 2: Track your cuts
+  const renderProgressCard = () => (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>Improvement coach</Text>
+      <Text style={styles.cardTitle}>Track your cuts</Text>
 
-      <View style={styles.chatContainer}>
-        <View style={styles.chatBubbleAI}>
-          <Text style={styles.chatTextAI}>
-            What's up! I'm your personal barber coach. What are you looking to improve?
-          </Text>
-        </View>
-
-        <View style={styles.chatBubbleUser}>
-          <Text style={styles.chatTextUser}>How do I get a better fade?</Text>
-        </View>
-
-        <View style={styles.chatBubbleAI}>
-          <Text style={styles.chatTextAI}>
-            Getting a better fade starts with communication. You can start by...
-          </Text>
+      <View style={styles.progressContainer}>
+        {[
+          { date: 'Jan 5', score: 6.2 },
+          { date: 'Jan 19', score: 7.1 },
+          { date: 'Feb 2', score: 7.8 },
+          { date: 'Feb 16', score: 8.4 },
+        ].map((item, i) => (
+          <View key={i} style={styles.progressRow}>
+            <Text style={styles.progressDate}>{item.date}</Text>
+            <View style={styles.progressBarContainer}>
+              <View
+                style={[
+                  styles.progressBar,
+                  {
+                    width: `${(item.score / 10) * 100}%`,
+                    backgroundColor: item.score >= 8 ? '#22C55E' : item.score >= 7 ? '#F59E0B' : '#EF4444'
+                  }
+                ]}
+              />
+            </View>
+            <Text style={[
+              styles.progressScore,
+              { color: item.score >= 8 ? '#22C55E' : item.score >= 7 ? '#F59E0B' : '#EF4444' }
+            ]}>
+              {item.score.toFixed(1)}
+            </Text>
+          </View>
+        ))}
+        <View style={styles.progressFooter}>
+          <Ionicons name="trending-up" size={16} color="#22C55E" />
+          <Text style={styles.progressFooterText}>+2.2 improvement</Text>
         </View>
       </View>
     </View>
@@ -179,9 +188,9 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
 
       <View style={styles.attributeList}>
         {[
-          { label: 'Hair Type', value: 'Type 3B' },
-          { label: 'Face Shape', value: 'Diamond' },
-          { label: 'Best Styles', value: 'Mid Fade' },
+          { label: 'Hair Texture', value: 'Coarse' },
+          { label: 'Hair Density', value: 'Thick' },
+          { label: 'Best Fade', value: 'Mid Taper' },
         ].map((item, i) => (
           <View key={i} style={styles.attributeRow}>
             <Text style={styles.attributeLabel}>{item.label}</Text>
@@ -225,7 +234,7 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
 
   const slideRenderers = [
     renderRatingsCard,
-    renderCoachCard,
+    renderProgressCard,
     renderLearnCard,
     renderImprovingCard,
   ];
@@ -290,50 +299,13 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
             />
           ))}
         </View>
+
+        {/* Scans count */}
+        <Text style={styles.scansText}>10,000+ scans completed</Text>
       </View>
 
       {/* Bottom */}
       <View style={styles.bottomSection}>
-        {/* Package Selection */}
-        {packages.length > 0 && (
-          <View style={styles.packageSelector}>
-            {packages.map((pkg) => {
-              const isSelected = selectedPackage?.identifier === pkg.identifier;
-              const isWeekly = pkg.packageType === PACKAGE_TYPE.WEEKLY;
-
-              return (
-                <TouchableOpacity
-                  key={pkg.identifier}
-                  style={[
-                    styles.packageOption,
-                    isSelected && styles.packageOptionSelected,
-                  ]}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setSelectedPackage(pkg);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  {isWeekly && (
-                    <View style={styles.popularBadge}>
-                      <Text style={styles.popularBadgeText}>POPULAR</Text>
-                    </View>
-                  )}
-                  <Text style={[styles.packagePeriod, isSelected && styles.packagePeriodSelected]}>
-                    {pkg.packageType === PACKAGE_TYPE.WEEKLY && 'Weekly'}
-                    {pkg.packageType === PACKAGE_TYPE.MONTHLY && 'Monthly'}
-                    {pkg.packageType === PACKAGE_TYPE.ANNUAL && 'Yearly'}
-                    {pkg.packageType === PACKAGE_TYPE.LIFETIME && 'Lifetime'}
-                  </Text>
-                  <Text style={[styles.packagePrice, isSelected && styles.packagePriceSelected]}>
-                    {pkg.product.priceString}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
-
         <TouchableOpacity
           style={[styles.unlockButton, isPurchasing && styles.unlockButtonDisabled]}
           onPress={handleUnlock}
@@ -349,31 +321,26 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
             {isPurchasing ? (
               <ActivityIndicator color={TEXT_PRIMARY} />
             ) : (
-              <Text style={styles.unlockButtonText}>
-                {selectedPackage ? `Subscribe ${getPriceDisplay()}` : 'Loading...'}
-              </Text>
+              <Text style={styles.unlockButtonText}>Unlock now 🙌</Text>
             )}
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Subscription Disclosure - Required by Apple */}
-        <Text style={styles.subscriptionDisclosure}>
-          Payment will be charged to your Apple ID account at confirmation of purchase.
-          Subscription automatically renews unless canceled at least 24 hours before the end of the current period.
-          Manage subscriptions in Settings {'>'} Apple ID {'>'} Subscriptions.
-        </Text>
+        {/* Price below button */}
+        <Text style={styles.priceText}>{getPriceDisplay()}</Text>
 
-        <View style={styles.footerLinks}>
-          <TouchableOpacity onPress={handleRestore} disabled={isPurchasing} style={styles.restoreButton}>
-            <Text style={styles.restoreLink}>Restore Purchases</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Apple Required Subscription Disclosure */}
+        <Text style={styles.subscriptionDisclosure}>
+          Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless canceled at least 24 hours before the end of the current period. Manage subscriptions in Account Settings.
+        </Text>
 
         <View style={styles.legalLinks}>
           <TouchableOpacity onPress={handleTerms}>
-            <Text style={styles.legalLink}>Terms of Service</Text>
+            <Text style={styles.legalLink}>Terms of Use</Text>
           </TouchableOpacity>
-          <Text style={styles.legalDot}>·</Text>
+          <TouchableOpacity onPress={handleRestore} disabled={isPurchasing}>
+            <Text style={styles.legalLink}>Restore Purchase</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={handlePrivacy}>
             <Text style={styles.legalLink}>Privacy Policy</Text>
           </TouchableOpacity>
@@ -495,36 +462,52 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
 
-  // Card 2: Chat
-  chatContainer: {
+  // Card 2: Progress
+  progressContainer: {
     flex: 1,
     justifyContent: 'center',
-    gap: 10,
+    gap: 14,
   },
-  chatBubbleAI: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 16,
-    borderTopLeftRadius: 4,
-    padding: 12,
-    maxWidth: '90%',
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  chatTextAI: {
-    fontSize: 13,
-    color: TEXT_PRIMARY,
-    lineHeight: 18,
+  progressDate: {
+    fontSize: 12,
+    color: TEXT_SECONDARY,
+    width: 50,
   },
-  chatBubbleUser: {
-    backgroundColor: ACCENT_BLUE,
-    borderRadius: 16,
-    borderTopRightRadius: 4,
-    padding: 12,
-    alignSelf: 'flex-end',
-    maxWidth: '75%',
+  progressBarContainer: {
+    flex: 1,
+    height: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 4,
   },
-  chatTextUser: {
-    fontSize: 13,
-    color: TEXT_PRIMARY,
-    lineHeight: 18,
+  progressBar: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  progressScore: {
+    fontSize: 14,
+    fontWeight: '700',
+    width: 32,
+    textAlign: 'right',
+  },
+  progressFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  progressFooterText: {
+    fontSize: 14,
+    color: '#22C55E',
+    fontWeight: '600',
   },
 
   // Card 3: Attributes
@@ -606,61 +589,19 @@ const styles = StyleSheet.create({
     width: 24,
     backgroundColor: ACCENT_BLUE,
   },
+  scansText: {
+    fontSize: 14,
+    color: TEXT_SECONDARY,
+    textAlign: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+  },
 
   // Bottom
   bottomSection: {
     paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 40,
-  },
-  packageSelector: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 16,
-  },
-  packageOption: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 14,
-    padding: 14,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-    position: 'relative',
-  },
-  packageOptionSelected: {
-    borderColor: ACCENT_BLUE,
-    backgroundColor: 'rgba(1, 69, 242, 0.1)',
-  },
-  popularBadge: {
-    position: 'absolute',
-    top: -8,
-    backgroundColor: ACCENT_BLUE,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  popularBadgeText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: TEXT_PRIMARY,
-    letterSpacing: 0.5,
-  },
-  packagePeriod: {
-    fontSize: 12,
-    color: TEXT_SECONDARY,
-    marginBottom: 4,
-  },
-  packagePeriodSelected: {
-    color: TEXT_PRIMARY,
-  },
-  packagePrice: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: TEXT_PRIMARY,
-  },
-  packagePriceSelected: {
-    color: ACCENT_BLUE,
   },
   unlockButton: {
     borderRadius: 16,
@@ -684,43 +625,31 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: '700',
   },
-  subscriptionDisclosure: {
-    fontSize: 11,
+  priceText: {
+    fontSize: 14,
     color: TEXT_SECONDARY,
     textAlign: 'center',
-    lineHeight: 16,
-    marginTop: 16,
-    paddingHorizontal: 8,
-  },
-  footerLinks: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
     marginTop: 12,
+    marginBottom: 8,
   },
-  restoreButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  restoreLink: {
-    fontSize: 14,
-    color: ACCENT_BLUE,
-    fontWeight: '600',
+  subscriptionDisclosure: {
+    fontSize: 10,
+    color: TEXT_SECONDARY,
+    textAlign: 'center',
+    lineHeight: 14,
+    marginBottom: 12,
+    paddingHorizontal: 8,
+    opacity: 0.7,
   },
   legalLinks: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    gap: 24,
     marginTop: 8,
     marginBottom: 8,
   },
   legalLink: {
-    fontSize: 12,
-    color: TEXT_SECONDARY,
-    textDecorationLine: 'underline',
-  },
-  legalDot: {
     fontSize: 12,
     color: TEXT_SECONDARY,
   },

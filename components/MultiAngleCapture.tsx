@@ -37,7 +37,7 @@ interface MultiAngleCaptureProps {
 }
 
 type AngleStep = 'front' | 'leftSide' | 'rightSide' | 'back';
-type ScreenMode = 'instruction' | 'camera';
+type ScreenMode = 'instruction' | 'camera' | 'preview';
 
 const ANGLE_CONFIG: Record<AngleStep, {
   title: string;
@@ -104,6 +104,7 @@ export default function MultiAngleCapture({ onComplete }: MultiAngleCaptureProps
   const [currentStep, setCurrentStep] = useState<AngleStep>('front');
   const [screenMode, setScreenMode] = useState<ScreenMode>('instruction');
   const [capturedImages, setCapturedImages] = useState<Partial<CapturedImages>>({});
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const currentStepIndex = ANGLE_ORDER.indexOf(currentStep);
 
@@ -148,8 +149,18 @@ export default function MultiAngleCapture({ onComplete }: MultiAngleCaptureProps
   };
 
   const handleImageCaptured = (uri: string) => {
-    const newCapturedImages = { ...capturedImages, [currentStep]: uri };
+    // Show preview instead of auto-advancing
+    setPreviewImage(uri);
+    setScreenMode('preview');
+  };
+
+  const handleUsePhoto = () => {
+    if (!previewImage) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const newCapturedImages = { ...capturedImages, [currentStep]: previewImage };
     setCapturedImages(newCapturedImages);
+    setPreviewImage(null);
 
     // Check if all images are captured
     if (Object.keys(newCapturedImages).length === 4) {
@@ -167,6 +178,12 @@ export default function MultiAngleCapture({ onComplete }: MultiAngleCaptureProps
         }, 300);
       }
     }
+  };
+
+  const handleRetake = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setPreviewImage(null);
+    setScreenMode('camera');
   };
 
   const toggleFacing = () => {
@@ -305,6 +322,70 @@ export default function MultiAngleCapture({ onComplete }: MultiAngleCaptureProps
               >
                 <Text style={styles.continueButtonText}>Take Photo</Text>
                 <Ionicons name="camera" size={18} color="#fff" style={{ marginLeft: 8 }} />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // Preview Screen
+  if (screenMode === 'preview' && previewImage) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.previewScreen}>
+          {/* Progress Bar */}
+          <View style={styles.progressContainer}>
+            {ANGLE_ORDER.map((angle, index) => (
+              <View
+                key={angle}
+                style={[
+                  styles.progressBar,
+                  {
+                    backgroundColor: index <= currentStepIndex ? ACCENT_BLUE : 'rgba(255,255,255,0.2)',
+                  },
+                ]}
+              />
+            ))}
+          </View>
+
+          {/* Step Indicator */}
+          <Text style={styles.stepIndicatorText}>Step {currentStepIndex + 1} of 4</Text>
+
+          {/* Title */}
+          <Text style={styles.instructionTitle}>{config.title}</Text>
+          <Text style={styles.previewSubtitle}>Does this look good?</Text>
+
+          {/* Preview Image */}
+          <View style={styles.previewImageContainer}>
+            <Image source={{ uri: previewImage }} style={styles.previewImage} />
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.previewButtonsContainer}>
+            <TouchableOpacity
+              style={styles.retakeButton}
+              onPress={handleRetake}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="refresh" size={20} color={TEXT_PRIMARY} />
+              <Text style={styles.retakeButtonText}>Retake</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.usePhotoButton}
+              onPress={handleUsePhoto}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={[ACCENT_BLUE, '#2563EB'] as const}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.usePhotoButtonGradient}
+              >
+                <Ionicons name="checkmark" size={20} color="#fff" />
+                <Text style={styles.usePhotoButtonText}>Use Photo</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -689,5 +770,74 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     letterSpacing: -0.3,
+  },
+  // Preview Screen Styles
+  previewScreen: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 56,
+  },
+  previewSubtitle: {
+    fontSize: 16,
+    color: TEXT_SECONDARY,
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 24,
+  },
+  previewImageContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  previewImage: {
+    width: SCREEN_WIDTH * 0.85,
+    height: SCREEN_WIDTH * 0.85,
+    borderRadius: 20,
+    backgroundColor: CARD_BG,
+  },
+  previewButtonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingBottom: 40,
+  },
+  retakeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 52,
+    backgroundColor: CARD_BG,
+    borderRadius: 14,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  retakeButtonText: {
+    color: TEXT_PRIMARY,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  usePhotoButton: {
+    flex: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: ACCENT_BLUE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  usePhotoButtonGradient: {
+    height: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  usePhotoButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

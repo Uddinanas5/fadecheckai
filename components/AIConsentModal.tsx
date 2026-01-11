@@ -89,10 +89,10 @@ export default function AIConsentModal({
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>What happens when you scan:</Text>
                 <BulletPoint>
-                  Your photos are securely sent to OpenAI for analysis
+                  Your photos are securely sent to our AI for analysis
                 </BulletPoint>
                 <BulletPoint>
-                  OpenAI's GPT-4 Vision evaluates your haircut and generates a score
+                  Advanced AI vision technology evaluates your haircut and generates a score
                 </BulletPoint>
                 <BulletPoint>
                   Results are returned to your device and stored locally
@@ -106,7 +106,7 @@ export default function AIConsentModal({
                   Photos are transmitted securely using encryption (HTTPS)
                 </BulletPoint>
                 <BulletPoint>
-                  OpenAI processes images in real-time and does not permanently store them
+                  Images are processed in real-time and never permanently stored
                 </BulletPoint>
                 <BulletPoint>
                   Analysis results are returned and the original images are discarded

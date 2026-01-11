@@ -75,14 +75,14 @@ export default function PrivacyPolicyScreen() {
             <Text style={styles.aiDisclosureTitle}>AI Data Sharing Disclosure</Text>
           </View>
           <Text style={styles.aiDisclosureText}>
-            When you submit photos for haircut analysis, your images are securely transmitted to OpenAI for processing using their GPT-4 Vision technology. This is essential for providing our AI-powered haircut analysis service.
+            When you submit photos for haircut analysis, your images are securely transmitted to our AI service for processing. This is essential for providing our AI-powered haircut analysis service.
           </Text>
           <Text style={[styles.aiDisclosureText, { marginTop: 8 }]}>
             What this means:
           </Text>
-          <BulletPoint>Your photos are transmitted securely to OpenAI using encryption (HTTPS)</BulletPoint>
-          <BulletPoint>OpenAI's GPT-4 Vision analyzes the images to generate your score</BulletPoint>
-          <BulletPoint>Photos are processed in real-time by OpenAI and not permanently stored</BulletPoint>
+          <BulletPoint>Your photos are transmitted securely using encryption (HTTPS)</BulletPoint>
+          <BulletPoint>Advanced AI vision technology analyzes the images to generate your score</BulletPoint>
+          <BulletPoint>Photos are processed in real-time and never permanently stored</BulletPoint>
           <BulletPoint>Your analysis history is stored only on your device</BulletPoint>
         </View>
 
@@ -110,7 +110,7 @@ export default function PrivacyPolicyScreen() {
             We use the following third-party services:
           </Paragraph>
           <BulletPoint>
-            OpenAI (GPT-4 Vision) - For AI-powered image analysis. Your photos are transmitted securely, processed in real-time, and not permanently stored by OpenAI.
+            AI Vision Service - For AI-powered image analysis. Your photos are transmitted securely, processed in real-time, and never permanently stored.
           </BulletPoint>
           <BulletPoint>
             Apple App Store - For app distribution and in-app purchases
@@ -132,7 +132,7 @@ export default function PrivacyPolicyScreen() {
 
         <Section title="Data Retention">
           <Paragraph>
-            Local analysis history is retained on your device until you choose to delete it. Photos sent to OpenAI for AI analysis are processed in real-time (typically within seconds) and are not permanently stored by us or OpenAI after processing is complete.
+            Local analysis history is retained on your device until you choose to delete it. Photos sent for AI analysis are processed in real-time (typically within seconds) and are never permanently stored after processing is complete.
           </Paragraph>
         </Section>
 

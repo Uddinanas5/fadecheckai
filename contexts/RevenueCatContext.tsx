@@ -8,8 +8,8 @@ import Purchases, {
   PACKAGE_TYPE,
 } from 'react-native-purchases';
 
-// Your RevenueCat API key
-const REVENUECAT_API_KEY = 'test_DqNXhJUHPZlUSQuFIsasXwCwJUT';
+// Your RevenueCat API key (Production)
+const REVENUECAT_API_KEY = 'appl_yKjFjZloSoLiZneNHPAHhnWRETt';
 
 // Your entitlement identifier from RevenueCat dashboard
 const ENTITLEMENT_ID = 'Fadecheck Pro';

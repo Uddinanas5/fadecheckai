@@ -24,8 +24,7 @@ export default function RevealScreen() {
 
   const handleInviteFriends = async () => {
     try {
-      // TODO: Replace with actual App Store URL after app is published
-      const appStoreUrl = 'https://apps.apple.com/app/fadecheck';
+      const appStoreUrl = 'https://apps.apple.com/app/id6757437429';
       const result = await Share.share({
         message: `Check out FadeCheck - AI-powered haircut analysis! Get instant feedback on your fade. Download it here: ${appStoreUrl}`,
         title: 'Try FadeCheck!',

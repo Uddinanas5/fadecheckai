@@ -90,7 +90,7 @@ export default function TermsOfServiceScreen() {
           </Paragraph>
           <BulletPoint>You confirm you have the right to share those images</BulletPoint>
           <BulletPoint>You grant us permission to process images through our AI system</BulletPoint>
-          <BulletPoint>You understand images will be sent to third-party AI services (OpenAI) for analysis</BulletPoint>
+          <BulletPoint>You understand images will be sent to our AI service for analysis</BulletPoint>
           <BulletPoint>You will not submit inappropriate, illegal, or harmful content</BulletPoint>
         </Section>
 

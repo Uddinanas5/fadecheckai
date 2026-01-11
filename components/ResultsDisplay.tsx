@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Share,
   Alert,
   ScrollView,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -16,15 +17,19 @@ import ViewShot from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import { Ionicons } from '@expo/vector-icons';
 import Colors, { getScoreColor, getScoreLabel } from '../constants/Colors';
-import { spacing, borderRadius } from '../constants/Styles';
+import { spacing } from '../constants/Styles';
 import { AnalysisResult } from '../types';
-import ScoreCard from './ScoreCard';
 import ImprovementTips from './ImprovementTips';
-import InsightBadges from './InsightBadges';
 import ExpandableCard from './ExpandableCard';
 
 const ACCENT_BLUE = '#0145F2';
 const CYAN_GLOW = '#38BDF8';
+const CARD_BG = '#12121A';
+const CARD_BG_LIGHT = '#1A1A24';
+const TEXT_PRIMARY = '#FFFFFF';
+const TEXT_SECONDARY = '#8B8B9E';
+const GOLD = '#FFD700';
+const GLASS_BORDER = 'rgba(255,255,255,0.08)';
 
 interface ResultsDisplayProps {
   imageUri: string;
@@ -34,12 +39,148 @@ interface ResultsDisplayProps {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+// Animated Score Ring Component
+const ScoreRing = ({
+  score,
+  size = 80,
+  strokeWidth = 6,
+  label
+}: {
+  score: number;
+  size?: number;
+  strokeWidth?: number;
+  label: string;
+}) => {
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const scoreColor = getScoreColor(score);
+  const percentage = (score / 10) * 100;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+
+  useEffect(() => {
+    Animated.timing(animatedValue, {
+      toValue: percentage,
+      duration: 1000,
+      useNativeDriver: false,
+    }).start();
+  }, [score]);
+
+  return (
+    <View style={[styles.scoreRingContainer, { width: size, height: size + 24 }]}>
+      <View style={[styles.scoreRingWrapper, { width: size, height: size }]}>
+        {/* Background Ring */}
+        <View style={[styles.ringBg, {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          borderWidth: strokeWidth,
+        }]} />
+
+        {/* Score Display */}
+        <View style={styles.scoreRingInner}>
+          <Text style={[styles.scoreRingValue, { color: scoreColor, fontSize: size * 0.32 }]}>
+            {score.toFixed(1)}
+          </Text>
+        </View>
+
+        {/* Colored Arc Indicator */}
+        <View style={[styles.scoreArc, {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          borderWidth: strokeWidth,
+          borderColor: scoreColor,
+          borderRightColor: 'transparent',
+          borderBottomColor: 'transparent',
+          transform: [{ rotate: '-45deg' }],
+        }]} />
+      </View>
+      <Text style={styles.scoreRingLabel}>{label}</Text>
+    </View>
+  );
+};
+
+// Premium Score Card Component
+const PremiumScoreCard = ({
+  label,
+  score,
+  icon,
+  delay = 0
+}: {
+  label: string;
+  score: number;
+  icon: string;
+  delay?: number;
+}) => {
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const scoreColor = getScoreColor(score);
+
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(delay),
+      Animated.parallel([
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 50,
+          friction: 7,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View style={[
+      styles.premiumCard,
+      {
+        transform: [{ scale: scaleAnim }],
+        opacity: opacityAnim,
+      }
+    ]}>
+      <LinearGradient
+        colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.02)']}
+        style={styles.premiumCardGradient}
+      >
+        <Text style={styles.premiumCardIcon}>{icon}</Text>
+        <Text style={[styles.premiumCardScore, { color: scoreColor }]}>
+          {score.toFixed(1)}
+        </Text>
+        <Text style={styles.premiumCardLabel}>{label}</Text>
+      </LinearGradient>
+    </Animated.View>
+  );
+};
+
 export default function ResultsDisplay({
   imageUri,
   result,
   onRateAnother,
 }: ResultsDisplayProps) {
   const viewShotRef = useRef<ViewShot>(null);
+  const headerScale = useRef(new Animated.Value(0.9)).current;
+  const headerOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(headerScale, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+      Animated.timing(headerOpacity, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const handleShare = async () => {
     try {
@@ -51,12 +192,12 @@ export default function ResultsDisplay({
         if (await Sharing.isAvailableAsync()) {
           await Sharing.shareAsync(uri, {
             mimeType: 'image/png',
-            dialogTitle: 'Share your FadeCheck rating',
+            dialogTitle: 'Share your rating',
           });
         } else {
           const scoreText = result.overall_score !== null ? `${result.overall_score}/10` : 'a rating';
           await Share.share({
-            message: `I got ${scoreText} on FadeCheck! "${result.verdict}"`,
+            message: `I got ${scoreText}! "${result.verdict}"`,
           });
         }
       }
@@ -69,11 +210,6 @@ export default function ResultsDisplay({
   const scoreColor = result.overall_score ? getScoreColor(result.overall_score) : Colors.text.secondary;
   const scoreLabel = result.overall_score ? getScoreLabel(result.overall_score) : 'N/A';
 
-  // Calculate potential score (slightly higher than current, max 10)
-  const potentialScore = result.overall_score
-    ? Math.min(10, result.overall_score + (10 - result.overall_score) * 0.5).toFixed(1)
-    : null;
-
   return (
     <View style={styles.container}>
       <ScrollView
@@ -81,185 +217,237 @@ export default function ResultsDisplay({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Shareable Hero Card */}
         <ViewShot
           ref={viewShotRef}
           options={{ format: 'png', quality: 1 }}
           style={styles.shareableContent}
         >
-          {/* Header with Photo and Main Score */}
-          <View style={styles.headerSection}>
-            <View style={styles.imageContainer}>
-              <Image source={{ uri: imageUri }} style={styles.image} />
-              <View style={styles.imageGradient} />
-            </View>
+          <Animated.View style={[
+            styles.heroCard,
+            {
+              transform: [{ scale: headerScale }],
+              opacity: headerOpacity,
+            }
+          ]}>
+            <LinearGradient
+              colors={['#1A1A2E', '#16162A', '#0F0F1A']}
+              style={styles.heroCardGradient}
+            >
+              {/* Top Section - Image + Main Score */}
+              <View style={styles.heroTop}>
+                {/* Profile Image with Glow */}
+                <View style={styles.imageWrapper}>
+                  <View style={[styles.imageGlow, { shadowColor: scoreColor }]} />
+                  <Image source={{ uri: imageUri }} style={styles.heroImage} />
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.6)']}
+                    style={styles.imageOverlay}
+                  />
+                </View>
 
-            {/* Overall Score Badge */}
-            <View style={styles.scoreBadge}>
-              <Text style={[styles.overallScore, { color: scoreColor }]}>
-                {result.overall_score ?? '—'}
-              </Text>
-              <Text style={styles.outOf}>/10</Text>
-            </View>
-          </View>
+                {/* Main Score Display */}
+                <View style={styles.mainScoreSection}>
+                  <View style={styles.scoreDisplay}>
+                    <Text style={[styles.mainScoreValue, { color: scoreColor }]}>
+                      {result.overall_score?.toFixed(1) ?? '—'}
+                    </Text>
+                    <Text style={styles.mainScoreMax}>/10</Text>
+                  </View>
+                  <View style={[styles.scoreBadge, { backgroundColor: `${scoreColor}20`, borderColor: `${scoreColor}40` }]}>
+                    <View style={[styles.scoreBadgeDot, { backgroundColor: scoreColor }]} />
+                    <Text style={[styles.scoreBadgeText, { color: scoreColor }]}>{scoreLabel}</Text>
+                  </View>
+                </View>
+              </View>
 
-          {/* Score Label */}
-          <View style={styles.labelContainer}>
-            <Text style={[styles.scoreLabel, { color: scoreColor }]}>
-              {scoreLabel}
-            </Text>
-            <Text style={styles.verdictText}>"{result.verdict}"</Text>
-          </View>
+              {/* Verdict */}
+              <Text style={styles.verdictText}>"{result.verdict}"</Text>
 
-          {/* Branding (for share card) */}
-          <Text style={styles.branding}>FadeCheck</Text>
+              {/* Score Grid - 3 Primary */}
+              {result.scores && (
+                <View style={styles.primaryScoreGrid}>
+                  <PremiumScoreCard label="Lineup" score={result.scores.lineup} icon="📐" delay={100} />
+                  <PremiumScoreCard label="Fade" score={result.scores.fade} icon="🎨" delay={200} />
+                  <PremiumScoreCard label="Blend" score={result.scores.blend} icon="✨" delay={300} />
+                </View>
+              )}
+
+              {/* Secondary Scores Row */}
+              {result.scores && (
+                <View style={styles.secondaryScoreRow}>
+                  <View style={styles.secondaryScoreItem}>
+                    <Text style={styles.secondaryScoreValue}>{result.scores.shape.toFixed(1)}</Text>
+                    <Text style={styles.secondaryScoreLabel}>Shape</Text>
+                  </View>
+                  <View style={styles.scoreDivider} />
+                  <View style={styles.secondaryScoreItem}>
+                    <Text style={styles.secondaryScoreValue}>{result.scores.freshness.toFixed(1)}</Text>
+                    <Text style={styles.secondaryScoreLabel}>Freshness</Text>
+                  </View>
+                  {result.maintenance && (
+                    <>
+                      <View style={styles.scoreDivider} />
+                      <View style={styles.secondaryScoreItem}>
+                        <Text style={[styles.secondaryScoreValue, { color: CYAN_GLOW }]}>
+                          {result.maintenance.days_until_touchup}
+                        </Text>
+                        <Text style={styles.secondaryScoreLabel}>Touchup</Text>
+                      </View>
+                    </>
+                  )}
+                </View>
+              )}
+            </LinearGradient>
+          </Animated.View>
         </ViewShot>
 
-        {/* Quick Insight Badges - Swipeable */}
-        <InsightBadges result={result} />
-
-        {/* Score Grid - Compact */}
-        {result.scores && (
-          <View style={styles.scoresSection}>
-            <Text style={styles.sectionTitle}>Your Ratings</Text>
-            <View style={styles.scoresGrid}>
-              <View style={styles.scoreRow}>
-                <ScoreCard label="Overall" score={result.overall_score || 0} size="large" />
-                <ScoreCard label="Potential" score={parseFloat(potentialScore || '0')} size="large" />
-              </View>
-              <View style={styles.scoreRow}>
-                <ScoreCard label="Lineup" score={result.scores.lineup} />
-                <ScoreCard label="Fade" score={result.scores.fade} />
-                <ScoreCard label="Blend" score={result.scores.blend} />
-              </View>
-              <View style={styles.scoreRow}>
-                <ScoreCard label="Shape" score={result.scores.shape} />
-                <ScoreCard label="Fresh" score={result.scores.freshness} />
-              </View>
+        {/* Quick Info Pills */}
+        <View style={styles.infoPills}>
+          {result.hair_profile && (
+            <View style={styles.infoPill}>
+              <Text style={styles.infoPillIcon}>🧬</Text>
+              <Text style={styles.infoPillText}>{result.hair_profile.hair_type_name}</Text>
             </View>
-          </View>
-        )}
+          )}
+          {result.face_analysis && (
+            <View style={styles.infoPill}>
+              <Text style={styles.infoPillIcon}>💎</Text>
+              <Text style={styles.infoPillText}>
+                {result.face_analysis.face_shape.charAt(0).toUpperCase() + result.face_analysis.face_shape.slice(1)} Face
+              </Text>
+            </View>
+          )}
+          {result.fade_details && result.fade_details.fade_type !== 'none' && (
+            <View style={styles.infoPill}>
+              <Text style={styles.infoPillIcon}>✂️</Text>
+              <Text style={styles.infoPillText}>{result.fade_details.fade_type_name}</Text>
+            </View>
+          )}
+        </View>
 
-        {/* Expandable Insight Cards */}
-        <View style={styles.insightsSection}>
-          {/* Hair Profile Card */}
+        {/* Detail Cards */}
+        <View style={styles.detailsSection}>
+          {/* Full Analysis */}
+          <ExpandableCard
+            icon="📊"
+            title="Full Analysis"
+            summary="Detailed breakdown"
+            accentColor={ACCENT_BLUE}
+            defaultExpanded={false}
+          >
+            <Text style={styles.analysisText}>{result.breakdown}</Text>
+          </ExpandableCard>
+
+          {/* Hair Profile */}
           {result.hair_profile && (
             <ExpandableCard
               icon="🧬"
-              title="Your Hair Type"
-              summary={`${result.hair_profile.hair_type_name} • ${result.hair_profile.density.charAt(0).toUpperCase() + result.hair_profile.density.slice(1)} Density`}
-              accentColor={Colors.accent.primary}
+              title="Hair Profile"
+              summary={result.hair_profile.hair_type_name}
+              accentColor="#8B5CF6"
             >
-              <Text style={styles.cardDescription}>
-                {result.hair_profile.hair_type_description}
-              </Text>
-              <View style={styles.densityRow}>
-                <Text style={styles.densityLabel}>Density</Text>
-                <View style={styles.densityIndicator}>
-                  {[1, 2, 3].map((i) => (
+              <Text style={styles.analysisText}>{result.hair_profile.hair_type_description}</Text>
+              <View style={styles.statRow}>
+                <Text style={styles.statLabel}>Density</Text>
+                <View style={styles.statValueContainer}>
+                  {['thin', 'medium', 'thick'].map((level, i) => (
                     <View
-                      key={i}
+                      key={level}
                       style={[
-                        styles.densityDot,
+                        styles.densityBar,
                         {
                           backgroundColor:
-                            (result.hair_profile?.density === 'thin' && i === 1) ||
-                            (result.hair_profile?.density === 'medium' && i <= 2) ||
+                            (result.hair_profile?.density === 'thin' && i === 0) ||
+                            (result.hair_profile?.density === 'medium' && i <= 1) ||
                             (result.hair_profile?.density === 'thick')
-                              ? Colors.accent.primary
-                              : Colors.background.secondary,
+                              ? '#8B5CF6'
+                              : 'rgba(255,255,255,0.1)',
                         },
                       ]}
                     />
                   ))}
+                  <Text style={styles.statValue}>
+                    {result.hair_profile.density.charAt(0).toUpperCase() + result.hair_profile.density.slice(1)}
+                  </Text>
                 </View>
-                <Text style={styles.densityValue}>
-                  {result.hair_profile.density.charAt(0).toUpperCase() + result.hair_profile.density.slice(1)}
-                </Text>
               </View>
-              <Text style={styles.cardSubtext}>{result.hair_profile.density_description}</Text>
             </ExpandableCard>
           )}
 
-          {/* Face Shape Card */}
+          {/* Face Shape */}
           {result.face_analysis && (
             <ExpandableCard
               icon="💎"
-              title="Your Face Shape"
+              title="Face Shape"
               summary={result.face_analysis.face_shape.charAt(0).toUpperCase() + result.face_analysis.face_shape.slice(1)}
-              accentColor={Colors.accent.secondary}
+              accentColor="#EC4899"
             >
-              <Text style={styles.cardDescription}>
-                {result.face_analysis.face_shape_description}
-              </Text>
-              <View style={styles.recommendationBox}>
-                <Text style={styles.recommendationLabel}>Best Styles For You</Text>
-                <Text style={styles.recommendationText}>
-                  {result.face_analysis.style_recommendation}
-                </Text>
+              <Text style={styles.analysisText}>{result.face_analysis.face_shape_description}</Text>
+              <View style={styles.tipBox}>
+                <Text style={styles.tipLabel}>💡 Best Styles</Text>
+                <Text style={styles.tipText}>{result.face_analysis.style_recommendation}</Text>
               </View>
             </ExpandableCard>
           )}
 
-          {/* Fade Details Card */}
+          {/* Fade Details */}
           {result.fade_details && result.fade_details.fade_type !== 'none' && (
             <ExpandableCard
               icon="✂️"
-              title="Your Fade"
+              title="Fade Analysis"
               summary={result.fade_details.fade_type_name}
-              accentColor={Colors.score.clean}
+              accentColor="#10B981"
             >
-              <Text style={styles.cardDescription}>
-                {result.fade_details.fade_description}
-              </Text>
+              <Text style={styles.analysisText}>{result.fade_details.fade_description}</Text>
             </ExpandableCard>
           )}
 
-          {/* Maintenance Card */}
+          {/* Maintenance */}
           {result.maintenance && (
             <ExpandableCard
               icon="📅"
               title="Maintenance"
-              summary={`Touchup in ${result.maintenance.days_until_touchup} • ${result.maintenance.maintenance_schedule}`}
-              accentColor={Colors.score.decent}
+              summary={result.maintenance.days_until_touchup}
+              accentColor="#F59E0B"
             >
               <View style={styles.maintenanceGrid}>
-                <View style={styles.maintenanceItem}>
-                  <Text style={styles.maintenanceLabel}>Next Touchup</Text>
-                  <Text style={styles.maintenanceValue}>{result.maintenance.days_until_touchup}</Text>
+                <View style={styles.maintenanceCard}>
+                  <Ionicons name="calendar-outline" size={20} color="#F59E0B" />
+                  <Text style={styles.maintenanceCardValue}>{result.maintenance.days_until_touchup}</Text>
+                  <Text style={styles.maintenanceCardLabel}>Next Visit</Text>
                 </View>
-                <View style={styles.maintenanceItem}>
-                  <Text style={styles.maintenanceLabel}>Schedule</Text>
-                  <Text style={styles.maintenanceValue}>{result.maintenance.maintenance_schedule}</Text>
+                <View style={styles.maintenanceCard}>
+                  <Ionicons name="repeat-outline" size={20} color="#F59E0B" />
+                  <Text style={styles.maintenanceCardValue}>{result.maintenance.maintenance_schedule}</Text>
+                  <Text style={styles.maintenanceCardLabel}>Schedule</Text>
                 </View>
               </View>
-              <Text style={styles.cardSubtext}>{result.maintenance.maintenance_tip}</Text>
+              <Text style={styles.tipText}>{result.maintenance.maintenance_tip}</Text>
             </ExpandableCard>
           )}
 
-          {/* Product Recommendations Card */}
+          {/* Products */}
           {result.product_recommendations && result.product_recommendations.length > 0 && (
             <ExpandableCard
               icon="💈"
-              title="Product Recommendation"
+              title="Recommended Products"
               summary={result.product_recommendations[0].product_type}
-              accentColor={Colors.accent.highlight}
+              accentColor="#06B6D4"
             >
               {result.product_recommendations.map((product, index) => (
-                <View key={index} style={styles.productItem}>
-                  <Text style={styles.productType}>Best for your hair: {product.product_type}</Text>
-                  <Text style={styles.cardSubtext}>{product.why}</Text>
+                <View key={index} style={styles.productRow}>
+                  <View style={styles.productIcon}>
+                    <Ionicons name="checkmark-circle" size={18} color="#06B6D4" />
+                  </View>
+                  <View style={styles.productInfo}>
+                    <Text style={styles.productName}>{product.product_type}</Text>
+                    <Text style={styles.productReason}>{product.why}</Text>
+                  </View>
                 </View>
               ))}
             </ExpandableCard>
           )}
-        </View>
-
-        {/* Full Analysis Breakdown */}
-        <View style={styles.breakdownSection}>
-          <Text style={styles.sectionTitle}>Full Analysis</Text>
-          <View style={styles.breakdownCard}>
-            <Text style={styles.breakdown}>{result.breakdown}</Text>
-          </View>
         </View>
 
         {/* Improvement Tips */}
@@ -268,34 +456,34 @@ export default function ResultsDisplay({
         )}
       </ScrollView>
 
-      {/* Action Buttons */}
-      <View style={styles.buttonContainer}>
+      {/* Bottom Actions */}
+      <View style={styles.bottomActions}>
         <TouchableOpacity
           onPress={handleShare}
           activeOpacity={0.9}
-          style={styles.primaryButton}
+          style={styles.shareBtn}
         >
           <LinearGradient
-            colors={[ACCENT_BLUE, '#2563EB'] as const}
+            colors={[ACCENT_BLUE, '#3B82F6']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={styles.primaryButtonGradient}
+            style={styles.shareBtnGradient}
           >
             <Ionicons name="share-outline" size={20} color="#fff" />
-            <Text style={styles.primaryButtonText}>Share Results</Text>
+            <Text style={styles.shareBtnText}>Share</Text>
           </LinearGradient>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.secondaryButton}
+          style={styles.rateAnotherBtn}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             onRateAnother();
           }}
           activeOpacity={0.8}
         >
-          <Ionicons name="camera-outline" size={20} color={ACCENT_BLUE} />
-          <Text style={styles.secondaryButtonText}>Rate Another</Text>
+          <Ionicons name="camera-outline" size={20} color={TEXT_PRIMARY} />
+          <Text style={styles.rateAnotherBtnText}>New Scan</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -305,244 +493,357 @@ export default function ResultsDisplay({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background.primary,
+    backgroundColor: '#0A0A0F',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.md,
   },
   shareableContent: {
-    backgroundColor: Colors.background.primary,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: 12,
+    paddingTop: 8,
   },
-  headerSection: {
-    position: 'relative',
-    marginBottom: spacing.md,
-  },
-  imageContainer: {
-    width: '100%',
-    height: 220,
-    borderRadius: borderRadius.xl,
+  // Hero Card
+  heroCard: {
+    borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: Colors.glass.border,
+    borderColor: GLASS_BORDER,
   },
-  image: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
+  heroCardGradient: {
+    padding: 16,
   },
-  imageGradient: {
+  heroTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  imageWrapper: {
+    position: 'relative',
+  },
+  imageGlow: {
+    position: 'absolute',
+    width: 88,
+    height: 88,
+    borderRadius: 20,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  heroImage: {
+    width: 88,
+    height: 88,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  imageOverlay: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: 100,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    height: 40,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-  scoreBadge: {
-    position: 'absolute',
-    bottom: -30,
-    alignSelf: 'center',
+  mainScoreSection: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  scoreDisplay: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    backgroundColor: Colors.background.primary,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-    borderWidth: 3,
-    borderColor: Colors.background.tertiary,
-    shadowColor: ACCENT_BLUE,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 6,
   },
-  overallScore: {
-    fontSize: 48,
-    fontWeight: '700',
+  mainScoreValue: {
+    fontSize: 52,
+    fontWeight: '800',
     letterSpacing: -2,
   },
-  outOf: {
-    fontSize: 20,
-    fontWeight: '500',
-    color: Colors.text.secondary,
+  mainScoreMax: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: TEXT_SECONDARY,
     marginLeft: 2,
   },
-  labelContainer: {
+  scoreBadge: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 40,
-    marginBottom: spacing.lg,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 4,
   },
-  scoreLabel: {
-    fontSize: 24,
+  scoreBadgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
+  },
+  scoreBadgeText: {
+    fontSize: 12,
     fontWeight: '700',
-    letterSpacing: 2,
+    letterSpacing: 0.5,
   },
   verdictText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: Colors.text.secondary,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-  },
-  scoresSection: {
-    marginBottom: spacing.lg,
-    paddingHorizontal: spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: Colors.text.secondary,
-    marginBottom: spacing.md,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  scoresGrid: {
-    gap: 12,
-  },
-  scoreRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  breakdownSection: {
-    marginBottom: spacing.md,
-    paddingHorizontal: spacing.lg,
-  },
-  breakdownCard: {
-    backgroundColor: Colors.background.tertiary,
-    borderRadius: borderRadius.xl,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: Colors.glass.border,
-    borderTopWidth: 3,
-    borderTopColor: ACCENT_BLUE,
-  },
-  breakdown: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: Colors.text.primary,
-  },
-  branding: {
-    textAlign: 'center',
     fontSize: 14,
-    color: Colors.text.tertiary,
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  insightsSection: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-  },
-  cardDescription: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: Colors.text.primary,
-    marginBottom: spacing.md,
-  },
-  cardSubtext: {
-    fontSize: 13,
-    lineHeight: 20,
-    color: Colors.text.secondary,
-    marginTop: spacing.xs,
-  },
-  densityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.background.secondary,
-    borderRadius: borderRadius.md,
-    padding: spacing.sm,
-    marginBottom: spacing.xs,
-  },
-  densityLabel: {
-    fontSize: 13,
     fontWeight: '500',
-    color: Colors.text.secondary,
-    marginRight: spacing.sm,
+    color: TEXT_SECONDARY,
+    fontStyle: 'italic',
+    marginBottom: 16,
+    textAlign: 'center',
   },
-  densityIndicator: {
+  // Primary Score Grid
+  primaryScoreGrid: {
     flexDirection: 'row',
-    gap: 6,
-    marginRight: spacing.sm,
+    gap: 8,
+    marginBottom: 12,
   },
-  densityDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  densityValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.text.primary,
-    marginLeft: 'auto',
-  },
-  recommendationBox: {
-    backgroundColor: Colors.background.secondary,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    marginTop: spacing.sm,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.accent.secondary,
-  },
-  recommendationLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: Colors.text.secondary,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: spacing.xs,
-  },
-  recommendationText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: Colors.text.primary,
-  },
-  maintenanceGrid: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  maintenanceItem: {
+  premiumCard: {
     flex: 1,
-    backgroundColor: Colors.background.secondary,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    alignItems: 'center',
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
   },
-  maintenanceLabel: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: Colors.text.secondary,
+  premiumCardGradient: {
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+  },
+  premiumCardIcon: {
+    fontSize: 18,
+    marginBottom: 4,
+  },
+  premiumCardScore: {
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: -1,
+  },
+  premiumCardLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: TEXT_SECONDARY,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: spacing.xs,
+    marginTop: 2,
   },
-  maintenanceValue: {
-    fontSize: 16,
+  // Secondary Score Row
+  secondaryScoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  secondaryScoreItem: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  secondaryScoreValue: {
+    fontSize: 18,
     fontWeight: '700',
-    color: Colors.text.primary,
+    color: TEXT_PRIMARY,
   },
-  productItem: {
-    marginBottom: spacing.sm,
+  secondaryScoreLabel: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: TEXT_SECONDARY,
+    textTransform: 'uppercase',
+    marginTop: 2,
   },
-  productType: {
-    fontSize: 15,
+  scoreDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  // Score Ring (keeping for potential future use)
+  scoreRingContainer: {
+    alignItems: 'center',
+  },
+  scoreRingWrapper: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  ringBg: {
+    position: 'absolute',
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  scoreRingInner: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scoreRingValue: {
+    fontWeight: '800',
+  },
+  scoreRingLabel: {
+    fontSize: 10,
     fontWeight: '600',
-    color: Colors.accent.primary,
-    marginBottom: spacing.xs,
+    color: TEXT_SECONDARY,
+    textTransform: 'uppercase',
+    marginTop: 6,
   },
-  buttonContainer: {
-    padding: spacing.lg,
-    paddingBottom: spacing.xl,
-    gap: spacing.md,
-    backgroundColor: Colors.background.primary,
+  scoreArc: {
+    position: 'absolute',
+  },
+  // Info Pills
+  infoPills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingHorizontal: 12,
+    marginTop: 12,
+    marginBottom: 16,
+  },
+  infoPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: CARD_BG_LIGHT,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+  },
+  infoPillIcon: {
+    fontSize: 14,
+  },
+  infoPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: TEXT_PRIMARY,
+  },
+  // Details Section
+  detailsSection: {
+    paddingHorizontal: 12,
+  },
+  analysisText: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: 'rgba(255,255,255,0.85)',
+    marginBottom: 8,
+  },
+  statRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 8,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: TEXT_SECONDARY,
+  },
+  statValueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  densityBar: {
+    width: 16,
+    height: 4,
+    borderRadius: 2,
+  },
+  statValue: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: TEXT_PRIMARY,
+    marginLeft: 8,
+  },
+  tipBox: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#EC4899',
+  },
+  tipLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: TEXT_SECONDARY,
+    marginBottom: 4,
+  },
+  tipText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: 'rgba(255,255,255,0.8)',
+  },
+  // Maintenance Grid
+  maintenanceGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
+  maintenanceCard: {
+    flex: 1,
+    backgroundColor: 'rgba(245,158,11,0.1)',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+  },
+  maintenanceCardValue: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: TEXT_PRIMARY,
+    marginTop: 6,
+    textAlign: 'center',
+  },
+  maintenanceCardLabel: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: TEXT_SECONDARY,
+    textTransform: 'uppercase',
+    marginTop: 2,
+  },
+  // Product Row
+  productRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  productIcon: {
+    marginRight: 10,
+    marginTop: 2,
+  },
+  productInfo: {
+    flex: 1,
+  },
+  productName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: TEXT_PRIMARY,
+    marginBottom: 2,
+  },
+  productReason: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: TEXT_SECONDARY,
+  },
+  // Bottom Actions
+  bottomActions: {
+    flexDirection: 'row',
+    padding: 12,
+    paddingBottom: 24,
+    gap: 10,
+    backgroundColor: '#0A0A0F',
     borderTopWidth: 1,
-    borderTopColor: Colors.glass.border,
+    borderTopColor: GLASS_BORDER,
   },
-  primaryButton: {
-    borderRadius: 16,
+  shareBtn: {
+    flex: 1,
+    borderRadius: 14,
     overflow: 'hidden',
     shadowColor: ACCENT_BLUE,
     shadowOffset: { width: 0, height: 4 },
@@ -550,34 +851,33 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
-  primaryButtonGradient: {
+  shareBtnGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.sm,
-    height: 56,
+    gap: 8,
+    height: 52,
   },
-  primaryButtonText: {
+  shareBtnText: {
     color: '#fff',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
-    letterSpacing: -0.3,
   },
-  secondaryButton: {
+  rateAnotherBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.sm,
-    backgroundColor: 'transparent',
-    height: 56,
-    borderRadius: 16,
+    gap: 8,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: CARD_BG_LIGHT,
     borderWidth: 1,
-    borderColor: 'rgba(1, 69, 242, 0.3)',
+    borderColor: GLASS_BORDER,
   },
-  secondaryButtonText: {
-    color: ACCENT_BLUE,
-    fontSize: 17,
+  rateAnotherBtnText: {
+    color: TEXT_PRIMARY,
+    fontSize: 16,
     fontWeight: '600',
-    letterSpacing: -0.3,
   },
 });

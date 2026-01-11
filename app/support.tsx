@@ -38,9 +38,7 @@ export default function SupportScreen() {
         {
           text: 'Rate',
           onPress: () => {
-            // TODO: Replace with actual App Store URL after app is published
-            // Format: https://apps.apple.com/app/fadecheck/id[YOUR_APP_ID]
-            Linking.openURL('https://apps.apple.com/app/fadecheck');
+            Linking.openURL('https://apps.apple.com/app/id6757437429?action=write-review');
           },
         },
       ]

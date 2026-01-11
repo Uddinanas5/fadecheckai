@@ -312,9 +312,6 @@ export default function BeginScan({ onBeginScan }: BeginScanProps) {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Haircut Analysis</Text>
-        <TouchableOpacity style={styles.settingsButton} activeOpacity={0.6}>
-          <Ionicons name="settings-outline" size={24} color="#6B7280" />
-        </TouchableOpacity>
       </View>
 
       {/* Main Content */}
@@ -455,10 +452,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: TEXT_PRIMARY,
     letterSpacing: -1,
-  },
-  settingsButton: {
-    padding: 8,
-    opacity: 0.7,
   },
   content: {
     flex: 1,

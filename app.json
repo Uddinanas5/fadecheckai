@@ -21,7 +21,8 @@
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "FadeCheck needs camera access to rate your haircut",
-        "NSPhotoLibraryUsageDescription": "FadeCheck needs photo library access to select photos of your haircut"
+        "NSPhotoLibraryUsageDescription": "FadeCheck needs photo library access to select photos of your haircut",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -29,7 +30,11 @@
         "foregroundImage": "./assets/images/Fadecheckailogo.png",
         "backgroundColor": "#0A0A0F"
       },
-      "package": "com.fadecheck.app"
+      "package": "com.fadecheck.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -55,6 +60,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "60dfae44-c004-4729-b7c2-d20f66758a9a"
+      }
+    },
+    "owner": "uddinanas5"
   }
 }

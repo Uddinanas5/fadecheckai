@@ -16,14 +16,15 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "bundleIdentifier": "com.fadecheck.app",
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "FadeCheck needs camera access to rate your haircut",
         "NSPhotoLibraryUsageDescription": "FadeCheck needs photo library access to select photos of your haircut",
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "buildNumber": "4"
     },
     "android": {
       "adaptiveIcon": {

@@ -61,7 +61,7 @@ export default function TermsOfServiceScreen() {
 
         <Section title="2. Description of Service">
           <Paragraph>
-            FadeCheck is an AI-powered mobile application that analyzes photos of haircuts and provides ratings and feedback. The App uses artificial intelligence technology to evaluate haircut quality based on various factors including fade quality, lineup precision, and overall aesthetics.
+            FadeCheck is an AI-powered personal grooming coach that analyzes photos of haircuts and provides constructive feedback. The App uses artificial intelligence technology to evaluate haircut quality based on various factors including fade quality, lineup precision, and overall aesthetics.
           </Paragraph>
         </Section>
 
@@ -79,7 +79,7 @@ export default function TermsOfServiceScreen() {
           <View style={styles.disclaimerBox}>
             <Ionicons name="information-circle" size={20} color={Colors.accent.secondary} />
             <Text style={styles.disclaimerText}>
-              The AI-generated ratings and feedback are for entertainment purposes only. Results may vary and should not be considered professional barbering advice. The App's analysis is based on image processing algorithms and may not reflect all aspects of haircut quality.
+              FadeCheck uses artificial intelligence to provide grooming feedback and is intended for personal self-improvement purposes only. Results are suggestions, not professional assessments. AI analysis is not a substitute for professional barber consultation. This app is designed for analyzing your own haircuts only - do not use it to judge or rate other people. We do not provide medical, dermatological, or professional styling advice. Consult a licensed barber or stylist for professional guidance.
             </Text>
           </View>
         </Section>
@@ -127,7 +127,7 @@ export default function TermsOfServiceScreen() {
           </Paragraph>
           <BulletPoint>The App is provided "AS IS" without warranties of any kind</BulletPoint>
           <BulletPoint>We are not liable for any indirect, incidental, or consequential damages</BulletPoint>
-          <BulletPoint>We do not guarantee the accuracy of AI-generated ratings</BulletPoint>
+          <BulletPoint>We do not guarantee the accuracy of AI-generated analysis</BulletPoint>
           <BulletPoint>Our total liability is limited to the amount you paid for the App</BulletPoint>
         </Section>
 

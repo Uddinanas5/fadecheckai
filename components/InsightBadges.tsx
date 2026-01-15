@@ -64,7 +64,7 @@ export default function InsightBadges({ result, onBadgePress }: InsightBadgesPro
       label: 'Fade',
       value: result.fade_details.fade_type_name?.split(' ')[0] || result.fade_details.fade_type.charAt(0).toUpperCase() + result.fade_details.fade_type.slice(1),
       section: 'fade',
-      color: Colors.score.clean,
+      color: Colors.score.great,
     });
   }
 
@@ -75,7 +75,7 @@ export default function InsightBadges({ result, onBadgePress }: InsightBadgesPro
       label: 'Next',
       value: result.maintenance.days_until_touchup,
       section: 'maintenance',
-      color: Colors.score.decent,
+      color: Colors.score.fair,
     });
   }
 

@@ -12,19 +12,25 @@ const APPLE_AUTH_STATE_KEY = 'fadecheck_apple_auth_state';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// Google OAuth Client IDs
-const GOOGLE_WEB_CLIENT_ID = '215893084176-mc7oivucn5877aamkmfpe0ac2t6bho5q.apps.googleusercontent.com';
-const GOOGLE_IOS_CLIENT_ID = '215893084176-3l3dq7ujdkoil0a826c0msvusaovf2mi.apps.googleusercontent.com';
+// Google OAuth Client IDs (CORRECTED - were swapped before!)
+const GOOGLE_IOS_CLIENT_ID = '215893084176-mc7oivucn5877aamkmfpe0ac2t6bho5q.apps.googleusercontent.com';
+const GOOGLE_WEB_CLIENT_ID = '215893084176-3l3dq7ujdkoil0a826c0msvusaovf2mi.apps.googleusercontent.com';
+
+// iOS redirect URI (reversed iOS client ID)
+const GOOGLE_IOS_REDIRECT_URI = 'com.googleusercontent.apps.215893084176-mc7oivucn5877aamkmfpe0ac2t6bho5q:/oauth2redirect/google';
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Google Auth setup
+  // Google Auth setup - use iOS-specific config on iOS (no web client to force native flow)
   const [googleRequest, googleResponse, promptGoogleAsync] = Google.useAuthRequest({
-    webClientId: GOOGLE_WEB_CLIENT_ID,
     iosClientId: GOOGLE_IOS_CLIENT_ID,
+    // Only include webClientId on non-iOS to force native iOS auth
+    ...(Platform.OS !== 'ios' && { webClientId: GOOGLE_WEB_CLIENT_ID }),
+    redirectUri: Platform.OS === 'ios' ? GOOGLE_IOS_REDIRECT_URI : undefined,
+    scopes: ['openid', 'profile', 'email'],
   });
 
   useEffect(() => {

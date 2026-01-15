@@ -54,33 +54,33 @@ const Colors = {
 
   // Score Colors (based on score ranges)
   score: {
-    elite: '#0145F2',        // 9-10: Electric Blue
-    fire: '#38BDF8',         // 8-8.9: Cyan Glow
-    clean: '#22C55E',        // 6.5-7.9: Emerald
-    decent: '#FBBF24',       // 5-6.4: Amber
-    mid: '#F97316',          // 3.5-4.9: Orange
-    botched: '#EF4444',      // 0-3.4: Red
+    expert: '#0145F2',       // 9-10: Electric Blue (Expert Level)
+    excellent: '#38BDF8',    // 8-8.9: Cyan Glow (Excellent)
+    great: '#22C55E',        // 6.5-7.9: Emerald (Great)
+    fair: '#FBBF24',         // 5-6.4: Amber (Fair)
+    developing: '#F97316',   // 3.5-4.9: Orange (Developing)
+    freshStart: '#EF4444',   // 0-3.4: Red (Fresh Start)
   },
 };
 
 // Get score color based on score value
 export const getScoreColor = (score: number): string => {
-  if (score >= 9) return Colors.score.elite;
-  if (score >= 8) return Colors.score.fire;
-  if (score >= 6.5) return Colors.score.clean;
-  if (score >= 5) return Colors.score.decent;
-  if (score >= 3.5) return Colors.score.mid;
-  return Colors.score.botched;
+  if (score >= 9) return Colors.score.expert;
+  if (score >= 8) return Colors.score.excellent;
+  if (score >= 6.5) return Colors.score.great;
+  if (score >= 5) return Colors.score.fair;
+  if (score >= 3.5) return Colors.score.developing;
+  return Colors.score.freshStart;
 };
 
 // Get score label based on score value
 export const getScoreLabel = (score: number): string => {
-  if (score >= 9) return 'ELITE';
-  if (score >= 8) return 'FIRE';
-  if (score >= 6.5) return 'CLEAN';
-  if (score >= 5) return 'DECENT';
-  if (score >= 3.5) return 'MID';
-  return 'BOTCHED';
+  if (score >= 9) return 'EXPERT LEVEL';
+  if (score >= 8) return 'EXCELLENT';
+  if (score >= 6.5) return 'GREAT';
+  if (score >= 5) return 'FAIR';
+  if (score >= 3.5) return 'DEVELOPING';
+  return 'FRESH START';
 };
 
 // Get gradient colors for score

@@ -104,7 +104,7 @@ export default function CameraScreen() {
       // User explicitly declined consent - show settings prompt
       Alert.alert(
         'AI Analysis Disabled',
-        'You need to enable AI analysis to rate your haircut. Would you like to enable it now?',
+        'You need to enable AI analysis to analyze your haircut. Would you like to enable it now?',
         [
           { text: 'Cancel', style: 'cancel' },
           {

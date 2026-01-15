@@ -105,7 +105,7 @@ export default function PhotoCapture({ photoType, onCapture, onSkip }: PhotoCapt
           </View>
           <Text style={styles.permissionTitle}>Camera Access Needed</Text>
           <Text style={styles.permissionText}>
-            FadeCheck needs camera access to rate your haircut
+            FadeCheck needs camera access to analyze your haircut
           </Text>
           <TouchableOpacity
             onPress={requestPermission}

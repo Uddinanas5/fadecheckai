@@ -400,7 +400,7 @@ export default function BeginScan({ onBeginScan }: BeginScanProps) {
 
         {/* Text */}
         <Text style={styles.mainText}>
-          Get your ratings and{'\n'}recommendations
+          Get your analysis and{'\n'}grooming tips
         </Text>
 
         {/* Pagination dots */}

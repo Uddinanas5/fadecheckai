@@ -16,6 +16,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
+import Purchases from 'react-native-purchases';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // StoreReview removed - Apple prohibits requesting reviews during onboarding
 import Colors from '../constants/Colors';
 import { useAuth } from '../hooks/useAuth';
@@ -60,14 +62,79 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     }
   };
 
-  const handleGenderSelect = (selected: 'male' | 'female') => {
+  const handleGenderSelect = async (selected: 'male' | 'female') => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setGender(selected);
+
+    // Save gender locally and to RevenueCat (if configured)
+    try {
+      await AsyncStorage.setItem('user_gender', selected);
+
+      // Only save to RevenueCat if it's configured
+      const isConfigured = await Purchases.isConfigured();
+      if (isConfigured) {
+        await Purchases.setAttributes({
+          'gender': selected,
+        });
+      }
+    } catch (error) {
+      // Silently fail - don't block onboarding
+      console.log('Gender will be synced later');
+    }
+
     setTimeout(() => goToNextStep(), 300);
   };
 
   const handleSkip = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    goToNextStep();
+  };
+
+  // VIP codes that grant free Pro access
+  const VIP_CODES = ['FREE2026'];
+
+  // Save referral code to local storage and RevenueCat (if configured)
+  const handleReferralContinue = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    if (referralCode.trim()) {
+      const code = referralCode.trim().toUpperCase();
+
+      try {
+        // Check if it's a VIP code that grants free access
+        if (VIP_CODES.includes(code)) {
+          await AsyncStorage.setItem('vip_access', 'true');
+          await AsyncStorage.setItem('vip_code_used', code);
+          console.log('VIP code activated! Free Pro access granted:', code);
+
+          // Show success message
+          Alert.alert(
+            '🎉 VIP Access Activated!',
+            'You now have free lifetime Pro access. Enjoy all premium features!',
+            [{ text: 'Awesome!' }]
+          );
+        }
+
+        // Save locally first (always works)
+        await AsyncStorage.setItem('referral_code', code);
+        console.log('Referral code saved locally:', code);
+
+        // Only save to RevenueCat if it's configured
+        const isConfigured = await Purchases.isConfigured();
+        if (isConfigured) {
+          await Purchases.setAttributes({
+            'referral_code': code,
+            'referred_by': code,
+            'vip_access': VIP_CODES.includes(code) ? 'true' : 'false',
+          });
+          console.log('Referral code synced to RevenueCat');
+        }
+      } catch (error) {
+        // Silently fail - code is saved locally, can sync later
+        console.log('Referral code saved locally, will sync to RevenueCat later');
+      }
+    }
+
     goToNextStep();
   };
 
@@ -173,7 +240,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   const renderSocialProofScreen = () => (
     <View style={styles.screenContainer}>
       {renderProgressBar()}
-      <Text style={styles.title}>Rate your haircut{'\n'}instantly</Text>
+      <Text style={styles.title}>Analyze your haircut{'\n'}instantly</Text>
 
       {/* App Logo */}
       <View style={styles.logoContainer}>
@@ -234,7 +301,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       <View style={styles.bottomButtonContainer}>
         <TouchableOpacity
           style={styles.continueButton}
-          onPress={goToNextStep}
+          onPress={handleReferralContinue}
           activeOpacity={0.8}
         >
           <LinearGradient

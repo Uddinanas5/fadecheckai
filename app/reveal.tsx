@@ -26,7 +26,7 @@ export default function RevealScreen() {
     try {
       const appStoreUrl = 'https://apps.apple.com/app/id6757437429';
       const result = await Share.share({
-        message: `Check out FadeCheck - AI-powered haircut analysis! Get instant feedback on your fade. Download it here: ${appStoreUrl}`,
+        message: `Check out FadeCheck - Your personal grooming coach! Get AI-powered haircut analysis and tips to look your best. Download it here: ${appStoreUrl}`,
         title: 'Try FadeCheck!',
       });
 

@@ -7,6 +7,7 @@ import Purchases, {
   PurchasesOffering,
   PACKAGE_TYPE,
 } from 'react-native-purchases';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Your RevenueCat API key (Production)
 const REVENUECAT_API_KEY = 'appl_yKjFjZloSoLiZneNHPAHhnWRETt';
@@ -44,16 +45,37 @@ interface RevenueCatProviderProps {
 
 export function RevenueCatProvider({ children }: RevenueCatProviderProps) {
   const [isProUser, setIsProUser] = useState(false);
+  const [isVipUser, setIsVipUser] = useState(false);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [currentOffering, setCurrentOffering] = useState<PurchasesOffering | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
 
+  // Check for VIP access from local storage
+  const checkVipAccess = async () => {
+    try {
+      const vipAccess = await AsyncStorage.getItem('vip_access');
+      if (vipAccess === 'true') {
+        setIsVipUser(true);
+        setIsProUser(true); // VIP users get Pro access
+        console.log('VIP access detected - Pro features unlocked');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.log('Error checking VIP access:', error);
+      return false;
+    }
+  };
+
   // Initialize RevenueCat
   useEffect(() => {
     const initRevenueCat = async () => {
       try {
+        // Check for VIP access first
+        await checkVipAccess();
+
         // Enable debug logs in development
         if (__DEV__) {
           Purchases.setLogLevel(LOG_LEVEL.DEBUG);
@@ -72,10 +94,41 @@ export function RevenueCatProvider({ children }: RevenueCatProviderProps) {
           loadCustomerInfo(),
           loadOfferings(),
         ]);
+
+        // Sync any locally saved attributes from onboarding
+        await syncLocalAttributes();
       } catch (error) {
         console.error('RevenueCat init error:', error);
       } finally {
         setIsLoading(false);
+      }
+    };
+
+    // Sync locally saved referral code and gender to RevenueCat
+    const syncLocalAttributes = async () => {
+      try {
+        const attributes: Record<string, string> = {};
+
+        // Get locally saved referral code
+        const referralCode = await AsyncStorage.getItem('referral_code');
+        if (referralCode) {
+          attributes['referral_code'] = referralCode;
+          attributes['referred_by'] = referralCode;
+        }
+
+        // Get locally saved gender
+        const gender = await AsyncStorage.getItem('user_gender');
+        if (gender) {
+          attributes['gender'] = gender;
+        }
+
+        // Sync to RevenueCat if we have any attributes
+        if (Object.keys(attributes).length > 0) {
+          await Purchases.setAttributes(attributes);
+          console.log('Synced attributes to RevenueCat:', attributes);
+        }
+      } catch (error) {
+        console.log('Could not sync attributes to RevenueCat:', error);
       }
     };
 
@@ -98,12 +151,19 @@ export function RevenueCatProvider({ children }: RevenueCatProviderProps) {
   };
 
   // Update customer info and pro status
-  const updateCustomerInfo = (info: CustomerInfo) => {
+  const updateCustomerInfo = async (info: CustomerInfo) => {
     setCustomerInfo(info);
 
-    // Check if user has the pro entitlement
+    // Check if user has the pro entitlement from RevenueCat
     const hasProEntitlement = info.entitlements.active[ENTITLEMENT_ID] !== undefined;
-    setIsProUser(hasProEntitlement);
+
+    // Also check for VIP access (local override)
+    const vipAccess = await AsyncStorage.getItem('vip_access');
+    const hasVipAccess = vipAccess === 'true';
+
+    // User is Pro if they have either RevenueCat entitlement OR VIP access
+    setIsProUser(hasProEntitlement || hasVipAccess);
+    setIsVipUser(hasVipAccess);
   };
 
   // Load available offerings/packages

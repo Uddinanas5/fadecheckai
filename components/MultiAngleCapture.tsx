@@ -214,7 +214,7 @@ export default function MultiAngleCapture({ onComplete }: MultiAngleCaptureProps
           </View>
           <Text style={styles.permissionTitle}>Camera Access Needed</Text>
           <Text style={styles.permissionText}>
-            FadeCheck needs camera access to rate your haircut from multiple angles
+            FadeCheck needs camera access to analyze your haircut from multiple angles
           </Text>
           <TouchableOpacity
             onPress={requestPermission}

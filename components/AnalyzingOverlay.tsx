@@ -18,9 +18,9 @@ const STATUS_MESSAGES = [
   'Analyzing front view',
   'Checking the sides',
   'Inspecting the back',
-  'Rating the blend',
-  'Evaluating symmetry',
-  'Finalizing results',
+  'Evaluating the blend',
+  'Checking symmetry',
+  'Preparing your results',
 ];
 
 const ANGLE_LABELS = ['Front', 'Left', 'Right', 'Back'];

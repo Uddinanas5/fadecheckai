@@ -91,7 +91,7 @@ export default function CameraView({ onCapture }: CameraViewProps) {
           </View>
           <Text style={styles.permissionTitle}>Camera Access Needed</Text>
           <Text style={styles.permissionText}>
-            FadeCheck needs camera access to rate your haircut
+            FadeCheck needs camera access to analyze your haircut
           </Text>
           <TouchableOpacity
             onPress={requestPermission}
@@ -127,7 +127,7 @@ export default function CameraView({ onCapture }: CameraViewProps) {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Rate Your Cut</Text>
+          <Text style={styles.headerTitle}>Analyze Your Cut</Text>
         </View>
 
         {/* Overlay guide */}

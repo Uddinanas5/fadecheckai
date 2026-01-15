@@ -95,7 +95,7 @@ export default function HistoryScreen() {
 
     const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
     const bestScore = Math.max(...scores);
-    const totalRatings = history.length;
+    const totalAnalyses = history.length;
 
     // Calculate trend (compare last 3 vs previous 3)
     let trend = 'neutral';
@@ -105,13 +105,13 @@ export default function HistoryScreen() {
       trend = recent > older ? 'up' : recent < older ? 'down' : 'neutral';
     }
 
-    return { avgScore, bestScore, totalRatings, trend };
+    return { avgScore, bestScore, totalAnalyses, trend };
   }, [history]);
 
   const handleClearHistory = () => {
     Alert.alert(
       'Clear History',
-      'Are you sure you want to delete all your ratings?',
+      'Are you sure you want to delete all your analyses?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -144,9 +144,9 @@ export default function HistoryScreen() {
           <Ionicons name="cut-outline" size={48} color={ACCENT_BLUE} />
         </LinearGradient>
       </View>
-      <Text style={styles.emptyTitle}>No Ratings Yet</Text>
+      <Text style={styles.emptyTitle}>No Analyses Yet</Text>
       <Text style={styles.emptyText}>
-        Rate your first haircut and start{'\n'}tracking your style journey
+        Analyze your first haircut and start{'\n'}tracking your style journey
       </Text>
       <TouchableOpacity
         style={styles.emptyButton}
@@ -158,7 +158,7 @@ export default function HistoryScreen() {
           style={styles.emptyButtonGradient}
         >
           <Ionicons name="camera" size={18} color="#FFF" />
-          <Text style={styles.emptyButtonText}>Rate Your Cut</Text>
+          <Text style={styles.emptyButtonText}>Analyze Your Cut</Text>
         </LinearGradient>
       </TouchableOpacity>
     </View>
@@ -186,7 +186,7 @@ export default function HistoryScreen() {
         <StatsCard
           icon="✂️"
           label="Total"
-          value={stats.totalRatings.toString()}
+          value={stats.totalAnalyses.toString()}
           delay={200}
         />
       </View>
@@ -200,7 +200,7 @@ export default function HistoryScreen() {
           <Text style={styles.headerTitle}>History</Text>
           {history.length > 0 && (
             <Text style={styles.headerSubtitle}>
-              {history.length} rating{history.length !== 1 ? 's' : ''}
+              {history.length} {history.length !== 1 ? 'analyses' : 'analysis'}
             </Text>
           )}
         </View>

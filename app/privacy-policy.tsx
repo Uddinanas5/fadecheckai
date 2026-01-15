@@ -51,7 +51,7 @@ export default function PrivacyPolicyScreen() {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.lastUpdated}>Last Updated: January 2025</Text>
+        <Text style={styles.lastUpdated}>Last Updated: January 15, 2026</Text>
 
         <Section title="Introduction">
           <Paragraph>
@@ -63,10 +63,11 @@ export default function PrivacyPolicyScreen() {
           <Paragraph>
             We collect the following types of information:
           </Paragraph>
-          <BulletPoint>Photos of your haircut that you voluntarily submit for analysis</BulletPoint>
+          <BulletPoint>Photos of your haircut that you voluntarily submit for AI analysis</BulletPoint>
+          <BulletPoint>Face shape analysis data (processed in real-time for style recommendations, not stored)</BulletPoint>
           <BulletPoint>Device information (device type, operating system version)</BulletPoint>
           <BulletPoint>App usage data (features used, analysis history stored locally)</BulletPoint>
-          <BulletPoint>Optional: Email address if you create an account</BulletPoint>
+          <BulletPoint>Account info: Email and name (if provided) when you sign in with Apple or Google (optional)</BulletPoint>
         </Section>
 
         <View style={styles.aiDisclosureBox}>
@@ -75,15 +76,21 @@ export default function PrivacyPolicyScreen() {
             <Text style={styles.aiDisclosureTitle}>AI Data Sharing Disclosure</Text>
           </View>
           <Text style={styles.aiDisclosureText}>
-            When you submit photos for haircut analysis, your images are securely transmitted to our AI service for processing. This is essential for providing our AI-powered haircut analysis service.
+            FadeCheck uses OpenAI's GPT-4 Vision API to analyze your haircut photos. When you submit photos, our AI evaluates:
           </Text>
           <Text style={[styles.aiDisclosureText, { marginTop: 8 }]}>
-            What this means:
+            • Haircut quality (fade, lineup, blend, shape, freshness){'\n'}
+            • Hair type classification (1A-4C){'\n'}
+            • Face shape (for personalized style recommendations){'\n'}
+            • Grooming tips tailored to you
           </Text>
-          <BulletPoint>Your photos are transmitted securely using encryption (HTTPS)</BulletPoint>
-          <BulletPoint>Advanced AI vision technology analyzes the images to generate your score</BulletPoint>
-          <BulletPoint>Photos are processed in real-time and never permanently stored</BulletPoint>
-          <BulletPoint>Your analysis history is stored only on your device</BulletPoint>
+          <Text style={[styles.aiDisclosureText, { marginTop: 12, fontWeight: '600' }]}>
+            How your data is handled:
+          </Text>
+          <BulletPoint>Photos transmitted securely via HTTPS encryption</BulletPoint>
+          <BulletPoint>Processed in real-time, never permanently stored by OpenAI</BulletPoint>
+          <BulletPoint>Per OpenAI's API terms, your data is NOT used to train their models</BulletPoint>
+          <BulletPoint>Analysis history stored only on your device</BulletPoint>
         </View>
 
         <Section title="How We Use Your Information">
@@ -110,13 +117,22 @@ export default function PrivacyPolicyScreen() {
             We use the following third-party services:
           </Paragraph>
           <BulletPoint>
-            AI Vision Service - For AI-powered image analysis. Your photos are transmitted securely, processed in real-time, and never permanently stored.
+            OpenAI - For AI-powered image analysis (GPT-4 Vision). Photos processed in real-time, never stored.
           </BulletPoint>
           <BulletPoint>
-            Apple App Store - For app distribution and in-app purchases
+            Supabase - For user authentication and account management (encrypted).
           </BulletPoint>
           <BulletPoint>
-            RevenueCat - For subscription management and billing
+            Apple Sign In - For secure account creation and login.
+          </BulletPoint>
+          <BulletPoint>
+            Google Sign In - For secure account creation and login.
+          </BulletPoint>
+          <BulletPoint>
+            RevenueCat - For subscription management and billing.
+          </BulletPoint>
+          <BulletPoint>
+            Apple App Store - For app distribution and in-app purchases.
           </BulletPoint>
         </Section>
 
@@ -124,10 +140,11 @@ export default function PrivacyPolicyScreen() {
           <Paragraph>
             You have the right to:
           </Paragraph>
-          <BulletPoint>Delete your local analysis history at any time via Settings</BulletPoint>
-          <BulletPoint>Withdraw consent for AI analysis (you can stop using the analysis feature)</BulletPoint>
-          <BulletPoint>Request information about data we have collected</BulletPoint>
-          <BulletPoint>Request deletion of your account and associated data</BulletPoint>
+          <BulletPoint>Access: View your data stored in the app</BulletPoint>
+          <BulletPoint>Delete: Clear your analysis history anytime via Settings</BulletPoint>
+          <BulletPoint>Withdraw Consent: Disable AI analysis in Settings</BulletPoint>
+          <BulletPoint>Account Deletion: Delete your account and all associated data via Settings</BulletPoint>
+          <BulletPoint>Export: Request a copy of your data by contacting us</BulletPoint>
         </Section>
 
         <Section title="Data Retention">

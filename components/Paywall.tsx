@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useRevenueCat } from '../contexts/RevenueCatContext';
 import { PurchasesPackage, PACKAGE_TYPE } from 'react-native-purchases';
+import { scheduleAbandonedPaywallNotification, cancelAbandonedPaywallNotification } from '../utils/notifications';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SLIDE_GAP = 16;
@@ -63,6 +64,13 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
     setCurrentSlide(slideIndex);
   };
 
+  // Handle close - schedule abandoned paywall notification
+  const handleClose = async () => {
+    // Schedule notification for users who didn't purchase
+    await scheduleAbandonedPaywallNotification();
+    onClose();
+  };
+
   const handleUnlock = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
@@ -74,6 +82,8 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
     const success = await purchasePackage(selectedPackage);
 
     if (success) {
+      // Cancel any scheduled abandoned paywall notification
+      await cancelAbandonedPaywallNotification();
       onUnlock();
     }
   };
@@ -84,6 +94,8 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
     const success = await restorePurchases();
 
     if (success) {
+      // Cancel any scheduled abandoned paywall notification
+      await cancelAbandonedPaywallNotification();
       onUnlock();
     }
   };
@@ -106,10 +118,10 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
     setTimeout(() => router.push('/privacy-policy'), 100);
   };
 
-  // Card 1: Get your ratings (2x3 grid like UMAX)
+  // Card 1: Get your analysis (2x3 grid like UMAX)
   const renderRatingsCard = () => (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>Get your ratings</Text>
+      <Text style={styles.cardTitle}>Get your analysis</Text>
 
       <View style={styles.ratingsGrid}>
         {[
@@ -244,7 +256,7 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
       {/* Close Button */}
       <TouchableOpacity
         style={styles.closeButton}
-        onPress={onClose}
+        onPress={handleClose}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
         <Ionicons name="close" size={22} color={TEXT_SECONDARY} />

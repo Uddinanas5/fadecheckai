@@ -192,12 +192,16 @@ export default function ResultsDisplay({
         if (await Sharing.isAvailableAsync()) {
           await Sharing.shareAsync(uri, {
             mimeType: 'image/png',
-            dialogTitle: 'Share your rating',
+            dialogTitle: 'Share your results',
           });
         } else {
-          const scoreText = result.overall_score !== null ? `${result.overall_score}/10` : 'a rating';
+          // For lower scores, share encouragingly without the exact score
+          const isGoodScore = result.overall_score !== null && result.overall_score >= 6;
+          const shareMessage = isGoodScore
+            ? `My haircut analysis: ${result.overall_score}/10! ${result.verdict}`
+            : `Working on my grooming game with FadeCheck! 💈`;
           await Share.share({
-            message: `I got ${scoreText}! "${result.verdict}"`,
+            message: shareMessage,
           });
         }
       }

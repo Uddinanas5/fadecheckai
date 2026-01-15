@@ -20,11 +20,18 @@
       "bundleIdentifier": "com.fadecheck.app",
       "usesAppleSignIn": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "FadeCheck needs camera access to rate your haircut",
-        "NSPhotoLibraryUsageDescription": "FadeCheck needs photo library access to select photos of your haircut",
-        "ITSAppUsesNonExemptEncryption": false
+        "NSCameraUsageDescription": "FadeCheck needs camera access to analyze your haircut and provide personalized grooming tips",
+        "NSPhotoLibraryUsageDescription": "FadeCheck needs photo library access to analyze photos of your haircut",
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.215893084176-mc7oivucn5877aamkmfpe0ac2t6bho5q"
+            ]
+          }
+        ]
       },
-      "buildNumber": "4"
+      "buildNumber": "6"
     },
     "android": {
       "adaptiveIcon": {
@@ -47,7 +54,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "FadeCheck needs camera access to rate your haircut"
+          "cameraPermission": "FadeCheck needs camera access to analyze your haircut and provide personalized grooming tips"
         }
       ],
       [

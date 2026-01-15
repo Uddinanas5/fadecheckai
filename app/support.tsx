@@ -126,8 +126,8 @@ export default function SupportScreen() {
         <Text style={styles.sectionTitle}>FREQUENTLY ASKED QUESTIONS</Text>
         <View style={styles.faqCard}>
           <FAQItem
-            question="How does the haircut rating work?"
-            answer="FadeCheck uses AI technology to analyze photos of your haircut. It evaluates factors like fade quality, lineup sharpness, blending, and overall shape to give you a comprehensive score."
+            question="How does the haircut analysis work?"
+            answer="FadeCheck uses AI technology to analyze photos of your haircut. It evaluates factors like fade quality, lineup sharpness, blending, and overall shape to provide personalized feedback and grooming tips."
           />
           <FAQItem
             question="Is my data private?"

@@ -75,9 +75,9 @@ export default function AIConsentModal({
               <View style={styles.iconContainer}>
                 <Ionicons name="sparkles" size={32} color={Colors.accent.primary} />
               </View>
-              <Text style={styles.title}>AI Analysis Consent</Text>
+              <Text style={styles.title}>Your Personal Grooming Coach</Text>
               <Text style={styles.subtitle}>
-                Before we analyze your haircut, we need your permission
+                Before we analyze your haircut, please confirm the following
               </Text>
             </View>
 
@@ -85,6 +85,20 @@ export default function AIConsentModal({
               style={styles.scrollContent}
               showsVerticalScrollIndicator={false}
             >
+              {/* Self-improvement agreement */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>I understand that:</Text>
+                <BulletPoint>
+                  This app is for personal self-improvement only
+                </BulletPoint>
+                <BulletPoint>
+                  I will only analyze photos of my own haircuts
+                </BulletPoint>
+                <BulletPoint>
+                  Results are AI-generated suggestions, not professional advice
+                </BulletPoint>
+              </View>
+
               {/* What happens */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>What happens when you scan:</Text>
@@ -92,7 +106,7 @@ export default function AIConsentModal({
                   Your photos are securely sent to our AI for analysis
                 </BulletPoint>
                 <BulletPoint>
-                  Advanced AI vision technology evaluates your haircut and generates a score
+                  AI provides personalized feedback and grooming tips
                 </BulletPoint>
                 <BulletPoint>
                   Results are returned to your device and stored locally

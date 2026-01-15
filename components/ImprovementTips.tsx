@@ -23,41 +23,41 @@ interface Tip {
 const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip[] => {
   const tips: Tip[] = [];
 
-  // Lineup tips
+  // Lineup coaching tips
   if (scores.lineup < 7) {
     tips.push({
-      title: 'Sharper Lineup Next Time',
-      description: 'Ask your barber to use a straight razor for the edges. A crisp lineup makes all the difference.',
+      title: 'Level Up Your Lineup',
+      description: 'Try asking your barber for a straight razor finish on edges. This gives that extra crisp definition.',
       icon: 'cut',
       color: '#FF6B6B',
     });
   }
 
-  // Fade tips
+  // Fade coaching tips
   if (scores.fade < 7) {
     tips.push({
-      title: 'Request a Smoother Fade',
-      description: 'Tell your barber to take more time blending. A good fade should look airbrushed with no visible lines.',
+      title: 'Enhance Your Fade',
+      description: 'Request extra blending time at your next visit. The smoothest fades take patience to perfect.',
       icon: 'layers',
       color: '#F59E0B',
     });
   }
 
-  // Blend tips
+  // Blend coaching tips
   if (scores.blend < 7) {
     tips.push({
-      title: 'Better Weight Line Blend',
-      description: 'The transition between top and sides needs more attention. Ask for extra clipper-over-comb work.',
+      title: 'Perfect Your Blend',
+      description: 'Ask for clipper-over-comb work on the top-to-side transition. This creates seamless flow.',
       icon: 'git-merge',
       color: ACCENT_BLUE,
     });
   }
 
-  // Shape tips
+  // Shape coaching tips
   if (scores.shape < 7) {
     tips.push({
-      title: 'Improve Overall Shape',
-      description: 'Discuss what style suits your head shape best. Sometimes a different fade height works better.',
+      title: 'Optimize Your Shape',
+      description: 'Chat with your barber about styles that complement your head shape. Small adjustments make a big difference.',
       icon: 'ellipse',
       color: CYAN_GLOW,
     });
@@ -66,31 +66,31 @@ const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip
   // Freshness tips
   if (scores.freshness < 7) {
     tips.push({
-      title: 'Time for a Touch-Up',
-      description: 'Your cut is growing out. For the crispiest look, get a lineup every 1-2 weeks.',
+      title: 'Schedule Your Touch-Up',
+      description: 'Your style is ready for a refresh. Regular visits every 1-2 weeks keep you looking sharp.',
       icon: 'time',
       color: '#22C55E',
     });
   }
 
-  // If all scores are decent, give maintenance tips
+  // High scores - maintenance tips
   if (tips.length === 0) {
     tips.push({
-      title: 'Keep It Fresh',
-      description: 'Great cut! Maintain it with regular visits every 2-3 weeks for that always-crispy look.',
+      title: 'Maintain Your Look',
+      description: 'Excellent work! Keep this fresh with regular visits every 2-3 weeks.',
       icon: 'checkmark-circle',
       color: '#22C55E',
     });
   }
 
-  // Add defect-specific tips
+  // Add constructive tips based on areas to improve
   if (defects && defects.length > 0) {
     const defectStr = defects.join(' ').toLowerCase();
 
     if (defectStr.includes('asymmetr') || defectStr.includes('uneven')) {
       tips.push({
-        title: 'Check Symmetry',
-        description: 'Ask your barber to step back and check both sides in the mirror before finishing.',
+        title: 'Pro Tip: Symmetry Check',
+        description: 'Ask your barber to do a mirror check from both sides before finishing up.',
         icon: 'git-compare',
         color: '#FF6B6B',
       });
@@ -105,7 +105,7 @@ export default function ImprovementTips({ scores, defects }: ImprovementTipsProp
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Tips to Improve</Text>
+      <Text style={styles.sectionTitle}>Your Grooming Guide</Text>
       <View style={styles.tipsContainer}>
         {tips.map((tip, index) => (
           <View key={index} style={[styles.tipCard, { borderLeftColor: tip.color }]}>

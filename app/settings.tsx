@@ -148,12 +148,12 @@ export default function SettingsScreen() {
   const handleExportData = () => {
     Alert.alert(
       'Export Your Data',
-      'To request a copy of your data, please email us at support@fadecheck.app with the subject "Data Export Request".',
+      'To request a copy of your data, please email us at fadecheck.app@gmail.com with the subject "Data Export Request".',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Open Email',
-          onPress: () => Linking.openURL('mailto:support@fadecheck.app?subject=Data%20Export%20Request'),
+          onPress: () => Linking.openURL('mailto:fadecheck.app@gmail.com?subject=Data%20Export%20Request'),
         },
       ]
     );

@@ -169,7 +169,7 @@ export default function PrivacyPolicyScreen() {
           <Paragraph>
             If you have questions about this Privacy Policy or our data practices, please contact us at:
           </Paragraph>
-          <Text style={styles.contactEmail}>support@fadecheck.app</Text>
+          <Text style={styles.contactEmail}>fadecheck.app@gmail.com</Text>
         </Section>
 
         <View style={styles.bottomPadding} />

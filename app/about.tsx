@@ -103,7 +103,7 @@ export default function AboutScreen() {
           <LinkRow
             icon="mail-outline"
             title="Contact Us"
-            onPress={() => Linking.openURL('mailto:support@fadecheck.app')}
+            onPress={() => Linking.openURL('mailto:fadecheck.app@gmail.com')}
           />
         </View>
 

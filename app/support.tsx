@@ -18,15 +18,15 @@ export default function SupportScreen() {
   const router = useRouter();
 
   const handleEmailSupport = () => {
-    Linking.openURL('mailto:support@fadecheck.app?subject=FadeCheck%20Support%20Request');
+    Linking.openURL('mailto:fadecheck.app@gmail.com?subject=FadeCheck%20Support%20Request');
   };
 
   const handleReportBug = () => {
-    Linking.openURL('mailto:support@fadecheck.app?subject=Bug%20Report%20-%20FadeCheck&body=Please%20describe%20the%20issue%20you%20encountered:%0A%0ADevice:%0AiOS%20Version:%0AApp%20Version:%0A%0ASteps%20to%20reproduce:%0A1.%0A2.%0A3.');
+    Linking.openURL('mailto:fadecheck.app@gmail.com?subject=Bug%20Report%20-%20FadeCheck&body=Please%20describe%20the%20issue%20you%20encountered:%0A%0ADevice:%0AiOS%20Version:%0AApp%20Version:%0A%0ASteps%20to%20reproduce:%0A1.%0A2.%0A3.');
   };
 
   const handleFeatureRequest = () => {
-    Linking.openURL('mailto:support@fadecheck.app?subject=Feature%20Request%20-%20FadeCheck&body=I%20would%20like%20to%20suggest%20the%20following%20feature:');
+    Linking.openURL('mailto:fadecheck.app@gmail.com?subject=Feature%20Request%20-%20FadeCheck&body=I%20would%20like%20to%20suggest%20the%20following%20feature:');
   };
 
   const handleRateApp = () => {
@@ -152,7 +152,7 @@ export default function SupportScreen() {
           <Text style={styles.contactInfoTitle}>Contact Information</Text>
           <View style={styles.contactInfoRow}>
             <Ionicons name="mail" size={16} color={Colors.accent.primary} />
-            <Text style={styles.contactInfoText}>support@fadecheck.app</Text>
+            <Text style={styles.contactInfoText}>fadecheck.app@gmail.com</Text>
           </View>
           <Text style={styles.responseTime}>
             We typically respond within 24-48 hours

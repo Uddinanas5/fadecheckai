@@ -155,7 +155,7 @@ export default function CustomerCenterScreen() {
         {/* Help */}
         <View style={styles.helpCard}>
           <Text style={styles.helpText}>
-            Having issues? Contact us at support@fadecheck.app
+            Having issues? Contact us at fadecheck.app@gmail.com
           </Text>
         </View>
       </View>

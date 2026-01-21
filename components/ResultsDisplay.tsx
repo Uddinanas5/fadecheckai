@@ -452,7 +452,7 @@ export default function ResultsDisplay({
 
         {/* Improvement Tips */}
         {result.scores && (
-          <ImprovementTips scores={result.scores} defects={result.defects_found} />
+          <ImprovementTips scores={result.scores} improvements={result.improvement_areas} defects={result.defects_found} />
         )}
       </ScrollView>
 

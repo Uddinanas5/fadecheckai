@@ -55,6 +55,8 @@ export interface AnalysisResult {
   overall_score: number | null;
   scores: HaircutScores | null;
   score_label: string | null;
+  improvement_areas?: string[] | null;
+  // Legacy field for backwards compatibility
   defects_found?: string[] | null;
   breakdown: string;
   verdict: string;

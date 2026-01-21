@@ -10,6 +10,8 @@ const CYAN_GLOW = '#38BDF8';
 
 interface ImprovementTipsProps {
   scores: HaircutScores;
+  improvements?: string[] | null;
+  // Legacy support
   defects?: string[] | null;
 }
 
@@ -20,7 +22,7 @@ interface Tip {
   color: string;
 }
 
-const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip[] => {
+const getTipsForScores = (scores: HaircutScores, improvements?: string[] | null): Tip[] => {
   const tips: Tip[] = [];
 
   // Lineup tips
@@ -83,11 +85,11 @@ const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip
     });
   }
 
-  // Add defect-specific tips
-  if (defects && defects.length > 0) {
-    const defectStr = defects.join(' ').toLowerCase();
+  // Add improvement-specific tips
+  if (improvements && improvements.length > 0) {
+    const improvementStr = improvements.join(' ').toLowerCase();
 
-    if (defectStr.includes('asymmetr') || defectStr.includes('uneven')) {
+    if (improvementStr.includes('asymmetr') || improvementStr.includes('uneven')) {
       tips.push({
         title: 'Check Symmetry',
         description: 'Ask your barber to step back and check both sides in the mirror before finishing.',
@@ -100,8 +102,9 @@ const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip
   return tips.slice(0, 3); // Max 3 tips
 };
 
-export default function ImprovementTips({ scores, defects }: ImprovementTipsProps) {
-  const tips = getTipsForScores(scores, defects);
+export default function ImprovementTips({ scores, improvements, defects }: ImprovementTipsProps) {
+  // Support both new 'improvements' and legacy 'defects' prop
+  const tips = getTipsForScores(scores, improvements || defects);
 
   return (
     <View style={styles.container}>

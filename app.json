@@ -21,7 +21,7 @@
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "FadeCheck needs camera access to analyze your haircut and provide personalized grooming tips",
-        "NSPhotoLibraryUsageDescription": "FadeCheck needs photo library access to analyze photos of your haircut",
+        "NSPhotoLibraryUsageDescription": "FadeCheck needs photo library access to select photos for personalized analysis",
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleURLTypes": [
           {

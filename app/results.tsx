@@ -29,7 +29,7 @@ export default function ResultsScreen() {
     }
   };
 
-  const handleRateAnother = () => {
+  const handleNewScan = () => {
     router.replace('/(tabs)');
   };
 
@@ -53,7 +53,7 @@ export default function ResultsScreen() {
       <ResultsDisplay
         imageUri={imageUri}
         result={result}
-        onRateAnother={handleRateAnother}
+        onNewScan={handleNewScan}
       />
     </View>
   );

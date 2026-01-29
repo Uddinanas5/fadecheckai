@@ -34,7 +34,7 @@ const GLASS_BORDER = 'rgba(255,255,255,0.08)';
 interface ResultsDisplayProps {
   imageUri: string;
   result: AnalysisResult;
-  onRateAnother: () => void;
+  onNewScan: () => void;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -160,7 +160,7 @@ const PremiumScoreCard = ({
 export default function ResultsDisplay({
   imageUri,
   result,
-  onRateAnother,
+  onNewScan,
 }: ResultsDisplayProps) {
   const viewShotRef = useRef<ViewShot>(null);
   const headerScale = useRef(new Animated.Value(0.9)).current;
@@ -467,15 +467,15 @@ export default function ResultsDisplay({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.rateAnotherBtn}
+          style={styles.newScanBtn}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            onRateAnother();
+            onNewScan();
           }}
           activeOpacity={0.8}
         >
           <Ionicons name="camera-outline" size={20} color={TEXT_PRIMARY} />
-          <Text style={styles.rateAnotherBtnText}>New Scan</Text>
+          <Text style={styles.newScanBtnText}>New Scan</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -855,7 +855,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  rateAnotherBtn: {
+  newScanBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -867,7 +867,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: GLASS_BORDER,
   },
-  rateAnotherBtnText: {
+  newScanBtnText: {
     color: TEXT_PRIMARY,
     fontSize: 16,
     fontWeight: '600',

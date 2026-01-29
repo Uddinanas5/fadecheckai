@@ -118,32 +118,29 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
     setTimeout(() => router.push('/privacy-policy'), 100);
   };
 
-  // Card 1: Get your analysis (2x3 grid like UMAX)
+  // Card 1: Get your coaching (2x3 grid)
   const renderRatingsCard = () => (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>Get your analysis</Text>
+      <Text style={styles.cardTitle}>Get detailed feedback</Text>
 
       <View style={styles.ratingsGrid}>
         {[
-          { label: 'Overall', score: 8.5, color: '#22C55E' },
-          { label: 'Lineup', score: 9.2, color: '#22C55E' },
-          { label: 'Fade', score: 7.8, color: '#F59E0B' },
-          { label: 'Blend', score: 8.1, color: '#22C55E' },
-          { label: 'Shape', score: 7.5, color: '#F59E0B' },
-          { label: 'Freshness', score: 9.0, color: '#22C55E' },
+          { label: 'Quality', icon: '✨' },
+          { label: 'Lineup', icon: '📐' },
+          { label: 'Fade', icon: '🎨' },
+          { label: 'Blend', icon: '✂️' },
+          { label: 'Style', icon: '💈' },
+          { label: 'Freshness', icon: '🌟' },
         ].map((item, i) => (
           <View key={i} style={styles.ratingBox}>
             <Text style={styles.ratingLabel}>{item.label}</Text>
-            <Text style={styles.ratingScore}>{item.score.toFixed(1)}</Text>
+            <Text style={styles.ratingScore}>{item.icon}</Text>
             <View style={styles.ratingBarBg}>
-              <View
-                style={[
-                  styles.ratingBar,
-                  {
-                    width: `${(item.score / 10) * 100}%`,
-                    backgroundColor: item.color
-                  }
-                ]}
+              <LinearGradient
+                colors={[ACCENT_BLUE, CYAN_GLOW] as const}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.ratingBar, { width: '75%' }]}
               />
             </View>
           </View>
@@ -152,42 +149,36 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
     </View>
   );
 
-  // Card 2: Track your cuts
+  // Card 2: Track your journey
   const renderProgressCard = () => (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>Track your cuts</Text>
+      <Text style={styles.cardTitle}>Track your journey</Text>
 
       <View style={styles.progressContainer}>
         {[
-          { date: 'Jan 5', score: 6.2 },
-          { date: 'Jan 19', score: 7.1 },
-          { date: 'Feb 2', score: 7.8 },
-          { date: 'Feb 16', score: 8.4 },
+          { date: 'Jan 5', level: 62, label: 'Started' },
+          { date: 'Jan 19', level: 71, label: 'Growing' },
+          { date: 'Feb 2', level: 78, label: 'Great' },
+          { date: 'Feb 16', level: 84, label: 'Excellent' },
         ].map((item, i) => (
           <View key={i} style={styles.progressRow}>
             <Text style={styles.progressDate}>{item.date}</Text>
             <View style={styles.progressBarContainer}>
-              <View
-                style={[
-                  styles.progressBar,
-                  {
-                    width: `${(item.score / 10) * 100}%`,
-                    backgroundColor: item.score >= 8 ? '#22C55E' : item.score >= 7 ? '#F59E0B' : '#EF4444'
-                  }
-                ]}
+              <LinearGradient
+                colors={[ACCENT_BLUE, CYAN_GLOW] as const}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.progressBar, { width: `${item.level}%` }]}
               />
             </View>
-            <Text style={[
-              styles.progressScore,
-              { color: item.score >= 8 ? '#22C55E' : item.score >= 7 ? '#F59E0B' : '#EF4444' }
-            ]}>
-              {item.score.toFixed(1)}
+            <Text style={[styles.progressScore, { color: '#22C55E' }]}>
+              {item.label}
             </Text>
           </View>
         ))}
         <View style={styles.progressFooter}>
           <Ionicons name="trending-up" size={16} color="#22C55E" />
-          <Text style={styles.progressFooterText}>+2.2 improvement</Text>
+          <Text style={styles.progressFooterText}>See your growth!</Text>
         </View>
       </View>
     </View>
@@ -235,8 +226,8 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
             <Text style={{ fontSize: 18 }}>💎</Text>
           </View>
           <View style={styles.featureContent}>
-            <Text style={styles.featureTitle}>Style for your face</Text>
-            <Text style={styles.featureDesc}>You have a unique face shape... let's find your best cut!</Text>
+            <Text style={styles.featureTitle}>Discover new styles</Text>
+            <Text style={styles.featureDesc}>Get personalized style ideas that complement your look!</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={TEXT_SECONDARY} />
         </View>
@@ -274,8 +265,8 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
           >
             <Text style={styles.proBadgeText}>PRO</Text>
           </LinearGradient>
-          <Text style={styles.headerTitle}>Unlock Everything</Text>
-          <Text style={styles.headerSubtitle}>Get the full picture of your cut</Text>
+          <Text style={styles.headerTitle}>Unlock Your Coach</Text>
+          <Text style={styles.headerSubtitle}>Get personalized grooming tips & feedback</Text>
         </View>
 
         {/* Slides */}
@@ -312,8 +303,8 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
           ))}
         </View>
 
-        {/* Scans count */}
-        <Text style={styles.scansText}>10,000+ scans completed</Text>
+        {/* Users count */}
+        <Text style={styles.scansText}>10,000+ users improving their style</Text>
       </View>
 
       {/* Bottom */}
@@ -501,9 +492,9 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   progressScore: {
-    fontSize: 14,
-    fontWeight: '700',
-    width: 32,
+    fontSize: 11,
+    fontWeight: '600',
+    width: 55,
     textAlign: 'right',
   },
   progressFooter: {

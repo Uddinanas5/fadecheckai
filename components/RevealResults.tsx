@@ -61,9 +61,9 @@ export default function RevealResults({ imageUri, onGetPro, onInviteFriends }: R
         <View style={styles.eyeIconContainer}>
           <Ionicons name="eye-outline" size={28} color={ACCENT_BLUE} />
         </View>
-        <Text style={styles.title}>Reveal your results</Text>
+        <Text style={styles.title}>Your coaching awaits</Text>
         <Text style={styles.subtitle}>
-          Invite 3 friends or get FadeCheck Pro to view your results
+          Invite 3 friends or get FadeCheck Pro to view your grooming tips
         </Text>
       </View>
 
@@ -82,10 +82,10 @@ export default function RevealResults({ imageUri, onGetPro, onInviteFriends }: R
           {/* Top row - larger cards */}
           <View style={styles.scoresRow}>
             <View style={styles.scoreCardLarge}>
-              <ScoreCard label="Overall" />
+              <ScoreCard label="Quality" />
             </View>
             <View style={styles.scoreCardLarge}>
-              <ScoreCard label="Potential" />
+              <ScoreCard label="Tips" />
             </View>
           </View>
 

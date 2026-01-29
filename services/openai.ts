@@ -10,7 +10,7 @@ const SYSTEM_PROMPT = `You are a FRIENDLY PERSONAL GROOMING COACH and HAIR EXPER
 2. OUTLINE/EDGE-UP (10 pts) - Sharpness and symmetry of hairline
 3. DIFFICULTY OF CUT/HAIR TEXTURE (10 pts) - Execution on the hair type
 4. STYLING TECHNIQUES (10 pts) - How well it's styled and finished
-5. TOTAL LOOK (5 pts) - Overall appearance and how it suits the head
+5. FINISHING TOUCHES (5 pts) - Final details, polish, and professional execution
 6. CLEANLINESS/CONTRAST (5 pts) - How fresh and defined everything looks
 
 ## HAIR TYPE CLASSIFICATION (Andre Walker System):
@@ -46,13 +46,13 @@ Analyze the face shape from the front view:
 - HEART: Wider forehead, narrow chin, often with widow's peak. Cheekbones prominent.
 - DIAMOND: High, wide cheekbones. Narrow forehead and jawline. Angular look.
 
-## FACE SHAPE STYLE RECOMMENDATIONS:
-- OVAL: Almost any style works. Quiffs, fades, crops, pompadours all suit you.
-- SQUARE: Soften angles with textured tops, side parts, or messy styles.
-- ROUND: Add height on top to elongate. High fades, pompadours, hard parts work great.
-- OBLONG: Avoid too much height. Fringes and side-swept styles add width.
-- HEART: Balance with volume on sides. Fringes help minimize forehead.
-- DIAMOND: Fades with volume on top, textured crops. Add width to forehead/jaw.
+## FACE SHAPE STYLE IDEAS (Styles that complement each shape):
+- OVAL: Your versatile features work with almost any style - quiffs, fades, crops, pompadours all look great on you.
+- SQUARE: Your strong features pair well with textured tops, side parts, or messy styles that add movement.
+- ROUND: Styles with height on top like high fades, pompadours, or hard parts complement your features nicely.
+- OBLONG: Fringes and side-swept styles work beautifully with your features, adding balance.
+- HEART: Volume on sides and fringes complement your features, creating a harmonious look.
+- DIAMOND: Your angular features look great with fades, textured crops, and styles with volume on top.
 
 ## FADE TYPES (Identify what you're looking at):
 
@@ -169,16 +169,16 @@ MINOR FLAWS (-0.5 each):
 - Slight styling issues
 - Very minor asymmetry
 
-## GRADE LABELS:
-- 9.5-10: EXPERT LEVEL - Competition-quality, virtually flawless, airbrushed perfection
+## QUALITY LEVELS:
+- 9.5-10: EXCEPTIONAL - Competition-quality, virtually flawless, airbrushed perfection
 - 9.0-9.4: EXCELLENT - Exceptional work, highly skilled barber, magazine-ready
 - 8.0-8.9: GREAT - High quality, crisp edges, professional execution
-- 7.0-7.9: GOOD - Solid cut with minor areas to refine, respectable work
-- 6.0-6.9: FAIR - Acceptable foundation, some opportunities for improvement
-- 5.0-5.9: DEVELOPING - Shows potential, several areas to discuss with barber
-- 4.0-4.9: NEEDS WORK - Multiple areas need attention, bring reference photos next time
-- 3.0-3.9: NEEDS ATTENTION - Significant room for improvement, consider a touch-up
-- 1.0-2.9: FRESH START - Great opportunity to start fresh with a new cut
+- 7.0-7.9: SOLID - Good cut with minor areas to refine, respectable work
+- 6.0-6.9: GOOD START - Decent foundation, some opportunities for improvement
+- 5.0-5.9: BUILDING UP - Shows potential, several areas to discuss with barber
+- 4.0-4.9: ROOM TO GROW - Multiple areas to discuss, bring reference photos next time
+- 3.0-3.9: GETTING STARTED - Great opportunity to level up with some adjustments
+- 1.0-2.9: FRESH START - Perfect time to start fresh with a new cut
 
 IMPORTANT TONE GUIDELINES:
 - Always be encouraging and constructive - you are a supportive coach, not a critic
@@ -261,6 +261,8 @@ export async function analyzeHaircut(images: CapturedImages): Promise<AnalysisRe
   }
 
   try {
+    console.log('[OpenAI Debug] Starting image conversion for 4 views');
+
     // Convert all images to base64
     const imageEntries = await Promise.all([
       { angle: 'FRONT VIEW', uri: images.front },
@@ -268,7 +270,9 @@ export async function analyzeHaircut(images: CapturedImages): Promise<AnalysisRe
       { angle: 'RIGHT SIDE VIEW', uri: images.rightSide },
       { angle: 'BACK VIEW', uri: images.back },
     ].map(async ({ angle, uri }) => {
+      console.log(`[OpenAI Debug] Reading ${angle} from URI:`, uri);
       const base64 = await readAsStringAsync(uri, { encoding: 'base64' });
+      console.log(`[OpenAI Debug] ${angle} base64 length:`, base64.length);
       const imageType = uri.toLowerCase().includes('.png') ? 'png' : 'jpeg';
       return {
         type: 'image_url' as const,
@@ -279,9 +283,13 @@ export async function analyzeHaircut(images: CapturedImages): Promise<AnalysisRe
       };
     }));
 
+    console.log('[OpenAI Debug] All images converted successfully');
+
     // Set up timeout - GPT-4o with images can take 30-60 seconds
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout
+
+    console.log('[OpenAI Debug] Sending request to OpenAI API with gpt-4o model');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -359,8 +367,23 @@ Write all descriptions in a conversational, friendly, and encouraging tone - lik
 
     const data = await response.json();
     const content = data.choices[0]?.message?.content;
+    const refusal = data.choices[0]?.message?.refusal;
+
+    // Log response details for debugging
+    console.log('[OpenAI Debug] Response received:', {
+      hasContent: !!content,
+      hasRefusal: !!refusal,
+      contentPreview: content?.substring(0, 100),
+      refusalMessage: refusal,
+    });
+
+    if (refusal) {
+      console.error('[OpenAI Error] API refused to process request:', refusal);
+      throw new Error(`OpenAI refused: ${refusal}`);
+    }
 
     if (!content) {
+      console.error('[OpenAI Error] No content in response. Full data:', JSON.stringify(data, null, 2));
       throw new Error('No content in response');
     }
 

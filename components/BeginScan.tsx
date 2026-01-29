@@ -311,7 +311,7 @@ export default function BeginScan({ onBeginScan }: BeginScanProps) {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Haircut Analysis</Text>
+        <Text style={styles.headerTitle}>Your Grooming Coach</Text>
       </View>
 
       {/* Main Content */}
@@ -382,16 +382,16 @@ export default function BeginScan({ onBeginScan }: BeginScanProps) {
               delay={750}
             />
 
-            {/* Floating Score Badges */}
+            {/* Floating Info Badges */}
             <ScoreBadge
-              score="9.5"
-              label="PERFECT"
+              score="✨"
+              label="CRISP"
               position={{ top: 50, right: -15 }}
               delay={1000}
             />
             <ScoreBadge
-              score="8.9"
-              label="SHARP"
+              score="💈"
+              label="FRESH"
               position={{ bottom: 70, left: -10 }}
               delay={1400}
             />

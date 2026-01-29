@@ -195,11 +195,8 @@ export default function ResultsDisplay({
             dialogTitle: 'Share your results',
           });
         } else {
-          // For lower scores, share encouragingly without the exact score
-          const isGoodScore = result.overall_score !== null && result.overall_score >= 6;
-          const shareMessage = isGoodScore
-            ? `My haircut analysis: ${result.overall_score}/10! ${result.verdict}`
-            : `Working on my grooming game with FadeCheck! 💈`;
+          // Same encouraging message for everyone - no score comparison
+          const shareMessage = `Check out FadeCheck - my personal grooming coach! 💈`;
           await Share.share({
             message: shareMessage,
           });
@@ -306,20 +303,12 @@ export default function ResultsDisplay({
           </Animated.View>
         </ViewShot>
 
-        {/* Quick Info Pills */}
+        {/* Quick Info Pills - Hair type and fade info only (no face shape badge) */}
         <View style={styles.infoPills}>
           {result.hair_profile && (
             <View style={styles.infoPill}>
               <Text style={styles.infoPillIcon}>🧬</Text>
               <Text style={styles.infoPillText}>{result.hair_profile.hair_type_name}</Text>
-            </View>
-          )}
-          {result.face_analysis && (
-            <View style={styles.infoPill}>
-              <Text style={styles.infoPillIcon}>💎</Text>
-              <Text style={styles.infoPillText}>
-                {result.face_analysis.face_shape.charAt(0).toUpperCase() + result.face_analysis.face_shape.slice(1)} Face
-              </Text>
             </View>
           )}
           {result.fade_details && result.fade_details.fade_type !== 'none' && (
@@ -332,11 +321,11 @@ export default function ResultsDisplay({
 
         {/* Detail Cards */}
         <View style={styles.detailsSection}>
-          {/* Full Analysis */}
+          {/* Coach's Notes */}
           <ExpandableCard
-            icon="📊"
-            title="Full Analysis"
-            summary="Detailed breakdown"
+            icon="📋"
+            title="Coach's Notes"
+            summary="Your detailed feedback"
             accentColor={ACCENT_BLUE}
             defaultExpanded={false}
           >
@@ -379,17 +368,16 @@ export default function ResultsDisplay({
             </ExpandableCard>
           )}
 
-          {/* Face Shape */}
+          {/* Style Ideas - Reframed from "Face Shape" to focus on recommendations */}
           {result.face_analysis && (
             <ExpandableCard
-              icon="💎"
-              title="Face Shape"
-              summary={result.face_analysis.face_shape.charAt(0).toUpperCase() + result.face_analysis.face_shape.slice(1)}
+              icon="💡"
+              title="Style Ideas For You"
+              summary="Personalized recommendations"
               accentColor="#EC4899"
             >
-              <Text style={styles.analysisText}>{result.face_analysis.face_shape_description}</Text>
               <View style={styles.tipBox}>
-                <Text style={styles.tipLabel}>💡 Best Styles</Text>
+                <Text style={styles.tipLabel}>✨ Styles That Complement Your Features</Text>
                 <Text style={styles.tipText}>{result.face_analysis.style_recommendation}</Text>
               </View>
             </ExpandableCard>

@@ -73,13 +73,16 @@ export const getScoreColor = (score: number): string => {
   return Colors.score.freshStart;
 };
 
-// Get score label based on score value
+// Get quality label based on score value
 export const getScoreLabel = (score: number): string => {
-  if (score >= 9) return 'EXPERT LEVEL';
-  if (score >= 8) return 'EXCELLENT';
-  if (score >= 6.5) return 'GREAT';
-  if (score >= 5) return 'FAIR';
-  if (score >= 3.5) return 'DEVELOPING';
+  if (score >= 9.5) return 'EXCEPTIONAL';
+  if (score >= 9) return 'EXCELLENT';
+  if (score >= 8) return 'GREAT';
+  if (score >= 7) return 'SOLID';
+  if (score >= 6) return 'GOOD START';
+  if (score >= 5) return 'BUILDING UP';
+  if (score >= 4) return 'ROOM TO GROW';
+  if (score >= 3) return 'GETTING STARTED';
   return 'FRESH START';
 };
 

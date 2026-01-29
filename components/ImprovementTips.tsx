@@ -56,8 +56,8 @@ const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip
   // Shape coaching tips
   if (scores.shape < 7) {
     tips.push({
-      title: 'Optimize Your Shape',
-      description: 'Chat with your barber about styles that complement your head shape. Small adjustments make a big difference.',
+      title: 'Refine Your Style',
+      description: 'Chat with your barber about trying new techniques. Small adjustments can make a big difference.',
       icon: 'ellipse',
       color: CYAN_GLOW,
     });

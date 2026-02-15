@@ -64,7 +64,7 @@ export default function AboutScreen() {
             />
           </View>
           <Text style={styles.appName}>FadeCheck</Text>
-          <Text style={styles.appTagline}>AI-powered haircut analysis</Text>
+          <Text style={styles.appTagline}>Your personal grooming coach</Text>
           <Text style={styles.versionText}>
             Version {APP_VERSION} ({BUILD_NUMBER})
           </Text>
@@ -73,7 +73,7 @@ export default function AboutScreen() {
         {/* Description */}
         <View style={styles.descriptionCard}>
           <Text style={styles.descriptionText}>
-            FadeCheck uses advanced AI technology to analyze your haircut. Get instant feedback on your fade quality, lineup precision, blending, and overall style.
+            FadeCheck is your personal grooming coach. Get instant feedback on your fade quality, lineup precision, blending, and personalized style recommendations.
           </Text>
         </View>
 

@@ -12,11 +12,11 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors, { getScoreColor } from '../../constants/Colors';
+import Colors, { getLevelColor } from '../../constants/Colors';
 import { spacing, borderRadius } from '../../constants/Styles';
 import { useHistory } from '../../hooks/useHistory';
 import HistoryCard from '../../components/HistoryCard';
-import { HistoryItem } from '../../types';
+import { HistoryItem, OverallLevel } from '../../types';
 
 const ACCENT_BLUE = '#0145F2';
 
@@ -87,25 +87,21 @@ export default function HistoryScreen() {
   const stats = useMemo(() => {
     if (history.length === 0) return null;
 
-    const scores = history
-      .map(h => h.result.overall_score)
-      .filter((s): s is number => s !== null && s !== undefined);
+    const levels = history
+      .map(h => h.result.overall_level)
+      .filter((l): l is OverallLevel => l !== null && l !== undefined);
 
-    if (scores.length === 0) return null;
+    if (levels.length === 0) return null;
 
-    const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-    const bestScore = Math.max(...scores);
+    const latestLevel: string = levels[0];
     const totalAnalyses = history.length;
 
-    // Calculate trend (compare last 3 vs previous 3)
-    let trend = 'neutral';
-    if (scores.length >= 6) {
-      const recent = scores.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
-      const older = scores.slice(3, 6).reduce((a, b) => a + b, 0) / 3;
-      trend = recent > older ? 'up' : recent < older ? 'down' : 'neutral';
-    }
+    // Find most common level
+    const levelCounts: Record<string, number> = {};
+    levels.forEach(l => { levelCounts[l] = (levelCounts[l] || 0) + 1; });
+    const mostCommon: string = Object.entries(levelCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || latestLevel;
 
-    return { avgScore, bestScore, totalAnalyses, trend };
+    return { latestLevel, mostCommon, totalAnalyses };
   }, [history]);
 
   const handleClearHistory = () => {
@@ -170,17 +166,17 @@ export default function HistoryScreen() {
     return (
       <View style={styles.statsContainer}>
         <StatsCard
-          icon="📊"
-          label="Average"
-          value={stats.avgScore.toFixed(1)}
-          color={getScoreColor(stats.avgScore)}
+          icon="💈"
+          label="Latest"
+          value={stats.latestLevel}
+          color={getLevelColor(stats.latestLevel)}
           delay={0}
         />
         <StatsCard
-          icon="🏆"
-          label="Best"
-          value={stats.bestScore.toFixed(1)}
-          color={getScoreColor(stats.bestScore)}
+          icon="⭐"
+          label="Most Common"
+          value={stats.mostCommon}
+          color={getLevelColor(stats.mostCommon)}
           delay={100}
         />
         <StatsCard

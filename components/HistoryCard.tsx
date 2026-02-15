@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-import Colors, { getScoreColor } from '../constants/Colors';
+import Colors, { getLevelColor, getTierColor } from '../constants/Colors';
 import { borderRadius, spacing } from '../constants/Styles';
 import { HistoryItem } from '../types';
 
@@ -13,8 +13,8 @@ interface HistoryCardProps {
 }
 
 export default function HistoryCard({ item, onPress, index = 0 }: HistoryCardProps) {
-  const score = item.result.overall_score;
-  const scoreColor = score ? getScoreColor(score) : Colors.text.secondary;
+  const level = item.result.overall_level;
+  const levelColor = level ? getLevelColor(level) : Colors.text.secondary;
 
   // Animation refs
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
@@ -59,18 +59,21 @@ export default function HistoryCard({ item, onPress, index = 0 }: HistoryCardPro
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const getScoreEmoji = (s: number | null): string => {
-    if (!s) return '✂️';
-    if (s >= 9) return '🔥';
-    if (s >= 8) return '✨';
-    if (s >= 7) return '👌';
-    if (s >= 6) return '👍';
-    return '📈';
+  const getLevelIcon = (l: string | null): string => {
+    if (!l) return '✂️';
+    switch (l.toUpperCase()) {
+      case 'ELITE': return '💎';
+      case 'SHARP': return '✨';
+      case 'CLEAN': return '✅';
+      case 'FRESH': return '🌱';
+      case 'GROWING': return '📈';
+      default: return '✂️';
+    }
   };
 
-  // Get mini scores for display
-  const fadeScore = item.result.scores?.fade ?? null;
-  const lineupScore = item.result.scores?.lineup ?? null;
+  // Get tier info for display
+  const fadeTier = item.result.scores?.fade ?? null;
+  const lineupTier = item.result.scores?.lineup ?? null;
 
   return (
     <Animated.View
@@ -87,48 +90,43 @@ export default function HistoryCard({ item, onPress, index = 0 }: HistoryCardPro
     >
       <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.85}>
         {/* Glow effect behind card */}
-        <View style={[styles.glowEffect, { backgroundColor: scoreColor }]} />
+        <View style={[styles.glowEffect, { backgroundColor: levelColor }]} />
 
         <Image source={{ uri: item.imageUri }} style={styles.image} />
 
-        {/* Top badge with emoji */}
+        {/* Top badge with icon */}
         <View style={styles.topBadge}>
           <BlurView intensity={40} tint="dark" style={styles.badgeBlur}>
-            <Text style={styles.badgeEmoji}>{getScoreEmoji(score)}</Text>
+            <Text style={styles.badgeEmoji}>{getLevelIcon(level)}</Text>
           </BlurView>
         </View>
 
-        {/* Bottom overlay with score info */}
+        {/* Bottom overlay with level info */}
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.85)'] as const}
           style={styles.overlay}
         >
-          {/* Score display */}
+          {/* Level display */}
           <View style={styles.scoreContainer}>
-            <Text style={[styles.scoreMain, { color: scoreColor }]}>
-              {score?.toFixed(1) ?? '—'}
+            <Text style={[styles.scoreMain, { color: levelColor }]}>
+              {level ?? '—'}
             </Text>
-            <Text style={styles.scoreTen}>/10</Text>
           </View>
 
-          {/* Mini scores row */}
-          {(fadeScore || lineupScore) && (
+          {/* Mini tier row */}
+          {(fadeTier || lineupTier) && (
             <View style={styles.miniScoresRow}>
-              {fadeScore && (
+              {fadeTier && (
                 <View style={styles.miniScore}>
                   <Text style={styles.miniLabel}>Fade</Text>
-                  <Text style={[styles.miniValue, { color: getScoreColor(fadeScore) }]}>
-                    {fadeScore.toFixed(1)}
-                  </Text>
+                  <View style={[styles.miniTierDot, { backgroundColor: getTierColor(fadeTier) }]} />
                 </View>
               )}
-              {fadeScore && lineupScore && <View style={styles.miniDivider} />}
-              {lineupScore && (
+              {fadeTier && lineupTier && <View style={styles.miniDivider} />}
+              {lineupTier && (
                 <View style={styles.miniScore}>
                   <Text style={styles.miniLabel}>Line</Text>
-                  <Text style={[styles.miniValue, { color: getScoreColor(lineupScore) }]}>
-                    {lineupScore.toFixed(1)}
-                  </Text>
+                  <View style={[styles.miniTierDot, { backgroundColor: getTierColor(lineupTier) }]} />
                 </View>
               )}
             </View>
@@ -199,21 +197,12 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   scoreMain: {
-    fontSize: 28,
+    fontSize: 18,
     fontWeight: '800',
-    letterSpacing: -1.5,
+    letterSpacing: 1,
     textShadowColor: 'rgba(0, 0, 0, 0.9)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 8,
-  },
-  scoreTen: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.6)',
-    marginLeft: 2,
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
   },
   miniScoresRow: {
     flexDirection: 'row',
@@ -235,6 +224,11 @@ const styles = StyleSheet.create({
   miniValue: {
     fontSize: 12,
     fontWeight: '700',
+  },
+  miniTierDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   miniDivider: {
     width: 1,

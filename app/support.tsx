@@ -134,8 +134,8 @@ export default function SupportScreen() {
             answer="Yes! Your photos are only used for analysis and are not stored on our servers. Analysis history is saved locally on your device. See our Privacy Policy for full details."
           />
           <FAQItem
-            question="Why does my score vary?"
-            answer="Lighting, angle, and photo quality can affect results. For the best accuracy, take photos in good lighting and capture multiple angles (front, sides, and back)."
+            question="Why do my results vary?"
+            answer="Lighting, angle, and photo quality can affect feedback. For the best accuracy, take photos in good lighting and capture multiple angles (front, sides, and back)."
           />
           <FAQItem
             question="How do I get FadeCheck Pro?"

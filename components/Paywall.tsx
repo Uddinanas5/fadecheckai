@@ -119,11 +119,11 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
   };
 
   // Card 1: Get your coaching (2x3 grid)
-  const renderRatingsCard = () => (
+  const renderFeedbackCard = () => (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Get detailed feedback</Text>
 
-      <View style={styles.ratingsGrid}>
+      <View style={styles.feedbackGrid}>
         {[
           { label: 'Quality', icon: '✨' },
           { label: 'Lineup', icon: '📐' },
@@ -132,15 +132,15 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
           { label: 'Style', icon: '💈' },
           { label: 'Freshness', icon: '🌟' },
         ].map((item, i) => (
-          <View key={i} style={styles.ratingBox}>
-            <Text style={styles.ratingLabel}>{item.label}</Text>
-            <Text style={styles.ratingScore}>{item.icon}</Text>
-            <View style={styles.ratingBarBg}>
+          <View key={i} style={styles.feedbackBox}>
+            <Text style={styles.feedbackLabel}>{item.label}</Text>
+            <Text style={styles.feedbackIcon}>{item.icon}</Text>
+            <View style={styles.feedbackBarBg}>
               <LinearGradient
                 colors={[ACCENT_BLUE, CYAN_GLOW] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={[styles.ratingBar, { width: '75%' }]}
+                style={[styles.feedbackBar, { width: '75%' }]}
               />
             </View>
           </View>
@@ -156,10 +156,10 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
 
       <View style={styles.progressContainer}>
         {[
-          { date: 'Jan 5', level: 62, label: 'Started' },
-          { date: 'Jan 19', level: 71, label: 'Growing' },
-          { date: 'Feb 2', level: 78, label: 'Great' },
-          { date: 'Feb 16', level: 84, label: 'Excellent' },
+          { date: 'Jan 5', level: 40, label: 'Growing' },
+          { date: 'Jan 19', level: 60, label: 'Fresh' },
+          { date: 'Feb 2', level: 75, label: 'Clean' },
+          { date: 'Feb 16', level: 90, label: 'Sharp' },
         ].map((item, i) => (
           <View key={i} style={styles.progressRow}>
             <Text style={styles.progressDate}>{item.date}</Text>
@@ -236,7 +236,7 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
   );
 
   const slideRenderers = [
-    renderRatingsCard,
+    renderFeedbackCard,
     renderProgressCard,
     renderLearnCard,
     renderImprovingCard,
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
   },
 
   // Card 1: Ratings Grid
-  ratingsGrid: {
+  feedbackGrid: {
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -436,31 +436,31 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     gap: 10,
   },
-  ratingBox: {
+  feedbackBox: {
     width: '31%',
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 14,
     padding: 12,
     alignItems: 'center',
   },
-  ratingLabel: {
+  feedbackLabel: {
     fontSize: 10,
     color: TEXT_SECONDARY,
     marginBottom: 4,
   },
-  ratingScore: {
+  feedbackIcon: {
     fontSize: 24,
     fontWeight: '700',
     color: TEXT_PRIMARY,
     marginBottom: 6,
   },
-  ratingBarBg: {
+  feedbackBarBg: {
     width: '100%',
     height: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 2,
   },
-  ratingBar: {
+  feedbackBar: {
     height: '100%',
     borderRadius: 2,
   },

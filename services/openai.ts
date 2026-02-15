@@ -108,6 +108,14 @@ Analyze the face shape from the front view:
 - PARIETAL RIDGE - ask barber to focus on the curve of the head
 - OCCIPITAL BONE area - request smoother blending at the back
 
+## LINEUP IMPROVEMENT OPPORTUNITIES:
+- FUZZY EDGES - ask for sharper definition next time
+- ASYMMETRY - request mirror-check during the cut
+- WOBBLY LINES - ask barber to take extra time on edges
+- HAIRLINE PLACEMENT - discuss natural vs pushed-back preference
+- EDGE TEXTURE - request cleaner finishing work
+- TEMPLE BALANCE - point out any unevenness to barber
+
 ## WHAT A PERFECT LINEUP LOOKS LIKE:
 - RAZOR SHARP edges - crisp, defined, could cut paper
 - PERFECT SYMMETRY - left temple is exact mirror of right temple
@@ -146,39 +154,20 @@ Analyze the face shape from the front view:
 - NEEDS CUT (7-10 days): Fuzzy edges, lost definition, visible regrowth
 - OVERGROWN (10+ days): Shape lost, fade gone, needs fresh cut
 
-## SCORING SYSTEM (Start at 10.0, deduct for each flaw):
+## QUALITY ASSESSMENT SYSTEM (Qualitative Levels):
 
-CRITICAL FLAWS (-2.0 each):
-- Visible horizontal lines/steps in fade (guard change showing)
-- Clearly asymmetrical temples or edges
-- Obvious patches, holes, or bald spots from error
-- Severely crooked or uneven lineup
-- Major disconnect between top and sides
+Evaluate the overall haircut quality and assign ONE of these levels:
 
-SIGNIFICANT FLAWS (-1.0 each):
-- Edges not razor sharp (noticeably fuzzy)
-- Minor but visible blend inconsistencies
-- Small uneven areas between sides
-- Visible weight line
-- Growing out (5-7 days)
-- Parietal ridge slightly off
+- ELITE: Competition-quality, virtually flawless, airbrushed perfection. Every detail is executed at the highest level.
+- SHARP: Excellent work, highly skilled barber, magazine-ready. Crisp edges, clean transitions, professional execution.
+- CLEAN: Good quality, well-executed. Solid fundamentals with minor areas that could be refined.
+- FRESH: Decent foundation, shows potential. Several areas to discuss with barber for improvement.
+- GROWING: Multiple areas to work on. Great opportunity to level up with reference photos and a skilled barber.
 
-MINOR FLAWS (-0.5 each):
-- Very subtle imperfections only barbers notice
-- Tiny areas that could be marginally cleaner
-- Slight styling issues
-- Very minor asymmetry
-
-## QUALITY LEVELS:
-- 9.5-10: EXCEPTIONAL - Competition-quality, virtually flawless, airbrushed perfection
-- 9.0-9.4: EXCELLENT - Exceptional work, highly skilled barber, magazine-ready
-- 8.0-8.9: GREAT - High quality, crisp edges, professional execution
-- 7.0-7.9: SOLID - Good cut with minor areas to refine, respectable work
-- 6.0-6.9: GOOD START - Decent foundation, some opportunities for improvement
-- 5.0-5.9: BUILDING UP - Shows potential, several areas to discuss with barber
-- 4.0-4.9: ROOM TO GROW - Multiple areas to discuss, bring reference photos next time
-- 3.0-3.9: GETTING STARTED - Great opportunity to level up with some adjustments
-- 1.0-2.9: FRESH START - Perfect time to start fresh with a new cut
+For each sub-category (lineup, fade, blend, shape, freshness), assign a tier:
+- "strong": Excellent execution in this area
+- "solid": Good execution with minor room for improvement
+- "developing": This area has clear opportunities for improvement
 
 IMPORTANT TONE GUIDELINES:
 - Always be encouraging and constructive - you are a supportive coach, not a critic
@@ -190,16 +179,15 @@ IMPORTANT TONE GUIDELINES:
 
 RESPOND WITH JSON ONLY:
 {
-  "overall_score": 7.5,
+  "overall_level": "CLEAN",
   "scores": {
-    "lineup": 8,
-    "fade": 7,
-    "blend": 7.5,
-    "shape": 8,
-    "freshness": 7
+    "lineup": "strong",
+    "fade": "solid",
+    "blend": "solid",
+    "shape": "strong",
+    "freshness": "solid"
   },
-  "score_label": "GOOD",
-  "defects_found": ["area for improvement 1", "area for improvement 2"],
+  "areas_to_improve": ["area for improvement 1", "area for improvement 2"],
   "breakdown": "2-3 sentences explaining your analysis with specific, constructive feedback. Focus on strengths and opportunities.",
   "verdict": "One encouraging summary line with a helpful tip.",
   "hair_profile": {
@@ -234,10 +222,9 @@ RESPOND WITH JSON ONLY:
 
 If no haircut visible or image unclear:
 {
-  "overall_score": null,
+  "overall_level": null,
   "scores": null,
-  "score_label": null,
-  "defects_found": null,
+  "areas_to_improve": null,
   "breakdown": "Explain why you can't analyze.",
   "verdict": "Request better photo.",
   "hair_profile": null,
@@ -251,9 +238,8 @@ export async function analyzeHaircut(images: CapturedImages): Promise<AnalysisRe
   // Validate API key before making request
   if (!OPENAI_API_KEY) {
     return {
-      overall_score: null,
+      overall_level: null,
       scores: null,
-      score_label: null,
       breakdown: 'API key not configured. Please set EXPO_PUBLIC_OPENAI_API_KEY in your environment.',
       verdict: 'Configuration error.',
       error: true,
@@ -319,7 +305,7 @@ export async function analyzeHaircut(images: CapturedImages): Promise<AnalysisRe
 3. RIGHT SIDE VIEW - Analyze right side fade quality, symmetry with left
 4. BACK VIEW - Analyze neckline, back fade, occipital bone blend
 
-Evaluate the lineup, fade, blend, and shape across ALL angles. Note both strengths and areas for improvement. Compare both sides for consistency. Calculate score starting from 10, adjusting based on technical execution. Be fair and constructive.
+Evaluate the lineup, fade, blend, and shape across ALL angles. Note both strengths and areas for improvement. Compare both sides for consistency. Assign an overall quality level and per-category tiers based on technical execution. Be fair and constructive.
 
 ## HAIR PROFILE ANALYSIS:
 - Identify HAIR TYPE (1A-4C) based on visible curl/wave pattern
@@ -412,9 +398,8 @@ Write all descriptions in a conversational, friendly, and encouraging tone - lik
                       error.message?.includes('aborted');
 
     return {
-      overall_score: null,
+      overall_level: null,
       scores: null,
-      score_label: null,
       breakdown: isTimeout
         ? 'The analysis took too long. Please check your internet connection and try again.'
         : 'Something went wrong analyzing your haircut. Please try again.',

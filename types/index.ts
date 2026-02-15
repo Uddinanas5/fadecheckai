@@ -1,9 +1,11 @@
+export type TierLevel = 'strong' | 'solid' | 'developing';
+
 export interface HaircutScores {
-  lineup: number;
-  fade: number;
-  blend: number;
-  shape: number;
-  freshness: number;
+  lineup: TierLevel;
+  fade: TierLevel;
+  blend: TierLevel;
+  shape: TierLevel;
+  freshness: TierLevel;
 }
 
 // Hair type using Andre Walker system (1A-4C)
@@ -51,15 +53,16 @@ export interface ProductRecommendation {
   why: string;
 }
 
+export type OverallLevel = 'ELITE' | 'SHARP' | 'CLEAN' | 'FRESH' | 'GROWING';
+
 export interface AnalysisResult {
-  overall_score: number | null;
+  overall_level: OverallLevel | null;
   scores: HaircutScores | null;
-  score_label: string | null;
-  defects_found?: string[] | null;
+  areas_to_improve?: string[] | null;
   breakdown: string;
   verdict: string;
   error?: boolean;
-  // New comprehensive analysis fields
+  // Comprehensive analysis fields
   hair_profile?: HairProfile | null;
   face_analysis?: FaceAnalysis | null;
   fade_details?: FadeDetails | null;
@@ -73,8 +76,6 @@ export interface HistoryItem {
   result: AnalysisResult;
   timestamp: number;
 }
-
-export type ScoreCategory = keyof HaircutScores;
 
 export interface CapturedImages {
   front: string;

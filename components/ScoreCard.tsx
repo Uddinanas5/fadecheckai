@@ -1,36 +1,46 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Colors, { getScoreColor, getScoreGradient } from '../constants/Colors';
+import Colors, { getTierColor } from '../constants/Colors';
 import { spacing, borderRadius } from '../constants/Styles';
+import { TierLevel } from '../types';
 
 interface ScoreCardProps {
   label: string;
-  score: number;
+  tier: TierLevel;
   size?: 'small' | 'large';
 }
 
-export default function ScoreCard({ label, score, size = 'small' }: ScoreCardProps) {
-  const scoreColor = getScoreColor(score);
-  const scoreGradient = getScoreGradient(score);
-  const isLarge = size === 'large';
+const getTierLabel = (tier: TierLevel): string => {
+  switch (tier) {
+    case 'strong': return 'Strong';
+    case 'solid': return 'Solid';
+    case 'developing': return 'Growing';
+  }
+};
 
-  // Get progress percentage (score out of 10)
-  const progress = (score / 10) * 100;
+const getTierProgress = (tier: TierLevel): number => {
+  switch (tier) {
+    case 'strong': return 100;
+    case 'solid': return 66;
+    case 'developing': return 33;
+  }
+};
+
+export default function ScoreCard({ label, tier, size = 'small' }: ScoreCardProps) {
+  const tierColor = getTierColor(tier);
+  const progress = getTierProgress(tier);
+  const isLarge = size === 'large';
 
   return (
     <View style={[styles.container, isLarge && styles.containerLarge]}>
       <Text style={[styles.label, isLarge && styles.labelLarge]}>{label}</Text>
-      <Text style={[styles.score, isLarge && styles.scoreLarge, { color: scoreColor }]}>
-        {score.toFixed(1)}
+      <Text style={[styles.tierText, isLarge && styles.tierTextLarge, { color: tierColor }]}>
+        {getTierLabel(tier)}
       </Text>
       {/* Progress bar with gradient */}
       <View style={styles.progressContainer}>
-        <LinearGradient
-          colors={scoreGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[styles.progressBar, { width: `${progress}%` }]}
+        <View
+          style={[styles.progressBar, { width: `${progress}%`, backgroundColor: tierColor }]}
         />
       </View>
     </View>
@@ -63,15 +73,14 @@ const styles = StyleSheet.create({
   labelLarge: {
     fontSize: 12,
   },
-  score: {
-    fontSize: 28,
+  tierText: {
+    fontSize: 16,
     fontWeight: '700',
     marginBottom: spacing.sm,
-    letterSpacing: -1,
+    letterSpacing: -0.5,
   },
-  scoreLarge: {
-    fontSize: 36,
-    letterSpacing: -2,
+  tierTextLarge: {
+    fontSize: 20,
   },
   progressContainer: {
     width: '100%',

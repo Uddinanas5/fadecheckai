@@ -10,7 +10,7 @@ const CYAN_GLOW = '#38BDF8';
 
 interface ImprovementTipsProps {
   scores: HaircutScores;
-  defects?: string[] | null;
+  areasToImprove?: string[] | null;
 }
 
 interface Tip {
@@ -20,11 +20,11 @@ interface Tip {
   color: string;
 }
 
-const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip[] => {
+const getTipsForScores = (scores: HaircutScores, areasToImprove?: string[] | null): Tip[] => {
   const tips: Tip[] = [];
 
   // Lineup coaching tips
-  if (scores.lineup < 7) {
+  if (scores.lineup === 'developing') {
     tips.push({
       title: 'Level Up Your Lineup',
       description: 'Try asking your barber for a straight razor finish on edges. This gives that extra crisp definition.',
@@ -34,7 +34,7 @@ const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip
   }
 
   // Fade coaching tips
-  if (scores.fade < 7) {
+  if (scores.fade === 'developing') {
     tips.push({
       title: 'Enhance Your Fade',
       description: 'Request extra blending time at your next visit. The smoothest fades take patience to perfect.',
@@ -44,7 +44,7 @@ const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip
   }
 
   // Blend coaching tips
-  if (scores.blend < 7) {
+  if (scores.blend === 'developing') {
     tips.push({
       title: 'Perfect Your Blend',
       description: 'Ask for clipper-over-comb work on the top-to-side transition. This creates seamless flow.',
@@ -54,7 +54,7 @@ const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip
   }
 
   // Shape coaching tips
-  if (scores.shape < 7) {
+  if (scores.shape === 'developing') {
     tips.push({
       title: 'Refine Your Style',
       description: 'Chat with your barber about trying new techniques. Small adjustments can make a big difference.',
@@ -64,7 +64,7 @@ const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip
   }
 
   // Freshness tips
-  if (scores.freshness < 7) {
+  if (scores.freshness === 'developing') {
     tips.push({
       title: 'Schedule Your Touch-Up',
       description: 'Your style is ready for a refresh. Regular visits every 1-2 weeks keep you looking sharp.',
@@ -73,7 +73,7 @@ const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip
     });
   }
 
-  // High scores - maintenance tips
+  // All areas strong - maintenance tips
   if (tips.length === 0) {
     tips.push({
       title: 'Maintain Your Look',
@@ -84,10 +84,10 @@ const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip
   }
 
   // Add constructive tips based on areas to improve
-  if (defects && defects.length > 0) {
-    const defectStr = defects.join(' ').toLowerCase();
+  if (areasToImprove && areasToImprove.length > 0) {
+    const areasStr = areasToImprove.join(' ').toLowerCase();
 
-    if (defectStr.includes('asymmetr') || defectStr.includes('uneven')) {
+    if (areasStr.includes('asymmetr') || areasStr.includes('uneven')) {
       tips.push({
         title: 'Pro Tip: Symmetry Check',
         description: 'Ask your barber to do a mirror check from both sides before finishing up.',
@@ -100,8 +100,8 @@ const getTipsForScores = (scores: HaircutScores, defects?: string[] | null): Tip
   return tips.slice(0, 3); // Max 3 tips
 };
 
-export default function ImprovementTips({ scores, defects }: ImprovementTipsProps) {
-  const tips = getTipsForScores(scores, defects);
+export default function ImprovementTips({ scores, areasToImprove }: ImprovementTipsProps) {
+  const tips = getTipsForScores(scores, areasToImprove);
 
   return (
     <View style={styles.container}>

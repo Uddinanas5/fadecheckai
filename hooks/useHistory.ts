@@ -49,25 +49,32 @@ export function useHistory() {
         timestamp: Date.now(),
       };
 
-      const updatedHistory = [newItem, ...history].slice(0, MAX_HISTORY_ITEMS);
-      setHistory(updatedHistory);
+      let updatedHistory: HistoryItem[] = [];
+      setHistory(prev => {
+        updatedHistory = [newItem, ...prev].slice(0, MAX_HISTORY_ITEMS);
+        return updatedHistory;
+      });
+      // Small delay to ensure state has settled before persisting
       await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
       return newItem.id;
     } catch (error) {
       console.error('Error saving to history:', error);
       return null;
     }
-  }, [history]);
+  }, []);
 
   const removeFromHistory = useCallback(async (id: string) => {
     try {
-      const updatedHistory = history.filter(item => item.id !== id);
-      setHistory(updatedHistory);
+      let updatedHistory: HistoryItem[] = [];
+      setHistory(prev => {
+        updatedHistory = prev.filter(item => item.id !== id);
+        return updatedHistory;
+      });
       await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
     } catch (error) {
       console.error('Error removing from history:', error);
     }
-  }, [history]);
+  }, []);
 
   const clearHistory = useCallback(async () => {
     try {

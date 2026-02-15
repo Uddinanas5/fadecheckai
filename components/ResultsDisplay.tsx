@@ -16,9 +16,9 @@ import * as Haptics from 'expo-haptics';
 import ViewShot from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import { Ionicons } from '@expo/vector-icons';
-import Colors, { getScoreColor, getScoreLabel } from '../constants/Colors';
+import Colors, { getLevelColor, getTierColor } from '../constants/Colors';
 import { spacing } from '../constants/Styles';
-import { AnalysisResult } from '../types';
+import { AnalysisResult, TierLevel } from '../types';
 import ImprovementTips from './ImprovementTips';
 import ExpandableCard from './ExpandableCard';
 
@@ -28,7 +28,6 @@ const CARD_BG = '#12121A';
 const CARD_BG_LIGHT = '#1A1A24';
 const TEXT_PRIMARY = '#FFFFFF';
 const TEXT_SECONDARY = '#8B8B9E';
-const GOLD = '#FFD700';
 const GLASS_BORDER = 'rgba(255,255,255,0.08)';
 
 interface ResultsDisplayProps {
@@ -39,82 +38,30 @@ interface ResultsDisplayProps {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Animated Score Ring Component
-const ScoreRing = ({
-  score,
-  size = 80,
-  strokeWidth = 6,
-  label
-}: {
-  score: number;
-  size?: number;
-  strokeWidth?: number;
-  label: string;
-}) => {
-  const animatedValue = useRef(new Animated.Value(0)).current;
-  const scoreColor = getScoreColor(score);
-  const percentage = (score / 10) * 100;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-
-  useEffect(() => {
-    Animated.timing(animatedValue, {
-      toValue: percentage,
-      duration: 1000,
-      useNativeDriver: false,
-    }).start();
-  }, [score]);
-
-  return (
-    <View style={[styles.scoreRingContainer, { width: size, height: size + 24 }]}>
-      <View style={[styles.scoreRingWrapper, { width: size, height: size }]}>
-        {/* Background Ring */}
-        <View style={[styles.ringBg, {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          borderWidth: strokeWidth,
-        }]} />
-
-        {/* Score Display */}
-        <View style={styles.scoreRingInner}>
-          <Text style={[styles.scoreRingValue, { color: scoreColor, fontSize: size * 0.32 }]}>
-            {score.toFixed(1)}
-          </Text>
-        </View>
-
-        {/* Colored Arc Indicator */}
-        <View style={[styles.scoreArc, {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          borderWidth: strokeWidth,
-          borderColor: scoreColor,
-          borderRightColor: 'transparent',
-          borderBottomColor: 'transparent',
-          transform: [{ rotate: '-45deg' }],
-        }]} />
-      </View>
-      <Text style={styles.scoreRingLabel}>{label}</Text>
-    </View>
-  );
+// Tier label display helper
+const getTierLabel = (tier: TierLevel): string => {
+  switch (tier) {
+    case 'strong': return 'Strong';
+    case 'solid': return 'Solid';
+    case 'developing': return 'Growing';
+  }
 };
 
-// Premium Score Card Component
-const PremiumScoreCard = ({
+// Category Tier Card Component
+const CategoryTierCard = ({
   label,
-  score,
+  tier,
   icon,
   delay = 0
 }: {
   label: string;
-  score: number;
+  tier: TierLevel;
   icon: string;
   delay?: number;
 }) => {
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-  const scoreColor = getScoreColor(score);
+  const tierColor = getTierColor(tier);
 
   useEffect(() => {
     Animated.sequence([
@@ -148,8 +95,8 @@ const PremiumScoreCard = ({
         style={styles.premiumCardGradient}
       >
         <Text style={styles.premiumCardIcon}>{icon}</Text>
-        <Text style={[styles.premiumCardScore, { color: scoreColor }]}>
-          {score.toFixed(1)}
+        <Text style={[styles.premiumCardTier, { color: tierColor }]}>
+          {getTierLabel(tier)}
         </Text>
         <Text style={styles.premiumCardLabel}>{label}</Text>
       </LinearGradient>
@@ -208,8 +155,7 @@ export default function ResultsDisplay({
     }
   };
 
-  const scoreColor = result.overall_score ? getScoreColor(result.overall_score) : Colors.text.secondary;
-  const scoreLabel = result.overall_score ? getScoreLabel(result.overall_score) : 'N/A';
+  const levelColor = result.overall_level ? getLevelColor(result.overall_level) : Colors.text.secondary;
 
   return (
     <View style={styles.container}>
@@ -235,11 +181,11 @@ export default function ResultsDisplay({
               colors={['#1A1A2E', '#16162A', '#0F0F1A']}
               style={styles.heroCardGradient}
             >
-              {/* Top Section - Image + Main Score */}
+              {/* Top Section - Image + Level Badge */}
               <View style={styles.heroTop}>
                 {/* Profile Image with Glow */}
                 <View style={styles.imageWrapper}>
-                  <View style={[styles.imageGlow, { shadowColor: scoreColor }]} />
+                  <View style={[styles.imageGlow, { shadowColor: levelColor }]} />
                   <Image source={{ uri: imageUri }} style={styles.heroImage} />
                   <LinearGradient
                     colors={['transparent', 'rgba(0,0,0,0.6)']}
@@ -247,17 +193,12 @@ export default function ResultsDisplay({
                   />
                 </View>
 
-                {/* Main Score Display */}
+                {/* Level Badge Display */}
                 <View style={styles.mainScoreSection}>
-                  <View style={styles.scoreDisplay}>
-                    <Text style={[styles.mainScoreValue, { color: scoreColor }]}>
-                      {result.overall_score?.toFixed(1) ?? '—'}
+                  <View style={[styles.levelBadge, { backgroundColor: `${levelColor}20`, borderColor: `${levelColor}40` }]}>
+                    <Text style={[styles.levelBadgeText, { color: levelColor }]}>
+                      {result.overall_level ?? '—'}
                     </Text>
-                    <Text style={styles.mainScoreMax}>/10</Text>
-                  </View>
-                  <View style={[styles.scoreBadge, { backgroundColor: `${scoreColor}20`, borderColor: `${scoreColor}40` }]}>
-                    <View style={[styles.scoreBadgeDot, { backgroundColor: scoreColor }]} />
-                    <Text style={[styles.scoreBadgeText, { color: scoreColor }]}>{scoreLabel}</Text>
                   </View>
                 </View>
               </View>
@@ -265,25 +206,29 @@ export default function ResultsDisplay({
               {/* Verdict */}
               <Text style={styles.verdictText}>"{result.verdict}"</Text>
 
-              {/* Score Grid - 3 Primary */}
+              {/* Category Tier Grid - 3 Primary */}
               {result.scores && (
                 <View style={styles.primaryScoreGrid}>
-                  <PremiumScoreCard label="Lineup" score={result.scores.lineup} icon="📐" delay={100} />
-                  <PremiumScoreCard label="Fade" score={result.scores.fade} icon="🎨" delay={200} />
-                  <PremiumScoreCard label="Blend" score={result.scores.blend} icon="✨" delay={300} />
+                  <CategoryTierCard label="Lineup" tier={result.scores.lineup} icon="📐" delay={100} />
+                  <CategoryTierCard label="Fade" tier={result.scores.fade} icon="🎨" delay={200} />
+                  <CategoryTierCard label="Blend" tier={result.scores.blend} icon="✨" delay={300} />
                 </View>
               )}
 
-              {/* Secondary Scores Row */}
+              {/* Secondary Tiers Row */}
               {result.scores && (
                 <View style={styles.secondaryScoreRow}>
                   <View style={styles.secondaryScoreItem}>
-                    <Text style={styles.secondaryScoreValue}>{result.scores.shape.toFixed(1)}</Text>
+                    <Text style={[styles.secondaryScoreValue, { color: getTierColor(result.scores.shape) }]}>
+                      {getTierLabel(result.scores.shape)}
+                    </Text>
                     <Text style={styles.secondaryScoreLabel}>Shape</Text>
                   </View>
                   <View style={styles.scoreDivider} />
                   <View style={styles.secondaryScoreItem}>
-                    <Text style={styles.secondaryScoreValue}>{result.scores.freshness.toFixed(1)}</Text>
+                    <Text style={[styles.secondaryScoreValue, { color: getTierColor(result.scores.freshness) }]}>
+                      {getTierLabel(result.scores.freshness)}
+                    </Text>
                     <Text style={styles.secondaryScoreLabel}>Freshness</Text>
                   </View>
                   {result.maintenance && (
@@ -444,7 +389,7 @@ export default function ResultsDisplay({
 
         {/* Improvement Tips */}
         {result.scores && (
-          <ImprovementTips scores={result.scores} defects={result.defects_found} />
+          <ImprovementTips scores={result.scores} areasToImprove={result.areas_to_improve} />
         )}
       </ScrollView>
 
@@ -544,42 +489,19 @@ const styles = StyleSheet.create({
   mainScoreSection: {
     flex: 1,
     marginLeft: 16,
+    justifyContent: 'center',
   },
-  scoreDisplay: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  mainScoreValue: {
-    fontSize: 52,
-    fontWeight: '800',
-    letterSpacing: -2,
-  },
-  mainScoreMax: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: TEXT_SECONDARY,
-    marginLeft: 2,
-  },
-  scoreBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  levelBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginTop: 4,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 2,
   },
-  scoreBadgeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 6,
-  },
-  scoreBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+  levelBadgeText: {
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: 2,
   },
   verdictText: {
     fontSize: 14,
@@ -611,10 +533,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 4,
   },
-  premiumCardScore: {
-    fontSize: 24,
+  premiumCardTier: {
+    fontSize: 14,
     fontWeight: '800',
-    letterSpacing: -1,
+    letterSpacing: 0.5,
   },
   premiumCardLabel: {
     fontSize: 10,
@@ -654,36 +576,6 @@ const styles = StyleSheet.create({
     width: 1,
     height: 24,
     backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  // Score Ring (keeping for potential future use)
-  scoreRingContainer: {
-    alignItems: 'center',
-  },
-  scoreRingWrapper: {
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  ringBg: {
-    position: 'absolute',
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  scoreRingInner: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scoreRingValue: {
-    fontWeight: '800',
-  },
-  scoreRingLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: TEXT_SECONDARY,
-    textTransform: 'uppercase',
-    marginTop: 6,
-  },
-  scoreArc: {
-    position: 'absolute',
   },
   // Info Pills
   infoPills: {

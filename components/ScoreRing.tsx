@@ -1,25 +1,24 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import Colors, { getScoreColor } from '../constants/Colors';
+import Colors, { getLevelColor } from '../constants/Colors';
 
 interface ScoreRingProps {
-  score: number;
+  level: string;
   size?: number;
   strokeWidth?: number;
   label: string;
 }
 
 export default function ScoreRing({
-  score,
+  level,
   size = 60,
   strokeWidth = 4,
   label
 }: ScoreRingProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const progress = (score / 10) * circumference;
-  const color = getScoreColor(score);
+  const color = getLevelColor(level);
 
   return (
     <View style={styles.container}>
@@ -34,7 +33,7 @@ export default function ScoreRing({
             strokeWidth={strokeWidth}
             fill="transparent"
           />
-          {/* Progress circle */}
+          {/* Full colored circle */}
           <Circle
             cx={size / 2}
             cy={size / 2}
@@ -42,15 +41,14 @@ export default function ScoreRing({
             stroke={color}
             strokeWidth={strokeWidth}
             fill="transparent"
-            strokeDasharray={`${progress} ${circumference}`}
-            strokeDashoffset={circumference / 4}
+            strokeDasharray={`${circumference} ${circumference}`}
             strokeLinecap="round"
             transform={`rotate(-90 ${size / 2} ${size / 2})`}
           />
         </Svg>
-        <View style={styles.scoreContainer}>
-          <Text style={[styles.scoreText, { color }]}>
-            {score % 1 === 0 ? score : score.toFixed(1)}
+        <View style={styles.levelContainer}>
+          <Text style={[styles.levelText, { color, fontSize: size * 0.18 }]} numberOfLines={1}>
+            {level}
           </Text>
         </View>
       </View>
@@ -71,13 +69,13 @@ const styles = StyleSheet.create({
   svg: {
     position: 'absolute',
   },
-  scoreContainer: {
+  levelContainer: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-  scoreText: {
-    fontSize: 16,
-    fontWeight: '700',
+  levelText: {
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   label: {
     marginTop: 6,

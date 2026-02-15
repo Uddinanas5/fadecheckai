@@ -97,7 +97,7 @@ export default function PrivacyPolicyScreen() {
           <Paragraph>
             We use the collected information for:
           </Paragraph>
-          <BulletPoint>Providing AI-powered haircut analysis and scoring</BulletPoint>
+          <BulletPoint>Providing AI-powered haircut analysis and grooming tips</BulletPoint>
           <BulletPoint>Storing your analysis history locally on your device</BulletPoint>
           <BulletPoint>Improving our app and user experience</BulletPoint>
           <BulletPoint>Responding to your inquiries and support requests</BulletPoint>

@@ -52,48 +52,55 @@ const Colors = {
     inverse: '#0A0A0F',      // Text on light backgrounds
   },
 
-  // Score Colors (based on score ranges)
-  score: {
-    expert: '#0145F2',       // 9-10: Electric Blue (Expert Level)
-    excellent: '#38BDF8',    // 8-8.9: Cyan Glow (Excellent)
-    great: '#22C55E',        // 6.5-7.9: Emerald (Great)
-    fair: '#FBBF24',         // 5-6.4: Amber (Fair)
-    developing: '#F97316',   // 3.5-4.9: Orange (Developing)
-    freshStart: '#EF4444',   // 0-3.4: Red (Fresh Start)
+  // Level Colors (qualitative tiers)
+  level: {
+    elite: '#0145F2',        // ELITE: Electric Blue
+    sharp: '#38BDF8',        // SHARP: Cyan Glow
+    clean: '#22C55E',        // CLEAN: Emerald
+    fresh: '#FBBF24',        // FRESH: Amber
+    growing: '#F97316',      // GROWING: Orange
+  },
+
+  // Tier Colors (sub-category tiers)
+  tier: {
+    strong: '#22C55E',       // Strong: Green
+    solid: '#38BDF8',        // Solid: Cyan
+    developing: '#F97316',   // Developing: Orange
   },
 };
 
-// Get score color based on score value
-export const getScoreColor = (score: number): string => {
-  if (score >= 9) return Colors.score.expert;
-  if (score >= 8) return Colors.score.excellent;
-  if (score >= 6.5) return Colors.score.great;
-  if (score >= 5) return Colors.score.fair;
-  if (score >= 3.5) return Colors.score.developing;
-  return Colors.score.freshStart;
+// Get color based on overall level
+export const getLevelColor = (level: string): string => {
+  switch (level.toUpperCase()) {
+    case 'ELITE': return Colors.level.elite;
+    case 'SHARP': return Colors.level.sharp;
+    case 'CLEAN': return Colors.level.clean;
+    case 'FRESH': return Colors.level.fresh;
+    case 'GROWING': return Colors.level.growing;
+    default: return Colors.text.secondary;
+  }
 };
 
-// Get quality label based on score value
-export const getScoreLabel = (score: number): string => {
-  if (score >= 9.5) return 'EXCEPTIONAL';
-  if (score >= 9) return 'EXCELLENT';
-  if (score >= 8) return 'GREAT';
-  if (score >= 7) return 'SOLID';
-  if (score >= 6) return 'GOOD START';
-  if (score >= 5) return 'BUILDING UP';
-  if (score >= 4) return 'ROOM TO GROW';
-  if (score >= 3) return 'GETTING STARTED';
-  return 'FRESH START';
+// Get color for sub-category tier
+export const getTierColor = (tier: string): string => {
+  switch (tier) {
+    case 'strong': return Colors.tier.strong;
+    case 'solid': return Colors.tier.solid;
+    case 'developing': return Colors.tier.developing;
+    default: return Colors.text.secondary;
+  }
 };
 
-// Get gradient colors for score
-export const getScoreGradient = (score: number): readonly [string, string] => {
-  if (score >= 9) return ['#0145F2', '#38BDF8'] as const;
-  if (score >= 8) return ['#38BDF8', '#22D3EE'] as const;
-  if (score >= 6.5) return ['#22C55E', '#4ADE80'] as const;
-  if (score >= 5) return ['#FBBF24', '#FCD34D'] as const;
-  if (score >= 3.5) return ['#F97316', '#FB923C'] as const;
-  return ['#EF4444', '#F87171'] as const;
+// Get gradient colors for level
+export const getLevelGradient = (level: string): readonly [string, string] => {
+  switch (level.toUpperCase()) {
+    case 'ELITE': return ['#0145F2', '#38BDF8'] as const;
+    case 'SHARP': return ['#38BDF8', '#22D3EE'] as const;
+    case 'CLEAN': return ['#22C55E', '#4ADE80'] as const;
+    case 'FRESH': return ['#FBBF24', '#FCD34D'] as const;
+    case 'GROWING': return ['#F97316', '#FB923C'] as const;
+    default: return ['#6B7280', '#9CA3AF'] as const;
+  }
 };
 
 export default Colors;

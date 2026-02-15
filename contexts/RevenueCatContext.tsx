@@ -252,11 +252,11 @@ export function RevenueCatProvider({ children }: RevenueCatProviderProps) {
 
   // Get package by type
   const getPackageByType = (type: 'weekly' | 'monthly' | 'yearly' | 'lifetime'): PurchasesPackage | undefined => {
-    const packageTypeMap: Record<string, string> = {
-      weekly: '$rc_weekly',
-      monthly: '$rc_monthly',
-      yearly: '$rc_annual',
-      lifetime: '$rc_lifetime',
+    const packageTypeMap: Record<string, PACKAGE_TYPE> = {
+      weekly: PACKAGE_TYPE.WEEKLY,
+      monthly: PACKAGE_TYPE.MONTHLY,
+      yearly: PACKAGE_TYPE.ANNUAL,
+      lifetime: PACKAGE_TYPE.LIFETIME,
     };
 
     return packages.find(pkg => pkg.packageType === packageTypeMap[type]);

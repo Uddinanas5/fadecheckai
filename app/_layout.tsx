@@ -10,7 +10,7 @@ import Onboarding from '../components/Onboarding';
 import BeginScan from '../components/BeginScan';
 
 // TEMPORARY: Set to true to reset app on next launch, then set back to false
-const RESET_APP_FOR_TESTING = true;
+const RESET_APP_FOR_TESTING = false;
 
 type AppPhase = 'loading' | 'onboarding' | 'begin_scan' | 'main_app';
 

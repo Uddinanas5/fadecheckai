@@ -85,9 +85,8 @@ export default function CameraScreen() {
           imageUri: images.front,
           images: JSON.stringify(images),
           result: JSON.stringify(result || {
-            overall_score: null,
+            overall_level: null,
             scores: null,
-            score_label: null,
             breakdown: 'Unable to analyze. Please try again.',
             verdict: 'Error occurred.',
           }),

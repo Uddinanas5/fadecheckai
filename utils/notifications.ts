@@ -38,7 +38,7 @@ export async function scheduleAbandonedPaywallNotification(): Promise<boolean> {
     const notificationId = await Notifications.scheduleNotificationAsync({
       content: {
         title: 'Your results are waiting! 👀',
-        body: 'Your fade analysis is ready! Join 10,000+ who unlocked their full score 🔓',
+        body: 'Your grooming tips are ready! See your personalized recommendations 💈',
         sound: true,
         data: { type: 'abandoned_paywall' },
       },

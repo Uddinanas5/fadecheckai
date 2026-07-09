@@ -29,26 +29,27 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Scan',
+          title: 'Create',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? "scan" : "scan-outline"}
-              size={size}
-              color={color}
-            />
+            <Ionicons name={focused ? 'color-wand' : 'color-wand-outline'} size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="history"
+        name="styles"
         options={{
-          title: 'History',
+          title: 'Styles',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? "time" : "time-outline"}
-              size={size}
-              color={color}
-            />
+            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="rate"
+        options={{
+          title: 'Rate',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'star' : 'star-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -57,11 +58,7 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? "person" : "person-outline"}
-              size={size}
-              color={color}
-            />
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
           ),
         }}
       />

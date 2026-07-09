@@ -78,6 +78,16 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="recommendations" />
+        <Stack.Screen name="style/[id]" />
+        <Stack.Screen name="history" />
+        <Stack.Screen
+          name="tryon"
+          options={{
+            presentation: 'fullScreenModal',
+            animation: 'slide_from_bottom',
+          }}
+        />
         <Stack.Screen
           name="results"
           options={{

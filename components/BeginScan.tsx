@@ -311,7 +311,7 @@ export default function BeginScan({ onBeginScan }: BeginScanProps) {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Your Grooming Coach</Text>
+        <Text style={styles.headerTitle}>Find Your Next Cut</Text>
       </View>
 
       {/* Main Content */}
@@ -400,7 +400,7 @@ export default function BeginScan({ onBeginScan }: BeginScanProps) {
 
         {/* Text */}
         <Text style={styles.mainText}>
-          Get your analysis and{'\n'}grooming tips
+          Upload a photo and{'\n'}preview new styles on you
         </Text>
 
         {/* Pagination dots */}
@@ -425,7 +425,7 @@ export default function BeginScan({ onBeginScan }: BeginScanProps) {
               end={{ x: 1, y: 0 }}
               style={styles.buttonGradient}
             >
-              <Text style={styles.beginButtonText}>Begin scan</Text>
+              <Text style={styles.beginButtonText}>Get started</Text>
             </LinearGradient>
           </TouchableOpacity>
         </Animated.View>

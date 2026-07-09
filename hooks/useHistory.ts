@@ -1,15 +1,35 @@
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { HistoryItem, AnalysisResult } from '../types';
+import { HistoryEntry, AnalysisResult, TryOnResult } from '../types';
 
 const HISTORY_KEY = 'fadecheck_history';
-const MAX_HISTORY_ITEMS = 50;
+const MAX_HISTORY_ITEMS = 60;
+
+// Migrate legacy entries (pre-2.0 shape had no `kind` and were all ratings).
+function normalize(raw: any): HistoryEntry | null {
+  if (!raw || typeof raw !== 'object') return null;
+  if (raw.kind === 'rating' || raw.kind === 'tryon') return raw as HistoryEntry;
+  // legacy rating: { id, imageUri, result, timestamp }
+  if (raw.imageUri && raw.result) {
+    return {
+      kind: 'rating',
+      id: raw.id ?? `${raw.timestamp ?? Date.now()}`,
+      imageUri: raw.imageUri,
+      result: raw.result,
+      timestamp: raw.timestamp ?? Date.now(),
+    };
+  }
+  return null;
+}
+
+function makeId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+}
 
 export function useHistory() {
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load history on mount
   useEffect(() => {
     loadHistory();
   }, []);
@@ -20,82 +40,108 @@ export function useHistory() {
       const stored = await AsyncStorage.getItem(HISTORY_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        // Validate parsed data is an array
         if (Array.isArray(parsed)) {
-          // Sort by timestamp descending (newest first)
-          parsed.sort((a, b) => b.timestamp - a.timestamp);
-          setHistory(parsed as HistoryItem[]);
+          const normalized = parsed
+            .map(normalize)
+            .filter((e): e is HistoryEntry => e !== null)
+            .sort((a, b) => b.timestamp - a.timestamp);
+          setEntries(normalized);
         } else {
-          // Corrupted data, reset history
-          console.error('Invalid history data format, resetting');
           await AsyncStorage.removeItem(HISTORY_KEY);
-          setHistory([]);
+          setEntries([]);
         }
       }
     } catch (error) {
       console.error('Error loading history:', error);
-      setHistory([]);
+      setEntries([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const addToHistory = useCallback(async (imageUri: string, result: AnalysisResult) => {
+  const persist = useCallback(async (next: HistoryEntry[]) => {
     try {
-      const newItem: HistoryItem = {
-        id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+    } catch (error) {
+      console.error('Error saving history:', error);
+    }
+  }, []);
+
+  const addRating = useCallback(
+    async (imageUri: string, result: AnalysisResult) => {
+      const entry: HistoryEntry = {
+        kind: 'rating',
+        id: makeId(),
         imageUri,
         result,
         timestamp: Date.now(),
       };
-
-      let updatedHistory: HistoryItem[] = [];
-      setHistory(prev => {
-        updatedHistory = [newItem, ...prev].slice(0, MAX_HISTORY_ITEMS);
-        return updatedHistory;
+      let next: HistoryEntry[] = [];
+      setEntries((prev) => {
+        next = [entry, ...prev].slice(0, MAX_HISTORY_ITEMS);
+        return next;
       });
-      // Small delay to ensure state has settled before persisting
-      await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
-      return newItem.id;
-    } catch (error) {
-      console.error('Error saving to history:', error);
-      return null;
-    }
-  }, []);
+      await persist(next);
+      return entry.id;
+    },
+    [persist],
+  );
 
-  const removeFromHistory = useCallback(async (id: string) => {
-    try {
-      let updatedHistory: HistoryItem[] = [];
-      setHistory(prev => {
-        updatedHistory = prev.filter(item => item.id !== id);
-        return updatedHistory;
+  const addTryOn = useCallback(
+    async (tryOn: TryOnResult) => {
+      const entry: HistoryEntry = {
+        kind: 'tryon',
+        id: tryOn.id,
+        tryOn,
+        timestamp: tryOn.createdAt,
+      };
+      let next: HistoryEntry[] = [];
+      setEntries((prev) => {
+        next = [entry, ...prev].slice(0, MAX_HISTORY_ITEMS);
+        return next;
       });
-      await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
-    } catch (error) {
-      console.error('Error removing from history:', error);
-    }
-  }, []);
+      await persist(next);
+      return entry.id;
+    },
+    [persist],
+  );
+
+  const removeEntry = useCallback(
+    async (id: string) => {
+      let next: HistoryEntry[] = [];
+      setEntries((prev) => {
+        next = prev.filter((e) => e.id !== id);
+        return next;
+      });
+      await persist(next);
+    },
+    [persist],
+  );
 
   const clearHistory = useCallback(async () => {
+    setEntries([]);
     try {
-      setHistory([]);
       await AsyncStorage.removeItem(HISTORY_KEY);
     } catch (error) {
       console.error('Error clearing history:', error);
     }
   }, []);
 
-  const getHistoryItem = useCallback((id: string): HistoryItem | undefined => {
-    return history.find(item => item.id === id);
-  }, [history]);
+  const getEntry = useCallback(
+    (id: string) => entries.find((e) => e.id === id),
+    [entries],
+  );
 
   return {
-    history,
+    entries,
+    ratings: entries.filter((e): e is Extract<HistoryEntry, { kind: 'rating' }> => e.kind === 'rating'),
+    tryOns: entries.filter((e): e is Extract<HistoryEntry, { kind: 'tryon' }> => e.kind === 'tryon'),
     isLoading,
-    addToHistory,
-    removeFromHistory,
+    addRating,
+    addTryOn,
+    removeEntry,
     clearHistory,
-    getHistoryItem,
+    getEntry,
     refreshHistory: loadHistory,
   };
 }

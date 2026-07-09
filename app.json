@@ -20,8 +20,9 @@
       "bundleIdentifier": "com.fadecheck.app",
       "usesAppleSignIn": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "FadeCheck needs camera access to analyze your haircut and provide personalized grooming tips",
-        "NSPhotoLibraryUsageDescription": "FadeCheck needs photo library access to select photos for personalized analysis",
+        "NSCameraUsageDescription": "FadeCheck needs camera access to take a photo so we can recommend haircuts and generate a preview of the new style on you",
+        "NSPhotoLibraryUsageDescription": "FadeCheck needs photo library access to select a photo for style recommendations and previews",
+        "NSPhotoLibraryAddUsageDescription": "FadeCheck needs permission to save your haircut previews to your photo library",
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleURLTypes": [
           {
@@ -60,7 +61,14 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "FadeCheck needs photo library access to select photos"
+          "photosPermission": "FadeCheck needs photo library access to select a photo for style recommendations and previews",
+          "cameraPermission": "FadeCheck needs camera access to take a photo for style recommendations and previews"
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "FadeCheck needs permission to save your haircut previews to your photos"
         }
       ],
       "expo-font",

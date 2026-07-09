@@ -1,164 +1,159 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRevenueCat } from '../../contexts/RevenueCatContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
 import { typography, spacing, borderRadius } from '../../constants/Styles';
+import { useHistory } from '../../hooks/useHistory';
+import { HistoryEntry } from '../../types';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { isProUser } = useRevenueCat();
-  const [historyCount, setHistoryCount] = useState(0);
-  const [totalScans, setTotalScans] = useState(0);
+  const insets = useSafeAreaInsets();
+  const { entries, tryOns, ratings } = useHistory();
 
-  useEffect(() => {
-    loadUserData();
-  }, []);
+  const recent = entries.slice(0, 6);
 
-  const loadUserData = async () => {
-    try {
-      const history = await AsyncStorage.getItem('fadecheck_history');
-
-      if (history) {
-        const parsed = JSON.parse(history);
-        if (Array.isArray(parsed)) {
-          setHistoryCount(parsed.length);
-          setTotalScans(parsed.length);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    }
-  };
+  const thumbUri = (e: HistoryEntry) =>
+    e.kind === 'tryon' ? e.tryOn.generatedImageUri : e.imageUri;
 
   const MenuItem = ({
     icon,
     title,
     subtitle,
     onPress,
-    showBadge,
-    badgeText,
+    badge,
   }: {
     icon: string;
     title: string;
     subtitle?: string;
     onPress: () => void;
-    showBadge?: boolean;
-    badgeText?: string;
+    badge?: string;
   }) => (
     <TouchableOpacity style={styles.menuItem} onPress={onPress}>
-      <View style={styles.menuIconContainer}>
+      <View style={styles.menuIcon}>
         <Ionicons name={icon as any} size={22} color={Colors.accent.primary} />
       </View>
-      <View style={styles.menuContent}>
+      <View style={{ flex: 1 }}>
         <Text style={styles.menuTitle}>{title}</Text>
-        {subtitle && <Text style={styles.menuSubtitle}>{subtitle}</Text>}
+        {subtitle ? <Text style={styles.menuSubtitle}>{subtitle}</Text> : null}
       </View>
-      {showBadge && badgeText && (
+      {badge ? (
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>{badgeText}</Text>
+          <Text style={styles.badgeText}>{badge}</Text>
         </View>
-      )}
+      ) : null}
       <Ionicons name="chevron-forward" size={20} color={Colors.text.tertiary} />
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.headerBar}>
         <Text style={styles.headerTitle}>Profile</Text>
       </View>
 
       <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={{ padding: spacing.md, paddingBottom: insets.bottom + 100 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* User Card */}
+        {/* User card */}
         <View style={styles.userCard}>
-          <View style={styles.avatarContainer}>
-            <LinearGradient
-              colors={Colors.gradient.blue}
-              style={styles.avatarGradient}
-            >
-              <Ionicons name="person" size={32} color={Colors.text.primary} />
-            </LinearGradient>
-          </View>
-          <View style={styles.userInfo}>
+          <LinearGradient colors={Colors.gradient.blue} style={styles.avatar}>
+            <Ionicons name="person" size={30} color="#fff" />
+          </LinearGradient>
+          <View style={{ flex: 1 }}>
             <Text style={styles.userName}>FadeCheck User</Text>
-            <View style={styles.statusContainer}>
-              {isProUser ? (
-                <View style={styles.proBadge}>
-                  <Ionicons name="star" size={12} color={Colors.accent.primary} />
-                  <Text style={styles.proText}>PRO</Text>
-                </View>
-              ) : (
-                <Text style={styles.freeText}>Free Plan</Text>
-              )}
-            </View>
+            <Text style={styles.userSub}>Plan your next cut</Text>
           </View>
-          {!isProUser && (
-            <TouchableOpacity
-              style={styles.upgradeButton}
-              onPress={() => router.push('/paywall')}
-            >
-              <LinearGradient
-                colors={Colors.gradient.button}
-                style={styles.upgradeGradient}
-              >
-                <Text style={styles.upgradeText}>Upgrade</Text>
-              </LinearGradient>
+        </View>
+
+        {/* Stats */}
+        <View style={styles.statsCard}>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{entries.length}</Text>
+            <Text style={styles.statLabel}>Saved</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{tryOns.length}</Text>
+            <Text style={styles.statLabel}>Try-ons</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{ratings.length}</Text>
+            <Text style={styles.statLabel}>Ratings</Text>
+          </View>
+        </View>
+
+        {/* Your looks */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>YOUR LOOKS</Text>
+          {entries.length > 0 && (
+            <TouchableOpacity onPress={() => router.push('/history')}>
+              <Text style={styles.seeAll}>See all</Text>
             </TouchableOpacity>
           )}
         </View>
+        {recent.length > 0 ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.looksRow}>
+            {recent.map((e) => (
+              <TouchableOpacity
+                key={e.id}
+                style={styles.lookThumb}
+                onPress={() => router.push('/history')}
+                activeOpacity={0.85}
+              >
+                <Image source={{ uri: thumbUri(e) }} style={styles.lookImage} />
+                <View style={styles.lookBadge}>
+                  <Ionicons
+                    name={e.kind === 'tryon' ? 'color-wand' : 'star'}
+                    size={11}
+                    color="#fff"
+                  />
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        ) : (
+          <TouchableOpacity
+            style={styles.emptyLooks}
+            onPress={() => router.push('/(tabs)')}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="add-circle-outline" size={22} color={Colors.accent.primary} />
+            <Text style={styles.emptyLooksText}>Create your first look</Text>
+          </TouchableOpacity>
+        )}
 
-        {/* Stats Card */}
-        <View style={styles.statsCard}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{totalScans}</Text>
-            <Text style={styles.statLabel}>Total Scans</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{historyCount}</Text>
-            <Text style={styles.statLabel}>In History</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{isProUser ? 'Yes' : 'No'}</Text>
-            <Text style={styles.statLabel}>Pro Status</Text>
-          </View>
-        </View>
-
-        {/* Menu Sections */}
+        {/* Account */}
         <Text style={styles.sectionTitle}>ACCOUNT</Text>
         <View style={styles.menuCard}>
+          <MenuItem
+            icon="images-outline"
+            title="Your looks"
+            subtitle="Saved try-ons and ratings"
+            onPress={() => router.push('/history')}
+            badge={entries.length > 0 ? String(entries.length) : undefined}
+          />
           <MenuItem
             icon="settings-outline"
             title="Settings"
             subtitle="Privacy, data, and preferences"
             onPress={() => router.push('/settings')}
           />
-          <MenuItem
-            icon="time-outline"
-            title="History"
-            subtitle="View past analyses"
-            onPress={() => router.push('/(tabs)/history')}
-            showBadge={historyCount > 0}
-            badgeText={historyCount.toString()}
-          />
         </View>
 
+        {/* Support */}
         <Text style={styles.sectionTitle}>SUPPORT</Text>
         <View style={styles.menuCard}>
           <MenuItem
@@ -167,14 +162,9 @@ export default function ProfileScreen() {
             subtitle="FAQ and contact us"
             onPress={() => router.push('/support')}
           />
-          <MenuItem
-            icon="chatbubble-outline"
-            title="Send Feedback"
-            subtitle="Help us improve"
-            onPress={() => router.push('/support')}
-          />
         </View>
 
+        {/* About */}
         <Text style={styles.sectionTitle}>ABOUT</Text>
         <View style={styles.menuCard}>
           <MenuItem
@@ -194,38 +184,24 @@ export default function ProfileScreen() {
             onPress={() => router.push('/terms-of-service')}
           />
         </View>
-
-        <View style={styles.bottomPadding} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background.primary,
-  },
-  header: {
+  container: { flex: 1, backgroundColor: Colors.background.primary },
+  headerBar: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: Colors.glass.border,
   },
-  headerTitle: {
-    ...typography.h1,
-    color: Colors.text.primary,
-    fontSize: 28,
-  },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: spacing.md,
-  },
+  headerTitle: { ...typography.h1, fontSize: 28 },
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.md,
     backgroundColor: Colors.background.tertiary,
     borderRadius: borderRadius.xl,
     borderWidth: 1,
@@ -233,59 +209,9 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.lg,
   },
-  avatarContainer: {
-    marginRight: spacing.md,
-  },
-  avatarGradient: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userInfo: {
-    flex: 1,
-  },
-  userName: {
-    ...typography.h3,
-    color: Colors.text.primary,
-    marginBottom: 4,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  proBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(1, 69, 242, 0.15)',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: borderRadius.sm,
-  },
-  proText: {
-    ...typography.small,
-    color: Colors.accent.primary,
-    fontWeight: '700',
-    marginLeft: 4,
-  },
-  freeText: {
-    ...typography.small,
-    color: Colors.text.tertiary,
-  },
-  upgradeButton: {
-    borderRadius: borderRadius.md,
-    overflow: 'hidden',
-  },
-  upgradeGradient: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  upgradeText: {
-    ...typography.button,
-    color: Colors.text.primary,
-    fontSize: 14,
-  },
+  avatar: { width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center' },
+  userName: { ...typography.h3 },
+  userSub: { ...typography.caption, marginTop: 2 },
   statsCard: {
     flexDirection: 'row',
     backgroundColor: Colors.background.tertiary,
@@ -295,30 +221,59 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.lg,
   },
-  statItem: {
-    flex: 1,
+  statItem: { flex: 1, alignItems: 'center' },
+  statNumber: { ...typography.h2, color: Colors.accent.primary },
+  statLabel: { ...typography.small, color: Colors.text.tertiary, marginTop: 2 },
+  statDivider: { width: 1, backgroundColor: Colors.glass.border, marginHorizontal: spacing.sm },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  statNumber: {
-    ...typography.h2,
-    color: Colors.accent.primary,
-    marginBottom: 4,
-  },
-  statLabel: {
-    ...typography.small,
-    color: Colors.text.tertiary,
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: Colors.glass.border,
-    marginHorizontal: spacing.sm,
+    marginBottom: spacing.sm,
   },
   sectionTitle: {
     ...typography.label,
     color: Colors.text.tertiary,
     marginBottom: spacing.sm,
     marginLeft: spacing.xs,
+    marginTop: spacing.xs,
   },
+  seeAll: { color: Colors.accent.primary, fontWeight: '600', fontSize: 13 },
+  looksRow: { marginBottom: spacing.lg },
+  lookThumb: {
+    width: 88,
+    height: 110,
+    borderRadius: borderRadius.md,
+    overflow: 'hidden',
+    marginRight: spacing.sm,
+    backgroundColor: Colors.background.secondary,
+  },
+  lookImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+  lookBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(5,5,8,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyLooks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    height: 88,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(1,69,242,0.4)',
+    backgroundColor: 'rgba(1,69,242,0.05)',
+    marginBottom: spacing.lg,
+  },
+  emptyLooksText: { color: Colors.accent.primary, fontWeight: '600', fontSize: 15 },
   menuCard: {
     backgroundColor: Colors.background.tertiary,
     borderRadius: borderRadius.lg,
@@ -334,28 +289,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.glass.border,
   },
-  menuIconContainer: {
+  menuIcon: {
     width: 40,
     height: 40,
     borderRadius: borderRadius.md,
-    backgroundColor: 'rgba(1, 69, 242, 0.1)',
-    alignItems: 'center',
+    backgroundColor: 'rgba(1,69,242,0.1)',
     justifyContent: 'center',
+    alignItems: 'center',
     marginRight: spacing.md,
   },
-  menuContent: {
-    flex: 1,
-  },
-  menuTitle: {
-    ...typography.body,
-    color: Colors.text.primary,
-    fontWeight: '500',
-  },
-  menuSubtitle: {
-    ...typography.small,
-    color: Colors.text.tertiary,
-    marginTop: 2,
-  },
+  menuTitle: { ...typography.body, fontWeight: '500' },
+  menuSubtitle: { ...typography.small, color: Colors.text.tertiary, marginTop: 2 },
   badge: {
     backgroundColor: Colors.accent.primary,
     borderRadius: 10,
@@ -363,13 +307,5 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     marginRight: spacing.sm,
   },
-  badgeText: {
-    ...typography.small,
-    color: Colors.text.primary,
-    fontWeight: '600',
-    fontSize: 11,
-  },
-  bottomPadding: {
-    height: spacing.xxl,
-  },
+  badgeText: { color: '#fff', fontWeight: '600', fontSize: 11 },
 });

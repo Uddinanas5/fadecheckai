@@ -240,7 +240,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   const renderSocialProofScreen = () => (
     <View style={styles.screenContainer}>
       {renderProgressBar()}
-      <Text style={styles.title}>Analyze your haircut{'\n'}instantly</Text>
+      <Text style={styles.title}>See your next haircut{'\n'}before you cut it</Text>
 
       {/* App Logo */}
       <View style={styles.logoContainer}>

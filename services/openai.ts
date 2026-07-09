@@ -234,6 +234,135 @@ If no haircut visible or image unclear:
   "product_recommendations": null
 }`;
 
+// Lightweight system prompt for the "plan your next cut" flow: we only need the
+// user's face shape + hair profile to power style recommendations (no grading).
+const PROFILE_PROMPT = `You are a friendly hair expert. Look at the single photo of a person and identify their FACE SHAPE and HAIR PROFILE so we can recommend flattering haircuts. Be encouraging and constructive. Only analyze photos of a real person's head/face.
+
+FACE SHAPES: oval, square, round, oblong, heart, diamond.
+HAIR TYPES (Andre Walker): 1A-1C straight, 2A-2C wavy, 3A-3C curly, 4A-4C coily.
+
+RESPOND WITH JSON ONLY:
+{
+  "hair_profile": {
+    "hair_type": "3B",
+    "hair_type_name": "Type 3B - Springy Curls",
+    "hair_type_description": "Friendly one-liner about their hair.",
+    "density": "medium",
+    "density_description": "Friendly one-liner about density."
+  },
+  "face_analysis": {
+    "face_shape": "oval",
+    "face_shape_description": "Friendly one-liner about their face shape.",
+    "style_recommendation": "One friendly sentence on what suits them."
+  },
+  "breakdown": "One friendly sentence summarizing their features.",
+  "verdict": "One encouraging line."
+}
+
+If no face/head is clearly visible, respond:
+{ "hair_profile": null, "face_analysis": null, "breakdown": "Explain why.", "verdict": "Ask for a clearer front-facing photo." }`;
+
+/**
+ * Analyze a single front-facing photo to extract face shape + hair profile.
+ * Used by the "plan your next cut" flow to drive recommendations.
+ */
+export async function analyzeSinglePhoto(uri: string): Promise<AnalysisResult> {
+  if (!OPENAI_API_KEY) {
+    return {
+      overall_level: null,
+      scores: null,
+      breakdown: 'API key not configured. Set EXPO_PUBLIC_OPENAI_API_KEY to enable AI analysis.',
+      verdict: 'Configuration error.',
+      error: true,
+    };
+  }
+
+  try {
+    const base64 = await readAsStringAsync(uri, { encoding: 'base64' });
+    const imageType = uri.toLowerCase().includes('.png') ? 'png' : 'jpeg';
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90000);
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: PROFILE_PROMPT },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'image_url',
+                image_url: { url: `data:image/${imageType};base64,${base64}`, detail: 'high' },
+              },
+              {
+                type: 'text',
+                text: 'Identify this person\'s face shape and hair profile so we can recommend flattering haircuts. Friendly, encouraging tone. JSON only.',
+              },
+            ],
+          },
+        ],
+        max_tokens: 600,
+        temperature: 0.3,
+        response_format: { type: 'json_object' },
+      }),
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      let errorMessage = `API Error: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error?.message || errorMessage;
+      } catch {
+        // non-JSON error
+      }
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content;
+    if (!content) throw new Error('No content in response');
+
+    let cleaned = content.trim();
+    if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7);
+    if (cleaned.startsWith('```')) cleaned = cleaned.slice(3);
+    if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3);
+
+    const parsed = JSON.parse(cleaned.trim());
+    return {
+      overall_level: null,
+      scores: null,
+      breakdown: parsed.breakdown || '',
+      verdict: parsed.verdict || '',
+      hair_profile: parsed.hair_profile ?? null,
+      face_analysis: parsed.face_analysis ?? null,
+    };
+  } catch (error: any) {
+    const isTimeout =
+      error.name === 'AbortError' ||
+      error.message?.includes('timeout') ||
+      error.message?.includes('aborted');
+    return {
+      overall_level: null,
+      scores: null,
+      breakdown: isTimeout
+        ? 'The analysis took too long. Check your connection and try again.'
+        : 'Something went wrong reading your photo. Please try again.',
+      verdict: isTimeout ? 'Network timeout. Try again.' : 'Error occurred. Try again.',
+      error: true,
+    };
+  }
+}
+
 export async function analyzeHaircut(images: CapturedImages): Promise<AnalysisResult> {
   // Validate API key before making request
   if (!OPENAI_API_KEY) {

@@ -1,264 +1,102 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Animated } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
-import Colors, { getLevelColor, getTierColor } from '../constants/Colors';
+import { Ionicons } from '@expo/vector-icons';
+import Colors, { getLevelColor } from '../constants/Colors';
 import { borderRadius, spacing } from '../constants/Styles';
-import { HistoryItem } from '../types';
+import { HistoryEntry } from '../types';
 
 interface HistoryCardProps {
-  item: HistoryItem;
+  entry: HistoryEntry;
   onPress: () => void;
-  index?: number;
 }
 
-export default function HistoryCard({ item, onPress, index = 0 }: HistoryCardProps) {
-  const level = item.result.overall_level;
-  const levelColor = level ? getLevelColor(level) : Colors.text.secondary;
+function formatDate(timestamp: number): string {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 
-  // Animation refs
-  const scaleAnim = useRef(new Animated.Value(0.9)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-  const translateYAnim = useRef(new Animated.Value(20)).current;
-
-  useEffect(() => {
-    const delay = index * 80; // Staggered animation
-
-    Animated.sequence([
-      Animated.delay(delay),
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          tension: 50,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.spring(translateYAnim, {
-          toValue: 0,
-          tension: 50,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-      ]),
-    ]).start();
-  }, []);
-
-  const formatDate = (timestamp: number): string => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-
-  const getLevelIcon = (l: string | null): string => {
-    if (!l) return '✂️';
-    switch (l.toUpperCase()) {
-      case 'ELITE': return '💎';
-      case 'SHARP': return '✨';
-      case 'CLEAN': return '✅';
-      case 'FRESH': return '🌱';
-      case 'GROWING': return '📈';
-      default: return '✂️';
-    }
-  };
-
-  // Get tier info for display
-  const fadeTier = item.result.scores?.fade ?? null;
-  const lineupTier = item.result.scores?.lineup ?? null;
+export default function HistoryCard({ entry, onPress }: HistoryCardProps) {
+  const isTryOn = entry.kind === 'tryon';
+  const imageUri = isTryOn ? entry.tryOn.generatedImageUri : entry.imageUri;
+  const label = isTryOn ? entry.tryOn.styleName : entry.result.overall_level ?? 'Analysis';
+  const labelColor =
+    !isTryOn && entry.result.overall_level
+      ? getLevelColor(entry.result.overall_level)
+      : Colors.text.primary;
 
   return (
-    <Animated.View
-      style={[
-        styles.animatedContainer,
-        {
-          opacity: opacityAnim,
-          transform: [
-            { scale: scaleAnim },
-            { translateY: translateYAnim },
-          ],
-        },
-      ]}
-    >
-      <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.85}>
-        {/* Glow effect behind card */}
-        <View style={[styles.glowEffect, { backgroundColor: levelColor }]} />
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.85}>
+      <Image source={{ uri: imageUri }} style={styles.image} />
 
-        <Image source={{ uri: item.imageUri }} style={styles.image} />
+      <View style={styles.topBadge}>
+        <Ionicons
+          name={isTryOn ? 'color-wand' : 'star'}
+          size={12}
+          color={isTryOn ? Colors.accent.secondary : Colors.accent.primary}
+        />
+      </View>
 
-        {/* Top badge with icon */}
-        <View style={styles.topBadge}>
-          <BlurView intensity={40} tint="dark" style={styles.badgeBlur}>
-            <Text style={styles.badgeEmoji}>{getLevelIcon(level)}</Text>
-          </BlurView>
+      <LinearGradient colors={['transparent', 'rgba(0,0,0,0.88)']} style={styles.overlay}>
+        <Text style={[styles.label, { color: labelColor }]} numberOfLines={1}>
+          {label}
+        </Text>
+        <View style={styles.dateRow}>
+          <Text style={styles.kind}>{isTryOn ? 'Try-on' : 'Rating'}</Text>
+          <Text style={styles.date}>{formatDate(entry.timestamp)}</Text>
         </View>
+      </LinearGradient>
 
-        {/* Bottom overlay with level info */}
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.85)'] as const}
-          style={styles.overlay}
-        >
-          {/* Level display */}
-          <View style={styles.scoreContainer}>
-            <Text style={[styles.scoreMain, { color: levelColor }]}>
-              {level ?? '—'}
-            </Text>
-          </View>
-
-          {/* Mini tier row */}
-          {(fadeTier || lineupTier) && (
-            <View style={styles.miniScoresRow}>
-              {fadeTier && (
-                <View style={styles.miniScore}>
-                  <Text style={styles.miniLabel}>Fade</Text>
-                  <View style={[styles.miniTierDot, { backgroundColor: getTierColor(fadeTier) }]} />
-                </View>
-              )}
-              {fadeTier && lineupTier && <View style={styles.miniDivider} />}
-              {lineupTier && (
-                <View style={styles.miniScore}>
-                  <Text style={styles.miniLabel}>Line</Text>
-                  <View style={[styles.miniTierDot, { backgroundColor: getTierColor(lineupTier) }]} />
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* Date */}
-          <View style={styles.dateContainer}>
-            <View style={styles.dateDot} />
-            <Text style={styles.date}>{formatDate(item.timestamp)}</Text>
-          </View>
-        </LinearGradient>
-
-        {/* Glass border overlay */}
-        <View style={styles.glassBorder} />
-      </TouchableOpacity>
-    </Animated.View>
+      <View style={styles.glassBorder} pointerEvents="none" />
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  animatedContainer: {
-    flex: 1,
-    margin: spacing.xs,
-  },
   container: {
     flex: 1,
-    aspectRatio: 0.85,
+    aspectRatio: 0.8,
     borderRadius: borderRadius.xl,
     overflow: 'hidden',
     backgroundColor: Colors.background.secondary,
+    margin: spacing.xs,
   },
-  glowEffect: {
-    position: 'absolute',
-    top: -20,
-    left: -20,
-    right: -20,
-    bottom: -20,
-    opacity: 0.15,
-    borderRadius: borderRadius.xl + 20,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
+  image: { width: '100%', height: '100%', resizeMode: 'cover' },
   topBadge: {
     position: 'absolute',
     top: spacing.sm,
     right: spacing.sm,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  badgeBlur: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  badgeEmoji: {
-    fontSize: 14,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: 'rgba(5,5,8,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'flex-end',
     padding: spacing.md,
-    paddingBottom: spacing.sm,
   },
-  scoreContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  scoreMain: {
-    fontSize: 18,
-    fontWeight: '800',
-    letterSpacing: 1,
-    textShadowColor: 'rgba(0, 0, 0, 0.9)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
-  },
-  miniScoresRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  miniScore: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  miniLabel: {
-    fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontWeight: '500',
+  label: { fontSize: 16, fontWeight: '800', letterSpacing: -0.2 },
+  dateRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+  kind: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.6)',
+    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  miniValue: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  miniTierDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  miniDivider: {
-    width: 1,
-    height: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    marginHorizontal: 8,
-  },
-  dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  dateDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    marginRight: 6,
-  },
-  date: {
-    fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontWeight: '500',
-    letterSpacing: 0.3,
-  },
+  date: { fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: '500' },
   glassBorder: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: borderRadius.xl,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    pointerEvents: 'none',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
 });

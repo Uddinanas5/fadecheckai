@@ -67,6 +67,33 @@ async function hasText(t) {
   return (await page.getByText(t, { exact: false }).count()) > 0;
 }
 
+// Return srcs of <img> elements that failed to load (broken require paths etc.).
+async function brokenImages() {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('img')]
+      .filter((i) => i.complete && i.naturalWidth === 0)
+      .map((i) => i.currentSrc || i.src)
+      .slice(0, 5),
+  );
+}
+
+// Detect horizontal overflow (layout blowout) on the current screen.
+async function horizontalOverflow() {
+  return page.evaluate(() => {
+    const sw = document.documentElement.scrollWidth;
+    const iw = window.innerWidth;
+    return sw > iw + 2 ? { scrollWidth: sw, innerWidth: iw } : null;
+  });
+}
+
+const ALL_STYLE_IDS = [
+  'low-taper-fade', 'mid-taper-fade', 'high-taper-fade', 'low-skin-fade',
+  'mid-skin-fade', 'high-skin-fade', 'burst-fade', 'drop-fade',
+  'textured-crop', 'french-crop', 'buzz-cut', 'crew-cut',
+  'classic-side-part', 'modern-quiff', 'pompadour', 'textured-fringe',
+  'curly-top-fade', 'mid-length-flow',
+];
+
 async function clickText(t, { which = 'first' } = {}) {
   const loc = page.getByText(t, { exact: false });
   const n = await loc.count();
@@ -259,6 +286,59 @@ async function main() {
     const empty = await hasText('Nothing saved yet');
     if (!populated && !empty) throw new Error('history neither populated nor empty-state');
     await shot('G_history');
+  });
+
+  console.log('\n== Suite H: image integrity + layout overflow ==');
+  const screens = [
+    { url: '/', name: 'Create' },
+    { url: '/styles', name: 'Styles' },
+    { url: '/style/mid-taper-fade', name: 'Style detail' },
+    { url: '/profile', name: 'Profile' },
+    { url: '/recommendations', name: 'Recommendations' },
+  ];
+  for (const s of screens) {
+    await step(`No broken images: ${s.name}`, async () => {
+      await page.goto(BASE + s.url, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(1200);
+      const broken = await brokenImages();
+      if (broken.length) throw new Error(`broken images: ${broken.join(', ')}`);
+    });
+    await step(`No horizontal overflow: ${s.name}`, async () => {
+      const ov = await horizontalOverflow();
+      if (ov) throw new Error(`overflow ${ov.scrollWidth}px > ${ov.innerWidth}px viewport`);
+    });
+  }
+
+  console.log('\n== Suite I: every catalog style opens with a loaded gallery ==');
+  for (const id of ALL_STYLE_IDS) {
+    await step(`Style opens: ${id}`, async () => {
+      await page.goto(`${BASE}/style/${id}`, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(700);
+      if (!(await hasText('Ask your barber'))) throw new Error('detail did not render');
+      const broken = await brokenImages();
+      if (broken.length) throw new Error(`gallery image failed to load`);
+    });
+  }
+
+  console.log('\n== Suite J: real "Choose from library" upload -> recommendations ==');
+  await step('Create: pick from library routes to recommendations', async () => {
+    // Write a temp PNG for the file chooser.
+    const upload = path.join(OUT, 'upload.png');
+    fs.writeFileSync(upload, Buffer.from(PHOTO.split(',')[1], 'base64'));
+    await goHome();
+    const [chooser] = await Promise.all([
+      page.waitForEvent('filechooser', { timeout: 8000 }),
+      clickText('Choose from library'),
+    ]);
+    await chooser.setFiles(upload);
+    // analyze (no API key -> error result) then proceed to recommendations.
+    await page.waitForFunction(
+      () => location.pathname.includes('recommendations') ||
+            document.body.innerText.includes('Recommended for you'),
+      { timeout: 15000 },
+    );
+    await shot('J_after_upload');
+    if (!(await hasText('Recommended for you'))) throw new Error('did not reach recommendations');
   });
 
   report.dialogs = dialogs;

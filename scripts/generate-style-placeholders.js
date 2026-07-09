@@ -39,56 +39,75 @@ const STYLES = [
 
 const W = 600;
 const H = 800;
-const BG_TOP = '#12121A';
-const BG_BOT = '#050508';
-const BLUE = '#0145F2';
-const CYAN = '#38BDF8';
+
+// Per-category accent pair (start, end) — a cohesive cool palette that gives the
+// catalog visual variety while staying on-brand.
+const CATEGORY_COLORS = {
+  Fade: ['#0145F2', '#38BDF8'],
+  Taper: ['#0EA5E9', '#22D3EE'],
+  Crop: ['#14B8A6', '#2DD4BF'],
+  Buzz: ['#64748B', '#94A3B8'],
+  Quiff: ['#6366F1', '#818CF8'],
+  Pompadour: ['#8B5CF6', '#A78BFA'],
+  Fringe: ['#0284C7', '#38BDF8'],
+  Curly: ['#2563EB', '#60A5FA'],
+  Classic: ['#475569', '#7DD3FC'],
+  Long: ['#4F46E5', '#93C5FD'],
+};
 
 function escapeXml(s) {
   return s.replace(/[<>&'"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
 }
 
-// A simple head/hair silhouette so placeholders read as "a person with a haircut".
+// A clearer, brighter head/hair silhouette so cards read as "a haircut" even at
+// small thumbnail sizes. `variant` nudges the shape so gallery refs differ.
 function silhouette(variant) {
-  // slight variation per reference so the gallery doesn't look identical
-  const topY = 250 - variant * 8;
+  const cx = 300;
+  const headTop = 235 - variant * 6;
+  const headCy = headTop + 150;
+  const hairR = 172 + variant * 5;
   return `
-    <g opacity="0.28" fill="url(#hair)">
-      <ellipse cx="300" cy="${topY + 60}" rx="150" ry="${150 + variant * 6}" />
-    </g>
-    <g opacity="0.35" fill="#1A1A24">
-      <ellipse cx="300" cy="${topY + 130}" rx="118" ry="140" />
-    </g>
-    <g opacity="0.30" fill="url(#hair)">
-      <path d="M182 ${topY + 120} Q300 ${topY - 30} 418 ${topY + 120} L418 ${topY + 70} Q300 ${topY - 70} 182 ${topY + 70} Z" />
-    </g>
+    <!-- hair mass -->
+    <path d="M${cx - hairR} ${headCy}
+             a${hairR} ${hairR} 0 0 1 ${hairR * 2} 0
+             q0 40 -30 60 q-${hairR - 30} -70 -${(hairR - 30) * 2} 0 q-30 -20 -30 -60 Z"
+          fill="url(#hair)" opacity="0.9"/>
+    <!-- face -->
+    <ellipse cx="${cx}" cy="${headCy + 40}" rx="118" ry="150" fill="#0B0B12" opacity="0.92"/>
+    <!-- fade shading on the sides -->
+    <path d="M${cx - 150} ${headCy + 40} q30 -110 150 -120 q120 10 150 120 l0 40 q-150 -90 -300 0 Z"
+          fill="url(#hair)" opacity="0.55"/>
+    <!-- neck -->
+    <rect x="${cx - 55}" y="${headCy + 150}" width="110" height="120" rx="30" fill="#0B0B12" opacity="0.9"/>
   `;
 }
 
 function svgFor(name, category, label, variant) {
+  const [c1, c2] = CATEGORY_COLORS[category] || ['#0145F2', '#38BDF8'];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${BG_TOP}"/>
-      <stop offset="100%" stop-color="${BG_BOT}"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#171722"/>
+      <stop offset="100%" stop-color="#070710"/>
     </linearGradient>
     <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="${BLUE}"/>
-      <stop offset="100%" stop-color="${CYAN}"/>
+      <stop offset="0%" stop-color="${c1}"/>
+      <stop offset="100%" stop-color="${c2}"/>
     </linearGradient>
-    <radialGradient id="glow" cx="0.5" cy="0.32" r="0.6">
-      <stop offset="0%" stop-color="${BLUE}" stop-opacity="0.22"/>
-      <stop offset="100%" stop-color="${BLUE}" stop-opacity="0"/>
+    <radialGradient id="glow" cx="0.5" cy="0.34" r="0.65">
+      <stop offset="0%" stop-color="${c1}" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="${c1}" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect width="${W}" height="${H}" fill="url(#bg)"/>
   <rect width="${W}" height="${H}" fill="url(#glow)"/>
   ${silhouette(variant)}
-  <rect x="40" y="${H - 190}" width="${W - 80}" height="150" rx="24" fill="#1A1A24" fill-opacity="0.7" stroke="#FFFFFF" stroke-opacity="0.08"/>
-  <text x="64" y="${H - 138}" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="${CYAN}" letter-spacing="2">${escapeXml(category.toUpperCase())}</text>
-  <text x="64" y="${H - 96}" font-family="Helvetica, Arial, sans-serif" font-size="38" font-weight="800" fill="#EDF1F5">${escapeXml(name)}</text>
-  <text x="64" y="${H - 60}" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="500" fill="#9CA3AF">${escapeXml(label)}</text>
+  <rect x="0" y="${H - 210}" width="${W}" height="210" fill="#05050A" fill-opacity="0.55"/>
+  <rect x="36" y="${H - 176}" width="${W - 72}" height="140" rx="24" fill="#12121A" fill-opacity="0.82" stroke="#FFFFFF" stroke-opacity="0.10"/>
+  <text x="60" y="${H - 128}" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="${c2}" letter-spacing="3">${escapeXml(category.toUpperCase())}</text>
+  <text x="60" y="${H - 86}" font-family="Helvetica, Arial, sans-serif" font-size="40" font-weight="800" fill="#EDF1F5">${escapeXml(name)}</text>
+  <text x="60" y="${H - 52}" font-family="Helvetica, Arial, sans-serif" font-size="19" font-weight="500" fill="#9CA3AF">${escapeXml(label)}</text>
 </svg>`;
 }
 

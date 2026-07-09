@@ -27,7 +27,8 @@ export default function StyleCard({ haircut, onPress, reason, score, compact }: 
         imageStyle={styles.imageInner}
       >
         <LinearGradient
-          colors={['transparent', 'rgba(5,5,8,0.85)']}
+          colors={['transparent', 'transparent', 'rgba(5,5,8,0.92)']}
+          locations={[0, 0.5, 1]}
           style={styles.imageOverlay}
         />
         {typeof score === 'number' && (

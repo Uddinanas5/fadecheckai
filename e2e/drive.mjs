@@ -244,7 +244,8 @@ async function main() {
   await page.goto(BASE + '/recommendations', { waitUntil: 'networkidle' });
   await page.waitForTimeout(1200);
   await step('Recommendations render + open a rec', async () => {
-    if (!(await hasText('Recommended for you'))) throw new Error('no recommendations header');
+    // No analysis params -> the neutral "Popular styles" variant.
+    if (!(await hasText('Popular styles'))) throw new Error('no recommendations header');
     await clickText('Low Taper Fade');
     await page.waitForTimeout(1000);
     if (!(await hasText('Ask your barber'))) throw new Error('rec card did not open detail');
@@ -350,7 +351,11 @@ async function main() {
       { timeout: 15000 },
     );
     await shot('J_after_upload');
-    if (!(await hasText('Recommended for you'))) throw new Error('did not reach recommendations');
+    // Upload has no successful analysis (no API key in CI), so the neutral
+    // "Popular styles" header is expected; accept either recommendations header.
+    if (!(await hasText('Popular styles')) && !(await hasText('Recommended for you'))) {
+      throw new Error('did not reach recommendations');
+    }
   });
 
   console.log('\n== Suite K: filter correctness ==');
@@ -377,6 +382,7 @@ async function main() {
     });
     await page.goto(`${BASE}/recommendations?result=${encodeURIComponent(result)}`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(1200);
+    if (!(await hasText('Recommended for you'))) throw new Error('tailored header not shown for analysis');
     if (!(await hasText('diamond'))) throw new Error('face shape chip/reason not reflected');
     // A tailored match should score above the generic 55-58 baseline.
     const hasHighMatch = await page.evaluate(() =>

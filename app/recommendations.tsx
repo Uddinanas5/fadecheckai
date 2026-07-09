@@ -29,6 +29,9 @@ export default function RecommendationsScreen() {
 
   const faceShape = result?.face_analysis?.face_shape;
   const hairType = result?.hair_profile?.hair_type_name || result?.hair_profile?.hair_type;
+  // When we have real analysis we show tailored match scores + reasons; otherwise
+  // present the same list as a neutral "popular styles" set (no fake 58% match).
+  const hasAnalysis = Boolean(faceShape || hairType);
 
   const openStyle = (styleId: string) => {
     router.push({
@@ -43,7 +46,7 @@ export default function RecommendationsScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color={Colors.text.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Recommended for you</Text>
+        <Text style={styles.headerTitle}>{hasAnalysis ? 'Recommended for you' : 'Popular styles'}</Text>
         <View style={styles.backButton} />
       </View>
 
@@ -80,8 +83,9 @@ export default function RecommendationsScreen() {
         )}
 
         <Text style={styles.intro}>
-          Tap a style to see reference photos and try it on. These are picked to suit your
-          features — but you can browse every style too.
+          {hasAnalysis
+            ? 'Tap a style to see reference photos and try it on. These are picked to suit your features — but you can browse every style too.'
+            : 'A few crowd-pleasers to explore. Tap any style to see reference photos and try it on, or browse the full catalog.'}
         </Text>
 
         {recommendations.map((rec) => {
@@ -91,8 +95,8 @@ export default function RecommendationsScreen() {
             <StyleCard
               key={rec.styleId}
               haircut={haircut}
-              reason={rec.reason}
-              score={rec.score}
+              reason={hasAnalysis ? rec.reason : undefined}
+              score={hasAnalysis ? rec.score : undefined}
               onPress={() => openStyle(rec.styleId)}
             />
           );

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HistoryEntry, AnalysisResult, TryOnResult } from '../types';
 
@@ -29,9 +29,18 @@ function makeId(): string {
 export function useHistory() {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // Mirror of `entries` so mutators can compute the next value without relying
+  // on the (possibly deferred) state-updater callback running synchronously.
+  const entriesRef = useRef<HistoryEntry[]>([]);
+
+  const apply = useCallback((next: HistoryEntry[]) => {
+    entriesRef.current = next;
+    setEntries(next);
+  }, []);
 
   useEffect(() => {
     loadHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadHistory = async () => {
@@ -45,15 +54,17 @@ export function useHistory() {
             .map(normalize)
             .filter((e): e is HistoryEntry => e !== null)
             .sort((a, b) => b.timestamp - a.timestamp);
-          setEntries(normalized);
+          apply(normalized);
         } else {
           await AsyncStorage.removeItem(HISTORY_KEY);
-          setEntries([]);
+          apply([]);
         }
+      } else {
+        apply([]);
       }
     } catch (error) {
       console.error('Error loading history:', error);
-      setEntries([]);
+      apply([]);
     } finally {
       setIsLoading(false);
     }
@@ -76,15 +87,12 @@ export function useHistory() {
         result,
         timestamp: Date.now(),
       };
-      let next: HistoryEntry[] = [];
-      setEntries((prev) => {
-        next = [entry, ...prev].slice(0, MAX_HISTORY_ITEMS);
-        return next;
-      });
+      const next = [entry, ...entriesRef.current].slice(0, MAX_HISTORY_ITEMS);
+      apply(next);
       await persist(next);
       return entry.id;
     },
-    [persist],
+    [apply, persist],
   );
 
   const addTryOn = useCallback(
@@ -95,47 +103,42 @@ export function useHistory() {
         tryOn,
         timestamp: tryOn.createdAt,
       };
-      let next: HistoryEntry[] = [];
-      setEntries((prev) => {
-        next = [entry, ...prev].slice(0, MAX_HISTORY_ITEMS);
-        return next;
-      });
+      const next = [entry, ...entriesRef.current].slice(0, MAX_HISTORY_ITEMS);
+      apply(next);
       await persist(next);
       return entry.id;
     },
-    [persist],
+    [apply, persist],
   );
 
   const removeEntry = useCallback(
     async (id: string) => {
-      let next: HistoryEntry[] = [];
-      setEntries((prev) => {
-        next = prev.filter((e) => e.id !== id);
-        return next;
-      });
+      const next = entriesRef.current.filter((e) => e.id !== id);
+      apply(next);
       await persist(next);
     },
-    [persist],
+    [apply, persist],
   );
 
   const clearHistory = useCallback(async () => {
-    setEntries([]);
+    apply([]);
     try {
       await AsyncStorage.removeItem(HISTORY_KEY);
     } catch (error) {
       console.error('Error clearing history:', error);
     }
-  }, []);
+  }, [apply]);
 
-  const getEntry = useCallback(
-    (id: string) => entries.find((e) => e.id === id),
-    [entries],
-  );
+  const getEntry = useCallback((id: string) => entriesRef.current.find((e) => e.id === id), []);
 
   return {
     entries,
-    ratings: entries.filter((e): e is Extract<HistoryEntry, { kind: 'rating' }> => e.kind === 'rating'),
-    tryOns: entries.filter((e): e is Extract<HistoryEntry, { kind: 'tryon' }> => e.kind === 'tryon'),
+    ratings: entries.filter(
+      (e): e is Extract<HistoryEntry, { kind: 'rating' }> => e.kind === 'rating',
+    ),
+    tryOns: entries.filter(
+      (e): e is Extract<HistoryEntry, { kind: 'tryon' }> => e.kind === 'tryon',
+    ),
     isLoading,
     addRating,
     addTryOn,

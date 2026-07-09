@@ -353,6 +353,66 @@ async function main() {
     if (!(await hasText('Recommended for you'))) throw new Error('did not reach recommendations');
   });
 
+  console.log('\n== Suite K: filter correctness ==');
+  await step('Buzz filter shows only buzz styles', async () => {
+    await page.goto(BASE + '/styles', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(800);
+    await clickText('Buzz Cuts');
+    await page.waitForTimeout(600);
+    if (!(await hasText('Buzz Cut')) || !(await hasText('Crew Cut'))) {
+      throw new Error('buzz styles missing after filter');
+    }
+    if (await hasText('Low Taper Fade')) throw new Error('non-buzz style leaked into filter');
+  });
+
+  console.log('\n== Suite L: recommendations tailored to analysis ==');
+  await step('Analysis-driven recommendations reflect face shape', async () => {
+    const result = JSON.stringify({
+      overall_level: null,
+      scores: null,
+      breakdown: '',
+      verdict: '',
+      hair_profile: { hair_type: '3B', hair_type_name: 'Type 3B', hair_type_description: '', density: 'medium', density_description: '' },
+      face_analysis: { face_shape: 'diamond', face_shape_description: '', style_recommendation: '' },
+    });
+    await page.goto(`${BASE}/recommendations?result=${encodeURIComponent(result)}`, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(1200);
+    if (!(await hasText('diamond'))) throw new Error('face shape chip/reason not reflected');
+    // A tailored match should score above the generic 55-58 baseline.
+    const hasHighMatch = await page.evaluate(() =>
+      /(\b[6-9]\d|100)% match/.test(document.body.innerText),
+    );
+    if (!hasHighMatch) throw new Error('no tailored (>=60%) match score present');
+  });
+
+  console.log('\n== Suite M: populated history shows both entry kinds ==');
+  await step('History renders rating + try-on entries', async () => {
+    const entries = [
+      {
+        kind: 'tryon',
+        id: 't1',
+        timestamp: 2,
+        tryOn: { id: 't1', styleId: 'buzz-cut', styleName: 'Buzz Cut', sourceImageUri: PHOTO, generatedImageUri: PHOTO, createdAt: 2 },
+      },
+      {
+        kind: 'rating',
+        id: 'r1',
+        timestamp: 1,
+        imageUri: PHOTO,
+        result: { overall_level: 'CLEAN', scores: null, breakdown: '', verdict: '' },
+      },
+    ];
+    await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
+    await page.evaluate((e) => localStorage.setItem('fadecheck_history', JSON.stringify(e)), entries);
+    await page.goto(BASE + '/history', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(1200);
+    if (!(await hasText('Buzz Cut'))) throw new Error('try-on entry not shown');
+    if (!(await hasText('CLEAN'))) throw new Error('rating entry not shown');
+    await shot('M_history_populated');
+    // Clean up so other runs start fresh.
+    await page.evaluate(() => localStorage.removeItem('fadecheck_history'));
+  });
+
   report.dialogs = dialogs;
   report.finishedAt = Date.now();
   const passed = report.checks.filter((c) => c.ok).length;

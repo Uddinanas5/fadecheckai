@@ -413,6 +413,38 @@ async function main() {
     await page.evaluate(() => localStorage.removeItem('fadecheck_history'));
   });
 
+  console.log('\n== Suite N: AI consent modal (first-use gate) ==');
+  // Use a fresh context that seeds ONLY onboarding/first-scan (no consent), so
+  // the first-use consent modal is genuinely required. (The main context's init
+  // script always seeds consent, which would mask this.)
+  {
+    const ctx2 = await browser.newContext({ viewport: { width: 414, height: 896 } });
+    const page2 = await ctx2.newPage();
+    const errs2 = [];
+    page2.on('pageerror', (e) => errs2.push(e.message));
+    await page2.addInitScript(() => {
+      localStorage.setItem('fadecheck_onboarding_completed', 'true');
+      localStorage.setItem('fadecheck_first_scan_completed', 'true');
+    });
+    await page2.goto(BASE + '/', { waitUntil: 'networkidle' });
+    await page2.waitForTimeout(1800);
+    try {
+      const shows = (await page2.getByText('I Agree', { exact: false }).count()) > 0;
+      if (!shows) throw new Error('consent modal did not appear on first use');
+      await page2.getByText('I Agree', { exact: false }).first().click();
+      await page2.waitForTimeout(1000);
+      const gone = (await page2.getByText('I Agree', { exact: false }).count()) === 0;
+      if (!gone) throw new Error('consent modal did not dismiss after agreeing');
+      const appErr = errs2.filter(isAppError);
+      record('Consent modal shows on first use and Agree dismisses it', appErr.length === 0,
+        appErr[0] || '');
+    } catch (e) {
+      record('Consent modal shows on first use and Agree dismisses it', false, e.message);
+      await page2.screenshot({ path: path.join(OUT, 'N_consent.png') }).catch(() => {});
+    }
+    await ctx2.close();
+  }
+
   report.dialogs = dialogs;
   report.finishedAt = Date.now();
   const passed = report.checks.filter((c) => c.ok).length;

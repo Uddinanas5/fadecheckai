@@ -9,7 +9,6 @@ import {
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
-  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -48,15 +47,11 @@ export default function StyleDetailScreen() {
   };
 
   const handleTryOn = () => {
+    // Without a source photo we can't generate a preview — send the user to the
+    // Create tab to add one. (The CTA also relabels itself in this case, so this
+    // is an obvious, cross-platform action rather than a hidden Alert.)
     if (!sourceImageUri) {
-      Alert.alert(
-        'Add your photo first',
-        'To preview this style on you, add a photo of yourself.',
-        [
-          { text: 'Not now', style: 'cancel' },
-          { text: 'Add photo', onPress: () => router.replace('/(tabs)') },
-        ],
-      );
+      router.replace('/(tabs)');
       return;
     }
     router.push({
@@ -141,8 +136,11 @@ export default function StyleDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* Sticky CTA */}
+      {/* Sticky CTA — relabels when no source photo is available yet */}
       <View style={[styles.ctaBar, { paddingBottom: insets.bottom + 12 }]}>
+        {!sourceImageUri && (
+          <Text style={styles.ctaHint}>Add a photo of yourself to preview this on you</Text>
+        )}
         <TouchableOpacity style={styles.cta} onPress={handleTryOn} activeOpacity={0.9}>
           <LinearGradient
             colors={Colors.gradient.button}
@@ -150,8 +148,8 @@ export default function StyleDetailScreen() {
             end={{ x: 1, y: 0 }}
             style={styles.ctaGradient}
           >
-            <Ionicons name="color-wand" size={20} color="#fff" />
-            <Text style={styles.ctaText}>Try it on</Text>
+            <Ionicons name={sourceImageUri ? 'color-wand' : 'camera'} size={20} color="#fff" />
+            <Text style={styles.ctaText}>{sourceImageUri ? 'Try it on' : 'Add your photo'}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -237,6 +235,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(10,10,15,0.94)',
     borderTopWidth: 1,
     borderTopColor: Colors.glass.border,
+  },
+  ctaHint: {
+    ...typography.small,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
   },
   cta: { borderRadius: borderRadius.lg, overflow: 'hidden' },
   ctaGradient: {

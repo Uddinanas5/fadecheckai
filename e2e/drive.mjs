@@ -288,6 +288,18 @@ async function main() {
     await shot('G_history');
   });
 
+  console.log('\n== Suite H0: tab bar labels fully visible ==');
+  await step('Tab labels not clipped by viewport bottom', async () => {
+    await goHome();
+    const vh = 896;
+    for (const label of ['Create', 'Styles', 'Rate', 'Profile']) {
+      const box = await page.getByText(label, { exact: true }).last().boundingBox();
+      if (box && box.y + box.height > vh + 1) {
+        throw new Error(`"${label}" label extends ${Math.round(box.y + box.height - vh)}px below viewport`);
+      }
+    }
+  });
+
   console.log('\n== Suite H: image integrity + layout overflow ==');
   const screens = [
     { url: '/', name: 'Create' },

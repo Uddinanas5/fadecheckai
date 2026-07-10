@@ -18,7 +18,13 @@ export default function ResultsScreen() {
   }>();
 
   const imageUri = params.imageUri;
-  const result: AnalysisResult = params.result ? JSON.parse(params.result) : null;
+  // Guarded parse — a malformed deep link must show the error state, not crash.
+  let result: AnalysisResult | null = null;
+  try {
+    result = params.result ? JSON.parse(params.result) : null;
+  } catch {
+    result = null;
+  }
   const fromHistory = params.fromHistory === 'true';
 
   const handleBack = () => {

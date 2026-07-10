@@ -224,9 +224,9 @@ export default function SettingsScreen() {
         <SettingsSection title="Subscription">
           <SettingsRow
             icon={isProUser ? "checkmark-circle" : "star-outline"}
-            title={isProUser ? "FadeCheck Pro" : "Free Plan"}
-            subtitle={isProUser ? "You have access to all features" : "Upgrade to unlock all features"}
-            onPress={() => router.push('/customer-center')}
+            title="All features unlocked"
+            subtitle="FadeCheck is free while we grow — enjoy!"
+            onPress={() => router.push('/about')}
           />
         </SettingsSection>
 
@@ -239,8 +239,8 @@ export default function SettingsScreen() {
               <Switch
                 value={aiConsentEnabled}
                 onValueChange={handleAiConsentToggle}
-                trackColor={{ false: Colors.background.tertiary, true: Colors.accent.primary }}
-                thumbColor={Colors.text.primary}
+                trackColor={{ false: '#E7DECB', true: Colors.accent.primary }}
+                thumbColor="#FFFFFF"
               />
             }
           />
@@ -252,8 +252,8 @@ export default function SettingsScreen() {
               <Switch
                 value={notificationsEnabled}
                 onValueChange={handleNotificationsToggle}
-                trackColor={{ false: Colors.background.tertiary, true: Colors.accent.primary }}
-                thumbColor={Colors.text.primary}
+                trackColor={{ false: '#E7DECB', true: Colors.accent.primary }}
+                thumbColor="#FFFFFF"
               />
             }
           />

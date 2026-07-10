@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   genderButtonText: {
-    color: TEXT_PRIMARY,
+    color: '#FFFFFF',
     fontSize: 19,
     fontWeight: '700',
     letterSpacing: -0.3,
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   continueButtonText: {
-    color: TEXT_PRIMARY,
+    color: '#FFFFFF',
     fontSize: 19,
     fontWeight: '700',
     letterSpacing: -0.3,

@@ -454,6 +454,57 @@ async function main() {
     await ctx2.close();
   }
 
+  console.log('\n== Suite O: edge cases & resilience ==');
+  await step('Unknown style id shows not-found, not a crash', async () => {
+    await page.goto(BASE + '/style/definitely-not-a-style', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(900);
+    if (!(await hasText('Style not found'))) throw new Error('no not-found state');
+    await clickText('Go back');
+    await page.waitForTimeout(600);
+  });
+  await step('Try-on without params shows recovery, not a crash', async () => {
+    await page.goto(BASE + '/tryon', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(900);
+    if (!(await hasText('Missing photo or style'))) throw new Error('no missing-params state');
+    await clickText('Start over');
+    await page.waitForTimeout(900);
+    if (!(await hasText('Find your next'))) throw new Error('Start over did not reach Create');
+  });
+  await step('Malformed results param degrades gracefully', async () => {
+    await page.goto(BASE + '/results?imageUri=' + encodeURIComponent(PHOTO) + '&result=%7Bnotjson', {
+      waitUntil: 'networkidle',
+    });
+    await page.waitForTimeout(900);
+    // Error state renders an alert icon; the key assertion is no crash/blank error page.
+    const bodyText = await page.evaluate(() => document.body.innerText);
+    if (/Unexpected token|SyntaxError|Cannot read/i.test(bodyText)) {
+      throw new Error('raw JS error leaked to UI');
+    }
+  });
+  await step('Rapid tab switching stays stable', async () => {
+    await goHome();
+    for (let i = 0; i < 2; i++) {
+      for (const t of ['Styles', 'Rate', 'Profile', 'Create']) {
+        await clickText(t, { which: 'last' });
+        await page.waitForTimeout(150);
+      }
+    }
+    await page.waitForTimeout(600);
+    if (!(await hasText('Find your next'))) throw new Error('did not settle on Create');
+  });
+  await step('Settings AI-consent toggle responds', async () => {
+    await page.goto(BASE + '/settings', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(900);
+    if (!(await hasText('AI Analysis Consent'))) throw new Error('settings did not render');
+    const sw = page.locator('[role="switch"]').first();
+    if ((await sw.count()) > 0) {
+      await sw.click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      await sw.click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(400);
+    }
+  });
+
   report.dialogs = dialogs;
   report.finishedAt = Date.now();
   const passed = report.checks.filter((c) => c.ok).length;

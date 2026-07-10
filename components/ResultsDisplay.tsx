@@ -24,8 +24,8 @@ import ExpandableCard from './ExpandableCard';
 
 const ACCENT_BLUE = '#7A5CFF';
 const CYAN_GLOW = '#FF4D9D';
-const CARD_BG = '#12121A';
-const CARD_BG_LIGHT = '#1A1A24';
+const CARD_BG = '#FFFFFF';
+const CARD_BG_LIGHT = '#F4EBDA';
 const TEXT_PRIMARY = '#FFFFFF';
 const TEXT_SECONDARY = '#8B8B9E';
 const GLASS_BORDER = 'rgba(255,255,255,0.08)';

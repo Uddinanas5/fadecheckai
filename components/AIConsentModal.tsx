@@ -75,9 +75,9 @@ export default function AIConsentModal({
               <View style={styles.iconContainer}>
                 <Ionicons name="sparkles" size={32} color={Colors.accent.primary} />
               </View>
-              <Text style={styles.title}>Your Personal Grooming Coach</Text>
+              <Text style={styles.title}>Before we work our magic</Text>
               <Text style={styles.subtitle}>
-                Before we analyze your haircut, please confirm the following
+                Quick heads-up on how your photo is used — please confirm
               </Text>
             </View>
 
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   },
   acceptText: {
     ...typography.button,
-    color: Colors.text.primary,
+    color: '#FFFFFF',
     marginLeft: spacing.sm,
   },
   declineButton: {

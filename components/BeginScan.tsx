@@ -386,13 +386,13 @@ export default function BeginScan({ onBeginScan }: BeginScanProps) {
             <ScoreBadge
               score="✨"
               label="CRISP"
-              position={{ top: 50, right: -15 }}
+              position={{ top: 14, right: 12 }}
               delay={1000}
             />
             <ScoreBadge
               score="💈"
               label="FRESH"
-              position={{ bottom: 70, left: -10 }}
+              position={{ bottom: 16, left: 12 }}
               delay={1400}
             />
           </Animated.View>
@@ -637,7 +637,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   beginButtonText: {
-    color: TEXT_PRIMARY,
+    color: '#FFFFFF',
     fontSize: 19,
     fontWeight: '700',
     letterSpacing: -0.3,

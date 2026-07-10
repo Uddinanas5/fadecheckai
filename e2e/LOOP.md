@@ -74,4 +74,7 @@ Anyone (human or agent) can run it; nothing here depends on session memory.
 |---|---|---|---|---|
 | R1 | 62/62 | 1 (BeginScan overflow) | 6 (dark results hero, ink-on-purple labels ×3, stale consent copy, dead Upgrade row, black switch thumb) | all 6 + overflow |
 | R2 | 62/62 | (ran on stale build — discounted) | — | results.tsx unguarded JSON.parse; +5 edge-case checks |
-| R3+ | see git log / CI output | | | |
+| R3 | 67/67 | 1 (BeginScan overflow persisted) | results hero still dark; cream-on-cream pills | ResultsDisplay rewritten light-first; glow clipped (real overflow cause) |
+| R4 | 67/67 | **0** | 1 (RN-web Modal focus ring on consent) | focus ring suppressed |
+| R5 | 67/67 | **0** | **0** ✅ clean round 1 | — |
+| R6 | 67/67 | **0** | **0** ✅ clean round 2 — **GATE MET** | — |

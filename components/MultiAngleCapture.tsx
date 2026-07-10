@@ -27,9 +27,9 @@ const AVATAR_IMAGES: Record<string, ImageSourcePropType> = {
 
 const ACCENT_BLUE = '#7A5CFF';
 const CYAN_GLOW = '#FF4D9D';
-const BACKGROUND = '#0A0A0F';
-const CARD_BG = '#1A1A24';
-const TEXT_PRIMARY = '#EDF1F5';
+const BACKGROUND = '#FBF3E4';
+const CARD_BG = '#FFFFFF';
+const TEXT_PRIMARY = '#17130F';
 const TEXT_SECONDARY = '#9CA3AF';
 
 interface MultiAngleCaptureProps {

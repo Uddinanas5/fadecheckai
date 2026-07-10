@@ -1,9 +1,11 @@
+// Styles — browse the whole catalog with category chips.
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
-import { spacing, borderRadius, typography } from '../../constants/Styles';
+import { spacing, typography } from '../../constants/Styles';
+import { Chip } from '../../components/ui';
 import StyleCard from '../../components/StyleCard';
 import { useCatalog } from '../../hooks/useCatalog';
 import { CATEGORY_LABELS } from '../../types';
@@ -17,11 +19,9 @@ export default function StylesScreen() {
     router.push({ pathname: '/style/[id]', params: { id } });
   };
 
-  // Render the grid in rows of two.
+  // Two-up grid rows.
   const rows: (typeof filtered)[] = [];
-  for (let i = 0; i < filtered.length; i += 2) {
-    rows.push(filtered.slice(i, i + 2));
-  }
+  for (let i = 0; i < filtered.length; i += 2) rows.push(filtered.slice(i, i + 2));
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -36,13 +36,9 @@ export default function StylesScreen() {
         contentContainerStyle={styles.chipsRow}
         style={styles.chipsScroll}
       >
-        <FilterChip
-          label="All"
-          active={activeCategory === 'all'}
-          onPress={() => setActiveCategory('all')}
-        />
+        <Chip label="All" active={activeCategory === 'all'} onPress={() => setActiveCategory('all')} />
         {categories.map((c) => (
-          <FilterChip
+          <Chip
             key={c}
             label={CATEGORY_LABELS[c]}
             active={activeCategory === c}
@@ -52,10 +48,7 @@ export default function StylesScreen() {
       </ScrollView>
 
       <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: spacing.lg,
-          paddingBottom: insets.bottom + 100,
-        }}
+        contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: insets.bottom + 110 }}
         showsVerticalScrollIndicator={false}
       >
         {rows.map((row, idx) => (
@@ -73,26 +66,6 @@ export default function StylesScreen() {
   );
 }
 
-function FilterChip({
-  label,
-  active,
-  onPress,
-}: {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      style={[styles.chip, active && styles.chipActive]}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background.primary },
   header: {
@@ -105,20 +78,8 @@ const styles = StyleSheet.create({
   },
   title: { ...typography.h1 },
   count: { ...typography.h3, color: Colors.text.tertiary },
-  chipsScroll: { flexGrow: 0, marginBottom: spacing.sm },
+  chipsScroll: { flexGrow: 0, marginBottom: spacing.md },
   chipsRow: { paddingHorizontal: spacing.lg, gap: spacing.sm },
-  chip: {
-    paddingHorizontal: spacing.md,
-    height: 40,
-    justifyContent: 'center',
-    borderRadius: borderRadius.full,
-    borderWidth: 2,
-    borderColor: Colors.ink,
-    backgroundColor: '#FFFFFF',
-  },
-  chipActive: { backgroundColor: Colors.pop.yellow, borderColor: Colors.ink },
-  chipText: { fontSize: 14, fontWeight: '800', color: Colors.ink },
-  chipTextActive: { color: Colors.ink },
   gridRow: { flexDirection: 'row', gap: spacing.md },
   gridItem: { flex: 1 },
 });

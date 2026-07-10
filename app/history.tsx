@@ -1,11 +1,12 @@
+// History — every saved try-on and rating in one grid.
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../constants/Colors';
-import { spacing, borderRadius, typography } from '../constants/Styles';
+import { spacing, typography, borderRadius, softShadow } from '../constants/Styles';
+import { ScreenHeader, PopButton } from '../components/ui';
 import { useHistory } from '../hooks/useHistory';
 import HistoryCard from '../components/HistoryCard';
 import { HistoryEntry } from '../types';
@@ -19,11 +20,7 @@ export default function HistoryScreen() {
     if (entry.kind === 'rating') {
       router.push({
         pathname: '/results',
-        params: {
-          imageUri: entry.imageUri,
-          result: JSON.stringify(entry.result),
-          fromHistory: 'true',
-        },
+        params: { imageUri: entry.imageUri, result: JSON.stringify(entry.result), fromHistory: 'true' },
       });
     } else {
       router.push({
@@ -42,19 +39,17 @@ export default function HistoryScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color={Colors.text.primary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Your looks</Text>
-        {entries.length > 0 ? (
-          <TouchableOpacity style={styles.iconBtn} onPress={confirmClear}>
-            <Ionicons name="trash-outline" size={20} color={Colors.accent.tertiary} />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.iconBtn} />
-        )}
-      </View>
+      <ScreenHeader
+        title="Your looks"
+        onBack={() => router.back()}
+        right={
+          entries.length > 0 ? (
+            <TouchableOpacity onPress={confirmClear}>
+              <Ionicons name="trash-outline" size={20} color={Colors.accent.tertiary} />
+            </TouchableOpacity>
+          ) : undefined
+        }
+      />
 
       {isLoading ? (
         <View style={styles.center}>
@@ -63,21 +58,16 @@ export default function HistoryScreen() {
       ) : entries.length === 0 ? (
         <View style={styles.center}>
           <View style={styles.emptyIcon}>
-            <LinearGradient
-              colors={['rgba(122,92,255,0.2)', 'rgba(122,92,255,0.05)']}
-              style={styles.emptyIconGradient}
-            >
-              <Ionicons name="images-outline" size={44} color={Colors.accent.primary} />
-            </LinearGradient>
+            <Ionicons name="images-outline" size={40} color={Colors.pop.purpleInk} />
           </View>
           <Text style={styles.emptyTitle}>Nothing saved yet</Text>
           <Text style={styles.emptyText}>Your try-ons and ratings will show up here.</Text>
-          <TouchableOpacity style={styles.emptyBtn} onPress={() => router.replace('/(tabs)')}>
-            <LinearGradient colors={Colors.gradient.button} style={styles.emptyBtnGradient}>
-              <Ionicons name="color-wand" size={18} color="#fff" />
-              <Text style={styles.emptyBtnText}>Create a look</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+          <PopButton
+            label="Create a look"
+            icon="color-wand"
+            onPress={() => router.replace('/(tabs)')}
+            style={{ marginTop: spacing.sm }}
+          />
         </View>
       ) : (
         <FlatList
@@ -85,7 +75,6 @@ export default function HistoryScreen() {
           keyExtractor={(e) => e.id}
           numColumns={2}
           contentContainerStyle={{ padding: spacing.sm, paddingBottom: insets.bottom + 40 }}
-          columnWrapperStyle={{ gap: 0 }}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => <HistoryCard entry={item} onPress={() => openEntry(item)} />}
         />
@@ -96,36 +85,21 @@ export default function HistoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background.primary },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  iconBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { ...typography.h3 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing.xl, gap: spacing.sm },
   muted: { ...typography.body, color: Colors.text.secondary },
-  emptyIcon: { borderRadius: 40, overflow: 'hidden', marginBottom: spacing.sm },
-  emptyIconGradient: {
-    width: 80,
-    height: 80,
+  emptyIcon: {
+    width: 84,
+    height: 84,
+    borderRadius: borderRadius.xl,
+    backgroundColor: Colors.pop.lime,
+    borderWidth: 2,
+    borderColor: Colors.ink,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 40,
-    borderWidth: 1,
-    borderColor: 'rgba(122,92,255,0.3)',
+    marginBottom: spacing.sm,
+    transform: [{ rotate: '-6deg' }],
+    ...softShadow,
   },
   emptyTitle: { ...typography.h2, textAlign: 'center' },
-  emptyText: { ...typography.bodySecondary, textAlign: 'center', marginBottom: spacing.md },
-  emptyBtn: { borderRadius: borderRadius.full, overflow: 'hidden' },
-  emptyBtnGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-  },
-  emptyBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  emptyText: { ...typography.bodySecondary, textAlign: 'center', marginBottom: spacing.sm },
 });

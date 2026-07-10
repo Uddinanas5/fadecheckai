@@ -1,3 +1,4 @@
+// Style detail — swipeable reference gallery, "ask your barber" notes, try-on CTA.
 import React, { useState } from 'react';
 import {
   View,
@@ -12,9 +13,8 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors from '../../constants/Colors';
+import Colors, { popFor } from '../../constants/Colors';
 import { spacing, borderRadius, typography, softShadow } from '../../constants/Styles';
 import { getHaircutById } from '../../constants/haircuts';
 
@@ -26,7 +26,6 @@ export default function StyleDetailScreen() {
   const params = useLocalSearchParams<{ id: string; imageUri?: string }>();
   const haircut = getHaircutById(params.id);
   const sourceImageUri = params.imageUri && params.imageUri.length > 0 ? params.imageUri : undefined;
-
   const [activeIndex, setActiveIndex] = useState(0);
 
   if (!haircut) {
@@ -41,56 +40,35 @@ export default function StyleDetailScreen() {
     );
   }
 
+  const pop = popFor(haircut.id);
+
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_W);
     if (idx !== activeIndex) setActiveIndex(idx);
   };
 
   const handleTryOn = () => {
-    // Without a source photo we can't generate a preview — send the user to the
-    // Create tab to add one. (The CTA also relabels itself in this case, so this
-    // is an obvious, cross-platform action rather than a hidden Alert.)
+    // No photo yet → route to Create to add one (CTA relabels itself below).
     if (!sourceImageUri) {
       router.replace('/(tabs)');
       return;
     }
-    router.push({
-      pathname: '/tryon',
-      params: { id: haircut.id, imageUri: sourceImageUri },
-    });
+    router.push({ pathname: '/tryon', params: { id: haircut.id, imageUri: sourceImageUri } });
   };
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Gallery */}
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 130 }} showsVerticalScrollIndicator={false}>
+        {/* Gallery pager */}
         <View>
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={onScroll}
-            scrollEventThrottle={16}
-          >
+          <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} onScroll={onScroll} scrollEventThrottle={16}>
             {haircut.referenceImages.map((img, i) => (
               <Image key={i} source={img} style={styles.galleryImage} />
             ))}
           </ScrollView>
-          <LinearGradient
-            colors={['rgba(5,5,8,0.6)', 'transparent']}
-            style={styles.topScrim}
-            pointerEvents="none"
-          />
-          <TouchableOpacity
-            style={[styles.backButton, { top: insets.top + 8 }]}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="chevron-back" size={24} color="#fff" />
+          <TouchableOpacity style={[styles.backButton, { top: insets.top + 8 }]} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={22} color={Colors.ink} />
           </TouchableOpacity>
-          {/* Dots */}
           <View style={styles.dots}>
             {haircut.referenceImages.map((_, i) => (
               <View key={i} style={[styles.dot, i === activeIndex && styles.dotActive]} />
@@ -99,17 +77,19 @@ export default function StyleDetailScreen() {
         </View>
 
         <View style={styles.body}>
-          <Text style={styles.category}>{haircut.category.toUpperCase()}</Text>
+          <View style={[styles.categoryTag, { backgroundColor: pop.bg }]}>
+            <Text style={[styles.categoryText, { color: pop.ink }]}>{haircut.category.toUpperCase()}</Text>
+          </View>
           <Text style={styles.name}>{haircut.name}</Text>
           <Text style={styles.tagline}>{haircut.tagline}</Text>
 
           <View style={styles.metaRow}>
             <View style={styles.metaChip}>
-              <Ionicons name="time-outline" size={14} color={Colors.accent.secondary} />
+              <Ionicons name="time-outline" size={14} color={Colors.ink} />
               <Text style={styles.metaText}>{haircut.maintenance}</Text>
             </View>
             <View style={styles.metaChip}>
-              <Ionicons name="cut-outline" size={14} color={Colors.accent.secondary} />
+              <Ionicons name="cut-outline" size={14} color={Colors.ink} />
               <Text style={styles.metaText}>{haircut.difficulty}</Text>
             </View>
           </View>
@@ -127,30 +107,22 @@ export default function StyleDetailScreen() {
           </View>
 
           <View style={styles.tipBox}>
-            <Ionicons name="bulb-outline" size={18} color={Colors.accent.secondary} />
+            <Ionicons name="bulb-outline" size={18} color={Colors.pop.limeInk} />
             <Text style={styles.tipText}>
-              Screenshot the reference photos above and show them to your barber for the clearest
-              result.
+              Screenshot the reference photos above and show them to your barber for the clearest result.
             </Text>
           </View>
         </View>
       </ScrollView>
 
-      {/* Sticky CTA — relabels when no source photo is available yet */}
+      {/* Sticky CTA — relabels when no photo is loaded yet */}
       <View style={[styles.ctaBar, { paddingBottom: insets.bottom + 12 }]}>
         {!sourceImageUri && (
           <Text style={styles.ctaHint}>Add a photo of yourself to preview this on you</Text>
         )}
         <TouchableOpacity style={styles.cta} onPress={handleTryOn} activeOpacity={0.9}>
-          <LinearGradient
-            colors={Colors.gradient.button}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.ctaGradient}
-          >
-            <Ionicons name={sourceImageUri ? 'color-wand' : 'camera'} size={20} color="#fff" />
-            <Text style={styles.ctaText}>{sourceImageUri ? 'Try it on' : 'Add your photo'}</Text>
-          </LinearGradient>
+          <Ionicons name={sourceImageUri ? 'color-wand' : 'camera'} size={20} color="#fff" />
+          <Text style={styles.ctaText}>{sourceImageUri ? 'Try it on' : 'Add your photo'}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -161,16 +133,17 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background.primary },
   center: { justifyContent: 'center', alignItems: 'center', gap: spacing.md },
   errorText: { ...typography.body, color: Colors.text.secondary },
-  link: { color: Colors.accent.primary, fontWeight: '600' },
-  galleryImage: { width: SCREEN_W, aspectRatio: 3 / 4, backgroundColor: Colors.background.tertiary },
-  topScrim: { position: 'absolute', top: 0, left: 0, right: 0, height: 120 },
+  link: { color: Colors.accent.primary, fontWeight: '800' },
+  galleryImage: { width: SCREEN_W, aspectRatio: 3 / 4, backgroundColor: Colors.background.secondary },
   backButton: {
     position: 'absolute',
     left: spacing.md,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(5,5,8,0.5)',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: Colors.ink,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -183,11 +156,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
   },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.4)' },
-  dotActive: { backgroundColor: '#fff', width: 18 },
+  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.55)', borderWidth: 1, borderColor: 'rgba(23,19,15,0.3)' },
+  dotActive: { backgroundColor: '#FFFFFF', width: 20, borderColor: Colors.ink },
   body: { padding: spacing.lg },
-  category: { ...typography.label, color: Colors.accent.primary },
-  name: { ...typography.h1, marginTop: 4 },
+  categoryTag: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: borderRadius.full,
+    borderWidth: 2,
+    borderColor: Colors.ink,
+  },
+  categoryText: { fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
+  name: { ...typography.h1, marginTop: spacing.sm },
   tagline: { ...typography.bodySecondary, marginTop: 4 },
   metaRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   metaChip: {
@@ -214,7 +195,7 @@ const styles = StyleSheet.create({
     ...softShadow,
   },
   barberRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
-  barberText: { flex: 1, ...typography.body, fontSize: 15, color: Colors.text.primary, lineHeight: 21 },
+  barberText: { flex: 1, ...typography.body, fontSize: 15, lineHeight: 21 },
   tipBox: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -237,26 +218,18 @@ const styles = StyleSheet.create({
     borderTopWidth: 2,
     borderTopColor: Colors.ink,
   },
-  ctaHint: {
-    ...typography.small,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-    color: Colors.text.secondary,
-  },
+  ctaHint: { ...typography.small, textAlign: 'center', marginBottom: spacing.sm },
   cta: {
     height: 60,
-    borderRadius: borderRadius.full,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: Colors.ink,
-    ...softShadow,
-  },
-  ctaGradient: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
+    borderRadius: borderRadius.full,
+    backgroundColor: Colors.pop.purple,
+    borderWidth: 2,
+    borderColor: Colors.ink,
+    ...softShadow,
   },
   ctaText: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: -0.2 },
 });

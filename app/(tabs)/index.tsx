@@ -1,25 +1,43 @@
+// Create — the front door. Photo in, personalized styles out.
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
 import { spacing, borderRadius, typography, softShadow } from '../../constants/Styles';
+import { Screen, PopButton, OutlineButton } from '../../components/ui';
 import AnalyzingOverlay from '../../components/AnalyzingOverlay';
 import AIConsentModal, { useAIConsent } from '../../components/AIConsentModal';
 import { analyzeSinglePhoto } from '../../services/openai';
 
 const STEPS = [
-  { icon: 'camera', title: 'Add your photo', desc: 'A clear, front-facing selfie works best', color: Colors.pop.lime, ink: Colors.pop.limeInk },
-  { icon: 'sparkles', title: 'Get matched styles', desc: 'We suggest cuts that suit your features', color: Colors.pop.pink, ink: '#fff' },
-  { icon: 'color-wand', title: 'Try it on', desc: 'See a preview of you with the new look', color: Colors.pop.yellow, ink: Colors.pop.yellowInk },
-] as const;
+  {
+    icon: 'camera' as const,
+    title: 'Add your photo',
+    desc: 'A clear, front-facing selfie works best',
+    color: Colors.pop.lime,
+    ink: Colors.pop.limeInk,
+  },
+  {
+    icon: 'sparkles' as const,
+    title: 'Get matched styles',
+    desc: 'We suggest cuts that suit your features',
+    color: Colors.pop.pink,
+    ink: '#FFFFFF',
+  },
+  {
+    icon: 'color-wand' as const,
+    title: 'Try it on',
+    desc: 'See a preview of you with the new look',
+    color: Colors.pop.yellow,
+    ink: Colors.pop.yellowInk,
+  },
+];
 
 export default function CreateScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { needsConsent, hasConsent, updateConsent } = useAIConsent();
   const [showConsent, setShowConsent] = useState(false);
   const [pendingUri, setPendingUri] = useState<string | null>(null);
@@ -32,7 +50,6 @@ export default function CreateScreen() {
 
   const proceed = async (uri: string) => {
     setIsAnalyzing(true);
-    // Show the analyzing overlay against this single photo.
     setPreviewUri(uri);
 
     const [result] = await Promise.all([
@@ -43,24 +60,19 @@ export default function CreateScreen() {
     setIsAnalyzing(false);
     setPreviewUri(null);
 
-    // Proceed to recommendations regardless — the recommender falls back to a
-    // sensible default ordering when analysis is unavailable.
+    // The recommender falls back gracefully when analysis is unavailable.
     router.push({
       pathname: '/recommendations',
       params: { imageUri: uri, result: JSON.stringify(result) },
     });
   };
 
-  const handlePhoto = async (uri: string) => {
+  const handlePhoto = (uri: string) => {
     if (hasConsent === false) {
-      Alert.alert(
-        'AI Analysis Disabled',
-        'Enable AI analysis to get personalized style recommendations?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Enable', onPress: () => { setPendingUri(uri); setShowConsent(true); } },
-        ],
-      );
+      Alert.alert('AI Analysis Disabled', 'Enable AI analysis to get personalized style recommendations?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Enable', onPress: () => { setPendingUri(uri); setShowConsent(true); } },
+      ]);
       return;
     }
     if (needsConsent || hasConsent === null) {
@@ -80,9 +92,7 @@ export default function CreateScreen() {
         aspect: [3, 4],
         quality: 0.8,
       });
-      if (!result.canceled && result.assets[0]?.uri) {
-        handlePhoto(result.assets[0].uri);
-      }
+      if (!result.canceled && result.assets[0]?.uri) handlePhoto(result.assets[0].uri);
     } catch (e) {
       console.error('Library pick error', e);
     }
@@ -102,9 +112,7 @@ export default function CreateScreen() {
         aspect: [3, 4],
         quality: 0.8,
       });
-      if (!result.canceled && result.assets[0]?.uri) {
-        handlePhoto(result.assets[0].uri);
-      }
+      if (!result.canceled && result.assets[0]?.uri) handlePhoto(result.assets[0].uri);
     } catch (e) {
       console.error('Camera error', e);
     }
@@ -127,20 +135,17 @@ export default function CreateScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ScrollView
-        contentContainerStyle={{ padding: spacing.lg, paddingBottom: insets.bottom + 130 }}
-        showsVerticalScrollIndicator={false}
-      >
+    <>
+      <Screen>
         {/* Wordmark */}
         <View style={styles.brandRow}>
           <View style={styles.brandDot}>
-            <Ionicons name="cut" size={16} color="#fff" />
+            <Ionicons name="cut" size={15} color="#fff" />
           </View>
           <Text style={styles.brand}>fadecheck</Text>
         </View>
 
-        {/* Hero — AI-generated cartoon character */}
+        {/* Hero — AI-generated realistic-cartoon character */}
         <View style={styles.hero}>
           <Image source={require('../../assets/art/hero-create.png')} style={styles.heroImg} />
           <Text style={styles.starA}>✦</Text>
@@ -153,32 +158,24 @@ export default function CreateScreen() {
           the barber touches it.
         </Text>
 
-        {/* Steps as colorful sticker rows */}
+        {/* Steps — color-block sticker rows */}
         <View style={styles.steps}>
           {STEPS.map((s, i) => (
             <View key={s.title} style={[styles.step, { backgroundColor: s.color }]}>
               <View style={styles.stepIcon}>
-                <Ionicons name={s.icon as any} size={22} color={s.ink} />
+                <Ionicons name={s.icon} size={22} color={s.ink} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.stepTitle, { color: s.ink }]}>{s.title}</Text>
-                <Text style={[styles.stepDesc, { color: s.ink, opacity: 0.75 }]}>{s.desc}</Text>
+                <Text style={[styles.stepDesc, { color: s.ink }]}>{s.desc}</Text>
               </View>
-              <Text style={[styles.stepNum, { color: s.ink, opacity: 0.35 }]}>{i + 1}</Text>
+              <Text style={[styles.stepNum, { color: s.ink }]}>{i + 1}</Text>
             </View>
           ))}
         </View>
 
-        {/* Primary chunky pill */}
-        <TouchableOpacity style={styles.primaryBtn} onPress={takePhoto} activeOpacity={0.9}>
-          <Ionicons name="camera" size={22} color="#fff" />
-          <Text style={styles.primaryText}>Take a photo</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.secondaryBtn} onPress={pickFromLibrary} activeOpacity={0.85}>
-          <Ionicons name="images-outline" size={20} color={Colors.ink} />
-          <Text style={styles.secondaryText}>Choose from library</Text>
-        </TouchableOpacity>
+        <PopButton label="Take a photo" icon="camera" onPress={takePhoto} style={{ marginBottom: spacing.md }} />
+        <OutlineButton label="Choose from library" icon="images-outline" onPress={pickFromLibrary} />
 
         <TouchableOpacity style={styles.ghostBtn} onPress={() => router.push('/(tabs)/styles')} activeOpacity={0.7}>
           <Text style={styles.ghostText}>or browse all styles</Text>
@@ -189,26 +186,23 @@ export default function CreateScreen() {
           Previews are AI-generated and for inspiration only — results may vary. Bring your
           favourites to a real barber.
         </Text>
-      </ScrollView>
+      </Screen>
 
-      <AnalyzingOverlay
-        images={null}
-        singleImage={previewUri}
-        isVisible={isAnalyzing && !!previewUri}
-      />
+      <AnalyzingOverlay images={null} singleImage={previewUri} isVisible={isAnalyzing && !!previewUri} />
       <AIConsentModal visible={showConsent} onAccept={onConsentAccept} onDecline={onConsentDecline} />
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background.primary },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: spacing.sm },
   brandDot: {
     width: 28,
     height: 28,
     borderRadius: 10,
     backgroundColor: Colors.pop.purple,
+    borderWidth: 2,
+    borderColor: Colors.ink,
     justifyContent: 'center',
     alignItems: 'center',
     transform: [{ rotate: '-8deg' }],
@@ -226,8 +220,8 @@ const styles = StyleSheet.create({
     ...softShadow,
   },
   heroImg: { width: '100%', height: '100%', resizeMode: 'cover' },
-  starA: { position: 'absolute', top: 16, right: 22, fontSize: 26, color: Colors.pop.pink },
-  starB: { position: 'absolute', bottom: 18, left: 20, fontSize: 18, color: Colors.pop.purple },
+  starA: { position: 'absolute', top: 14, right: 20, fontSize: 26, color: Colors.pop.pink },
+  starB: { position: 'absolute', bottom: 16, left: 18, fontSize: 18, color: Colors.pop.purple },
 
   title: {
     fontSize: 40,
@@ -237,12 +231,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     lineHeight: 42,
   },
-  subtitle: {
-    ...typography.bodySecondary,
-    fontSize: 15,
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-  },
+  subtitle: { ...typography.bodySecondary, fontSize: 15, marginTop: spacing.sm, marginBottom: spacing.lg },
 
   steps: { gap: spacing.sm, marginBottom: spacing.lg },
   step: {
@@ -263,35 +252,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stepTitle: { fontSize: 16, fontWeight: '800', letterSpacing: -0.2 },
-  stepDesc: { fontSize: 13, fontWeight: '600', marginTop: 2 },
-  stepNum: { fontSize: 26, fontWeight: '800' },
+  stepDesc: { fontSize: 13, fontWeight: '600', marginTop: 2, opacity: 0.75 },
+  stepNum: { fontSize: 26, fontWeight: '800', opacity: 0.35 },
 
-  primaryBtn: {
-    height: 60,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    borderRadius: borderRadius.full,
-    backgroundColor: Colors.pop.purple,
-    borderWidth: 2,
-    borderColor: Colors.ink,
-    marginBottom: spacing.md,
-    ...softShadow,
-  },
-  primaryText: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: -0.2 },
-  secondaryBtn: {
-    height: 58,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    borderRadius: borderRadius.full,
-    borderWidth: 2,
-    borderColor: Colors.ink,
-    backgroundColor: Colors.background.secondary,
-  },
-  secondaryText: { color: Colors.ink, fontSize: 16, fontWeight: '800' },
   ghostBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -300,10 +263,5 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   ghostText: { color: Colors.accent.primary, fontSize: 15, fontWeight: '800' },
-  disclaimer: {
-    ...typography.small,
-    textAlign: 'center',
-    lineHeight: 16,
-    paddingHorizontal: spacing.md,
-  },
+  disclaimer: { ...typography.small, textAlign: 'center', lineHeight: 16, paddingHorizontal: spacing.md },
 });

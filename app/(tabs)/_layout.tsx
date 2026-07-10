@@ -1,6 +1,6 @@
+// Floating sticker tab bar — white pill, ink outline, yellow active highlight.
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
 
@@ -15,21 +15,22 @@ export default function TabLayout() {
         tabBarShowLabel: true,
         tabBarActiveTintColor: Colors.ink,
         tabBarInactiveTintColor: Colors.text.tertiary,
+        tabBarActiveBackgroundColor: Colors.pop.yellow,
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '800',
           letterSpacing: 0.2,
           marginTop: 2,
         },
-        // Floating, sticker-outlined bar
         tabBarStyle: {
           position: 'absolute',
           left: 16,
           right: 16,
           bottom: bottomPad,
           height: 64,
-          paddingTop: 8,
-          paddingBottom: 8,
+          paddingTop: 6,
+          paddingBottom: 6,
+          paddingHorizontal: 6,
           borderRadius: 24,
           backgroundColor: '#FFFFFF',
           borderWidth: 2,
@@ -41,9 +42,8 @@ export default function TabLayout() {
           shadowOpacity: 0.12,
           shadowRadius: 16,
           elevation: 8,
-          ...(Platform.OS === 'android' ? { paddingBottom: 8 } : {}),
         },
-        tabBarItemStyle: { borderRadius: 18, marginHorizontal: 4 },
+        tabBarItemStyle: { borderRadius: 16, marginHorizontal: 3, overflow: 'hidden' },
       }}
     >
       <Tabs.Screen

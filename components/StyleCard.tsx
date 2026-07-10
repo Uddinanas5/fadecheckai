@@ -1,3 +1,5 @@
+// StyleCard — sticker card for a catalog haircut: art on top, white label bar,
+// pop-colored arrow, optional match score + reason (recommendations).
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,9 +10,9 @@ import { Haircut } from '../types';
 interface StyleCardProps {
   haircut: Haircut;
   onPress: () => void;
-  reason?: string; // optional recommendation reason
-  score?: number; // optional match score 0-100
-  compact?: boolean; // smaller grid card
+  reason?: string;
+  score?: number; // 0-100 match
+  compact?: boolean;
 }
 
 export default function StyleCard({ haircut, onPress, reason, score, compact }: StyleCardProps) {
@@ -18,7 +20,7 @@ export default function StyleCard({ haircut, onPress, reason, score, compact }: 
 
   return (
     <TouchableOpacity
-      style={[styles.card, compact && styles.cardCompact]}
+      style={[styles.card, compact && { flex: 1 }]}
       onPress={onPress}
       activeOpacity={0.9}
     >
@@ -32,7 +34,6 @@ export default function StyleCard({ haircut, onPress, reason, score, compact }: 
         )}
       </View>
 
-      {/* Label bar */}
       <View style={styles.label}>
         <View style={{ flex: 1 }}>
           <Text style={styles.name} numberOfLines={1}>
@@ -62,20 +63,20 @@ export default function StyleCard({ haircut, onPress, reason, score, compact }: 
 const styles = StyleSheet.create({
   card: {
     borderRadius: borderRadius.xl,
-    backgroundColor: Colors.background.secondary,
+    backgroundColor: '#FFFFFF',
     borderWidth: 2,
     borderColor: Colors.ink,
     overflow: 'hidden',
     marginBottom: spacing.md,
     ...softShadow,
   },
-  cardCompact: { flex: 1 },
   image: {
     width: '100%',
     aspectRatio: 3 / 4,
     alignItems: 'flex-end',
     padding: spacing.sm,
   },
+  // Plain Image, not ImageBackground — the latter doesn't paint on RN-web.
   imageInner: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', resizeMode: 'cover' },
   scorePill: {
     flexDirection: 'row',

@@ -1,3 +1,4 @@
+// Try-on — generate & present the "you with this haircut" preview.
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
@@ -10,13 +11,13 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../constants/Colors';
 import { spacing, borderRadius, typography, softShadow } from '../constants/Styles';
+import { ScreenHeader, PopButton, OutlineButton } from '../components/ui';
 import { getHaircutById } from '../constants/haircuts';
 import { useTryOn } from '../hooks/useTryOn';
 import { useHistory } from '../hooks/useHistory';
@@ -34,14 +35,14 @@ export default function TryOnScreen() {
   const [saved, setSaved] = useState(false);
   const savedRef = useRef(false);
 
-  // Kick off generation once.
+  // Generate once on mount.
   useEffect(() => {
     if (!haircut || !sourceImageUri) return;
     run({ sourceImageUri, haircut });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist to history once, when done.
+  // Persist once when done.
   useEffect(() => {
     if (status === 'done' && result && !savedRef.current) {
       savedRef.current = true;
@@ -75,7 +76,7 @@ export default function TryOnScreen() {
       await MediaLibrary.saveToLibraryAsync(result.generatedImageUri);
       setSaved(true);
       Alert.alert('Saved', 'The preview was saved to your photos.');
-    } catch (e) {
+    } catch {
       Alert.alert('Could not save', 'Something went wrong saving the image.');
     }
   };
@@ -89,22 +90,14 @@ export default function TryOnScreen() {
         return;
       }
       await Sharing.shareAsync(result.generatedImageUri);
-    } catch (e) {
-      // user cancelled or error — no-op
+    } catch {
+      // user cancelled — no-op
     }
   };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color={Colors.text.primary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          {haircut.name}
-        </Text>
-        <View style={styles.iconBtn} />
-      </View>
+      <ScreenHeader title={haircut.name} onBack={() => router.back()} />
 
       <View style={styles.stage}>
         {status === 'generating' && (
@@ -122,13 +115,12 @@ export default function TryOnScreen() {
             <Ionicons name="cloud-offline-outline" size={48} color={Colors.text.secondary} />
             <Text style={styles.loadingTitle}>Preview failed</Text>
             <Text style={styles.loadingSub}>{error}</Text>
-            <TouchableOpacity
-              style={styles.retryBtn}
+            <PopButton
+              label="Try again"
+              icon="refresh"
               onPress={() => run({ sourceImageUri, haircut })}
-            >
-              <Ionicons name="refresh" size={18} color="#fff" />
-              <Text style={styles.retryText}>Try again</Text>
-            </TouchableOpacity>
+              style={{ marginTop: spacing.lg }}
+            />
           </View>
         )}
 
@@ -153,7 +145,7 @@ export default function TryOnScreen() {
               onPressOut={() => setShowBefore(false)}
               activeOpacity={0.9}
             >
-              <Ionicons name="eye-outline" size={18} color={Colors.accent.secondary} />
+              <Ionicons name="eye-outline" size={18} color={Colors.accent.primary} />
               <Text style={styles.toggleText}>Hold to compare with original</Text>
             </TouchableOpacity>
 
@@ -170,34 +162,19 @@ export default function TryOnScreen() {
       {status === 'done' && result && (
         <View style={[styles.actions, { paddingBottom: insets.bottom + 12 }]}>
           <View style={styles.actionRow}>
-            <TouchableOpacity style={styles.secondaryAction} onPress={handleSave}>
-              <Ionicons
-                name={saved ? 'checkmark' : 'download-outline'}
-                size={20}
-                color={Colors.text.primary}
-              />
-              <Text style={styles.secondaryActionText}>{saved ? 'Saved' : 'Save'}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.secondaryAction} onPress={handleShare}>
-              <Ionicons name="share-outline" size={20} color={Colors.text.primary} />
-              <Text style={styles.secondaryActionText}>Share</Text>
-            </TouchableOpacity>
+            <OutlineButton
+              label={saved ? 'Saved' : 'Save'}
+              icon={saved ? 'checkmark' : 'download-outline'}
+              onPress={handleSave}
+              style={{ flex: 1 }}
+            />
+            <OutlineButton label="Share" icon="share-outline" onPress={handleShare} style={{ flex: 1 }} />
           </View>
-          <TouchableOpacity
-            style={styles.primaryAction}
+          <PopButton
+            label="Try another style"
+            icon="color-wand"
             onPress={() => router.replace('/(tabs)/styles')}
-            activeOpacity={0.9}
-          >
-            <LinearGradient
-              colors={Colors.gradient.button}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.primaryGradient}
-            >
-              <Ionicons name="color-wand" size={20} color="#fff" />
-              <Text style={styles.primaryText}>Try another style</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+          />
         </View>
       )}
     </View>
@@ -208,45 +185,26 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background.primary },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: spacing.sm, padding: spacing.lg },
   errText: { ...typography.body, color: Colors.text.secondary },
-  link: { color: Colors.accent.primary, fontWeight: '600', marginTop: spacing.sm },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  iconBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { ...typography.h3, flex: 1, textAlign: 'center' },
+  link: { color: Colors.accent.primary, fontWeight: '800', marginTop: spacing.sm },
   stage: { flex: 1, padding: spacing.lg, justifyContent: 'center' },
   loaderRing: {
     width: 96,
     height: 96,
     borderRadius: 48,
-    borderWidth: 1,
-    borderColor: 'rgba(122,92,255,0.3)',
-    backgroundColor: 'rgba(122,92,255,0.08)',
+    borderWidth: 2,
+    borderColor: Colors.ink,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.lg,
+    ...softShadow,
   },
   loadingTitle: { ...typography.h2, textAlign: 'center', marginTop: spacing.sm },
   loadingSub: { ...typography.bodySecondary, fontSize: 14, textAlign: 'center', marginTop: 4 },
-  retryBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: Colors.accent.primary,
-    paddingHorizontal: spacing.lg,
-    height: 48,
-    borderRadius: borderRadius.lg,
-    marginTop: spacing.lg,
-  },
-  retryText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   imageWrap: {
     borderRadius: borderRadius.xl,
     overflow: 'hidden',
-    backgroundColor: Colors.background.tertiary,
+    backgroundColor: '#FFFFFF',
     borderWidth: 2,
     borderColor: Colors.ink,
     alignSelf: 'center',
@@ -263,12 +221,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(5,5,8,0.7)',
+    backgroundColor: Colors.ink,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: borderRadius.full,
   },
-  demoText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  demoText: { color: '#fff', fontSize: 11, fontWeight: '800' },
   beforeAfterBadge: {
     position: 'absolute',
     top: spacing.sm,
@@ -288,14 +246,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginTop: spacing.md,
   },
-  toggleText: { color: Colors.accent.secondary, fontSize: 14, fontWeight: '600' },
-  demoNote: {
-    ...typography.small,
-    textAlign: 'center',
-    marginTop: spacing.md,
-    lineHeight: 16,
-    paddingHorizontal: spacing.md,
-  },
+  toggleText: { color: Colors.accent.primary, fontSize: 14, fontWeight: '800' },
+  demoNote: { ...typography.small, textAlign: 'center', marginTop: spacing.md, lineHeight: 16, paddingHorizontal: spacing.md },
   actions: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
@@ -304,33 +256,4 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.ink,
   },
   actionRow: { flexDirection: 'row', gap: spacing.md },
-  secondaryAction: {
-    flex: 1,
-    height: 54,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    borderRadius: borderRadius.full,
-    borderWidth: 2,
-    borderColor: Colors.ink,
-    backgroundColor: Colors.background.secondary,
-  },
-  secondaryActionText: { color: Colors.ink, fontSize: 15, fontWeight: '800' },
-  primaryAction: {
-    height: 58,
-    borderRadius: borderRadius.full,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: Colors.ink,
-    ...softShadow,
-  },
-  primaryGradient: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-  },
-  primaryText: { color: '#fff', fontSize: 17, fontWeight: '800' },
 });

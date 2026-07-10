@@ -25,8 +25,8 @@ const AVATAR_IMAGES: Record<string, ImageSourcePropType> = {
   back: require('../assets/images/backviewpicture.png'),
 };
 
-const ACCENT_BLUE = '#0145F2';
-const CYAN_GLOW = '#38BDF8';
+const ACCENT_BLUE = '#7A5CFF';
+const CYAN_GLOW = '#FF4D9D';
 const BACKGROUND = '#0A0A0F';
 const CARD_BG = '#1A1A24';
 const TEXT_PRIMARY = '#EDF1F5';
@@ -222,7 +222,7 @@ export default function MultiAngleCapture({ onComplete }: MultiAngleCaptureProps
             style={styles.permissionButton}
           >
             <LinearGradient
-              colors={[ACCENT_BLUE, '#2563EB'] as const}
+              colors={[ACCENT_BLUE, '#9B6BFF'] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.permissionButtonGradient}
@@ -315,7 +315,7 @@ export default function MultiAngleCapture({ onComplete }: MultiAngleCaptureProps
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={[ACCENT_BLUE, '#2563EB'] as const}
+                colors={[ACCENT_BLUE, '#9B6BFF'] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.continueButtonGradient}
@@ -379,7 +379,7 @@ export default function MultiAngleCapture({ onComplete }: MultiAngleCaptureProps
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={[ACCENT_BLUE, '#2563EB'] as const}
+                colors={[ACCENT_BLUE, '#9B6BFF'] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.usePhotoButtonGradient}
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: CARD_BG,
     borderWidth: 2,
-    borderColor: 'rgba(1, 69, 242, 0.3)',
+    borderColor: 'rgba(122, 92, 255, 0.3)',
     shadowColor: ACCENT_BLUE,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -548,7 +548,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: 'rgba(1, 69, 242, 0.15)',
+    backgroundColor: 'rgba(122, 92, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -639,7 +639,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: ACCENT_BLUE,
-    backgroundColor: 'rgba(1, 69, 242, 0.2)',
+    backgroundColor: 'rgba(122, 92, 255, 0.2)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
     height: SCREEN_WIDTH * 0.65,
     borderRadius: SCREEN_WIDTH * 0.325,
     borderWidth: 3,
-    borderColor: 'rgba(1, 69, 242, 0.4)',
+    borderColor: 'rgba(122, 92, 255, 0.4)',
   },
   controls: {
     flexDirection: 'row',
@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(1, 69, 242, 0.15)',
+    backgroundColor: 'rgba(122, 92, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.md,

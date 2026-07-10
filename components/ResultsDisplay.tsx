@@ -22,8 +22,8 @@ import { AnalysisResult, TierLevel } from '../types';
 import ImprovementTips from './ImprovementTips';
 import ExpandableCard from './ExpandableCard';
 
-const ACCENT_BLUE = '#0145F2';
-const CYAN_GLOW = '#38BDF8';
+const ACCENT_BLUE = '#7A5CFF';
+const CYAN_GLOW = '#FF4D9D';
 const CARD_BG = '#12121A';
 const CARD_BG_LIGHT = '#1A1A24';
 const TEXT_PRIMARY = '#FFFFFF';

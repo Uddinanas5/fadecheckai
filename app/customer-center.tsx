@@ -7,7 +7,7 @@ import { useRevenueCat } from '../contexts/RevenueCatContext';
 import Colors from '../constants/Colors';
 import { spacing, borderRadius } from '../constants/Styles';
 
-const ACCENT_BLUE = '#0145F2';
+const ACCENT_BLUE = '#7A5CFF';
 
 export default function CustomerCenterScreen() {
   const router = useRouter();

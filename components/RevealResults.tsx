@@ -12,8 +12,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const ACCENT_BLUE = '#0145F2';
-const CYAN_GLOW = '#38BDF8';
+const ACCENT_BLUE = '#7A5CFF';
+const CYAN_GLOW = '#FF4D9D';
 const BACKGROUND = '#0A0A0F';
 const CARD_BG = '#1A1A24';
 const TEXT_PRIMARY = '#EDF1F5';
@@ -126,7 +126,7 @@ export default function RevealResults({ imageUri, onGetPro, onInviteFriends }: R
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={[ACCENT_BLUE, '#2563EB'] as const}
+            colors={[ACCENT_BLUE, '#9B6BFF'] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.proButtonGradient}
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(1, 69, 242, 0.15)',
+    backgroundColor: 'rgba(122, 92, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -250,11 +250,11 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(1, 69, 242, 0.15)',
+    backgroundColor: 'rgba(122, 92, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(1, 69, 242, 0.3)',
+    borderColor: 'rgba(122, 92, 255, 0.3)',
   },
   buttonsContainer: {
     paddingHorizontal: 24,

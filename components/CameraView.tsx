@@ -14,8 +14,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
 import { spacing, borderRadius } from '../constants/Styles';
 
-const ACCENT_BLUE = '#0145F2';
-const CYAN_GLOW = '#38BDF8';
+const ACCENT_BLUE = '#7A5CFF';
+const CYAN_GLOW = '#FF4D9D';
 
 interface CameraViewProps {
   onCapture: (uri: string) => void;
@@ -99,7 +99,7 @@ export default function CameraView({ onCapture }: CameraViewProps) {
             style={styles.permissionButton}
           >
             <LinearGradient
-              colors={[ACCENT_BLUE, '#2563EB'] as const}
+              colors={[ACCENT_BLUE, '#9B6BFF'] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.permissionButtonGradient}
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     height: SCREEN_WIDTH * 0.7,
     borderRadius: SCREEN_WIDTH * 0.35,
     borderWidth: 3,
-    borderColor: 'rgba(1, 69, 242, 0.35)',
+    borderColor: 'rgba(122, 92, 255, 0.35)',
   },
   guideText: {
     marginTop: spacing.lg,
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(1, 69, 242, 0.15)',
+    backgroundColor: 'rgba(122, 92, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.md,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(1, 69, 242, 0.3)',
+    borderColor: 'rgba(122, 92, 255, 0.3)',
     gap: spacing.sm,
   },
   galleryButtonText: {

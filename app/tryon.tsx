@@ -16,7 +16,7 @@ import * as Sharing from 'expo-sharing';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../constants/Colors';
-import { spacing, borderRadius, typography } from '../constants/Styles';
+import { spacing, borderRadius, typography, softShadow } from '../constants/Styles';
 import { getHaircutById } from '../constants/haircuts';
 import { useTryOn } from '../hooks/useTryOn';
 import { useHistory } from '../hooks/useHistory';
@@ -224,8 +224,8 @@ const styles = StyleSheet.create({
     height: 96,
     borderRadius: 48,
     borderWidth: 1,
-    borderColor: 'rgba(1,69,242,0.3)',
-    backgroundColor: 'rgba(1,69,242,0.08)',
+    borderColor: 'rgba(122,92,255,0.3)',
+    backgroundColor: 'rgba(122,92,255,0.08)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.lg,
@@ -247,12 +247,13 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     overflow: 'hidden',
     backgroundColor: Colors.background.tertiary,
-    borderWidth: 1,
-    borderColor: Colors.glass.border,
+    borderWidth: 2,
+    borderColor: Colors.ink,
     alignSelf: 'center',
     width: '100%',
     aspectRatio: 3 / 4,
     maxHeight: '82%',
+    ...softShadow,
   },
   image: { width: '100%', height: '100%', resizeMode: 'cover' },
   demoBadge: {
@@ -272,7 +273,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.sm,
     right: spacing.sm,
-    backgroundColor: 'rgba(1,69,242,0.85)',
+    backgroundColor: Colors.pop.purple,
+    borderWidth: 2,
+    borderColor: Colors.ink,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: borderRadius.full,
@@ -295,32 +298,39 @@ const styles = StyleSheet.create({
   },
   actions: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
+    paddingTop: spacing.md,
     gap: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: Colors.glass.border,
+    borderTopWidth: 2,
+    borderTopColor: Colors.ink,
   },
   actionRow: { flexDirection: 'row', gap: spacing.md },
   secondaryAction: {
     flex: 1,
-    height: 52,
+    height: 54,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.glass.border,
+    borderRadius: borderRadius.full,
+    borderWidth: 2,
+    borderColor: Colors.ink,
     backgroundColor: Colors.background.secondary,
   },
-  secondaryActionText: { color: Colors.text.primary, fontSize: 15, fontWeight: '600' },
-  primaryAction: { borderRadius: borderRadius.lg, overflow: 'hidden' },
+  secondaryActionText: { color: Colors.ink, fontSize: 15, fontWeight: '800' },
+  primaryAction: {
+    height: 58,
+    borderRadius: borderRadius.full,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: Colors.ink,
+    ...softShadow,
+  },
   primaryGradient: {
-    height: 56,
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
   },
-  primaryText: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  primaryText: { color: '#fff', fontSize: 17, fontWeight: '800' },
 });

@@ -23,8 +23,8 @@ const SLIDE_GAP = 16;
 const SLIDE_WIDTH = SCREEN_WIDTH - 48;
 const CARD_HEIGHT = SCREEN_HEIGHT * 0.38;
 
-const ACCENT_BLUE = '#0145F2';
-const CYAN_GLOW = '#38BDF8';
+const ACCENT_BLUE = '#7A5CFF';
+const CYAN_GLOW = '#FF4D9D';
 const BACKGROUND = '#0A0A0F';
 const CARD_BG = '#111118';
 const TEXT_PRIMARY = '#FFFFFF';
@@ -316,7 +316,7 @@ export default function Paywall({ onClose, onUnlock }: PaywallProps) {
           disabled={isPurchasing || isLoading}
         >
           <LinearGradient
-            colors={[ACCENT_BLUE, '#2563EB'] as const}
+            colors={[ACCENT_BLUE, '#9B6BFF'] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.unlockButtonGradient}

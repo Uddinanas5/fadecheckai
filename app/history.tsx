@@ -64,7 +64,7 @@ export default function HistoryScreen() {
         <View style={styles.center}>
           <View style={styles.emptyIcon}>
             <LinearGradient
-              colors={['rgba(1,69,242,0.2)', 'rgba(1,69,242,0.05)']}
+              colors={['rgba(122,92,255,0.2)', 'rgba(122,92,255,0.05)']}
               style={styles.emptyIconGradient}
             >
               <Ionicons name="images-outline" size={44} color={Colors.accent.primary} />
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 40,
     borderWidth: 1,
-    borderColor: 'rgba(1,69,242,0.3)',
+    borderColor: 'rgba(122,92,255,0.3)',
   },
   emptyTitle: { ...typography.h2, textAlign: 'center' },
   emptyText: { ...typography.bodySecondary, textAlign: 'center', marginBottom: spacing.md },

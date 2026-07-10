@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: borderRadius.sm,
-    backgroundColor: 'rgba(1, 69, 242, 0.1)',
+    backgroundColor: 'rgba(122, 92, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,

@@ -23,11 +23,11 @@ import Colors from '../constants/Colors';
 import { useAuth } from '../hooks/useAuth';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const ACCENT_BLUE = '#0145F2';
-const CYAN_GLOW = '#38BDF8';
-const BACKGROUND = '#0A0A0F';
-const CARD_BG = '#1A1A24';
-const TEXT_PRIMARY = '#EDF1F5';
+const ACCENT_BLUE = '#7A5CFF';
+const CYAN_GLOW = '#FF4D9D';
+const BACKGROUND = '#FBF3E4';
+const CARD_BG = '#FFFFFF';
+const TEXT_PRIMARY = '#17130F';
 const TEXT_SECONDARY = '#9CA3AF';
 const TEXT_TERTIARY = '#6B7280';
 
@@ -190,7 +190,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           style={[
             styles.progressBar,
             {
-              backgroundColor: index <= getStepIndex() ? ACCENT_BLUE : '#252530',
+              backgroundColor: index <= getStepIndex() ? ACCENT_BLUE : '#E7DECB',
             },
           ]}
         />
@@ -210,7 +210,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={[ACCENT_BLUE, '#2563EB'] as const}
+            colors={[ACCENT_BLUE, '#9B6BFF'] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.genderButtonGradient}
@@ -225,7 +225,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={[ACCENT_BLUE, '#2563EB'] as const}
+            colors={[ACCENT_BLUE, '#9B6BFF'] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.genderButtonGradient}
@@ -265,7 +265,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={[ACCENT_BLUE, '#2563EB'] as const}
+            colors={[ACCENT_BLUE, '#9B6BFF'] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.continueButtonGradient}
@@ -305,7 +305,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={[ACCENT_BLUE, '#2563EB'] as const}
+            colors={[ACCENT_BLUE, '#9B6BFF'] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.continueButtonGradient}
@@ -335,7 +335,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={[ACCENT_BLUE, '#2563EB'] as const}
+            colors={[ACCENT_BLUE, '#9B6BFF'] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.continueButtonGradient}

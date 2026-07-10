@@ -4,8 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '../constants/Colors';
 import { CapturedImages } from '../types';
 
-const ACCENT_BLUE = '#0145F2';
-const CYAN_GLOW = '#38BDF8';
+const ACCENT_BLUE = '#7A5CFF';
+const CYAN_GLOW = '#FF4D9D';
 
 interface AnalyzingOverlayProps {
   images: CapturedImages | null;

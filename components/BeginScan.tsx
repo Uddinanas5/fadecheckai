@@ -16,11 +16,11 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const IMAGE_SIZE = SCREEN_WIDTH * 0.82;
 
 // Design System Colors
-const ACCENT_BLUE = '#0145F2';
-const CYAN_GLOW = '#38BDF8';
-const BACKGROUND = '#0A0A0F';
-const CARD_BG = '#1A1A24';
-const TEXT_PRIMARY = '#EDF1F5';
+const ACCENT_BLUE = '#7A5CFF';
+const CYAN_GLOW = '#FF4D9D';
+const BACKGROUND = '#FBF3E4';
+const CARD_BG = '#FFFFFF';
+const TEXT_PRIMARY = '#17130F';
 
 interface BeginScanProps {
   onBeginScan: () => void;
@@ -420,7 +420,7 @@ export default function BeginScan({ onBeginScan }: BeginScanProps) {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={[ACCENT_BLUE, '#2563EB']}
+              colors={[ACCENT_BLUE, '#9B6BFF']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.buttonGradient}
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     overflow: 'visible',
     borderWidth: 2,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
+    borderColor: 'rgba(255, 77, 157, 0.3)',
     shadowColor: CYAN_GLOW,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.4,
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.4)',
+    borderColor: 'rgba(255, 77, 157, 0.4)',
     alignItems: 'center',
     zIndex: 20,
     shadowColor: ACCENT_BLUE,
@@ -612,7 +612,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#252530',
+    backgroundColor: '#E7DECB',
   },
   dotActive: {
     backgroundColor: ACCENT_BLUE,

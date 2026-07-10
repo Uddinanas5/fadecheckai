@@ -11,7 +11,6 @@ import { spacing, borderRadius, typography } from '../../constants/Styles';
 import AnalyzingOverlay from '../../components/AnalyzingOverlay';
 import AIConsentModal, { useAIConsent } from '../../components/AIConsentModal';
 import { analyzeSinglePhoto } from '../../services/openai';
-import { CapturedImages } from '../../types';
 
 const STEPS = [
   { icon: 'camera', title: 'Add your photo', desc: 'A clear, front-facing selfie works best' },
@@ -26,7 +25,7 @@ export default function CreateScreen() {
   const [showConsent, setShowConsent] = useState(false);
   const [pendingUri, setPendingUri] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [previewImages, setPreviewImages] = useState<CapturedImages | null>(null);
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
 
   useEffect(() => {
     if (needsConsent) setShowConsent(true);
@@ -34,8 +33,8 @@ export default function CreateScreen() {
 
   const proceed = async (uri: string) => {
     setIsAnalyzing(true);
-    // Show the analyzing overlay against this image.
-    setPreviewImages({ front: uri, leftSide: uri, rightSide: uri, back: uri });
+    // Show the analyzing overlay against this single photo.
+    setPreviewUri(uri);
 
     const [result] = await Promise.all([
       analyzeSinglePhoto(uri),
@@ -43,7 +42,7 @@ export default function CreateScreen() {
     ]);
 
     setIsAnalyzing(false);
-    setPreviewImages(null);
+    setPreviewUri(null);
 
     // Proceed to recommendations regardless — the recommender falls back to a
     // sensible default ordering when analysis is unavailable.
@@ -179,7 +178,11 @@ export default function CreateScreen() {
         </Text>
       </ScrollView>
 
-      <AnalyzingOverlay images={previewImages} isVisible={isAnalyzing && !!previewImages} />
+      <AnalyzingOverlay
+        images={null}
+        singleImage={previewUri}
+        isVisible={isAnalyzing && !!previewUri}
+      />
       <AIConsentModal visible={showConsent} onAccept={onConsentAccept} onDecline={onConsentDecline} />
     </View>
   );

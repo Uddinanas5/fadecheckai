@@ -344,6 +344,9 @@ async function main() {
       clickText('Choose from library'),
     ]);
     await chooser.setFiles(upload);
+    // Capture the single-photo analyzing overlay mid-flight (~min 1.8s window).
+    await page.waitForTimeout(700);
+    await shot('J_analyzing_overlay');
     // analyze (no API key -> error result) then proceed to recommendations.
     await page.waitForFunction(
       () => location.pathname.includes('recommendations') ||

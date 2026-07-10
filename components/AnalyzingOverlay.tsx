@@ -10,6 +10,10 @@ const CYAN_GLOW = '#38BDF8';
 interface AnalyzingOverlayProps {
   images: CapturedImages | null;
   isVisible: boolean;
+  // Single-photo mode (Create flow): shows one image with custom messaging
+  // instead of the 4-angle grid used by the Rate flow.
+  singleImage?: string | null;
+  messages?: string[];
 }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -23,9 +27,19 @@ const STATUS_MESSAGES = [
   'Preparing your results',
 ];
 
+// Default messaging for the single-photo "plan your next cut" flow.
+const RECOMMEND_MESSAGES = [
+  'Reading your features',
+  'Estimating your face shape',
+  'Assessing your hair type',
+  'Matching flattering styles',
+  'Curating your recommendations',
+];
+
 const ANGLE_LABELS = ['Front', 'Left', 'Right', 'Back'];
 
-export default function AnalyzingOverlay({ images, isVisible }: AnalyzingOverlayProps) {
+export default function AnalyzingOverlay({ images, isVisible, singleImage, messages }: AnalyzingOverlayProps) {
+  const statusMessages = messages ?? (singleImage ? RECOMMEND_MESSAGES : STATUS_MESSAGES);
   const scanLineAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const [statusIndex, setStatusIndex] = useState(0);
@@ -70,7 +84,7 @@ export default function AnalyzingOverlay({ images, isVisible }: AnalyzingOverlay
 
     // Status message rotation
     const statusInterval = setInterval(() => {
-      setStatusIndex(prev => (prev + 1) % STATUS_MESSAGES.length);
+      setStatusIndex(prev => (prev + 1) % statusMessages.length);
     }, 1200);
 
     return () => {
@@ -78,11 +92,13 @@ export default function AnalyzingOverlay({ images, isVisible }: AnalyzingOverlay
       pulseAnimation.stop();
       clearInterval(statusInterval);
     };
-  }, [isVisible, scanLineAnim, pulseAnim]);
+  }, [isVisible, scanLineAnim, pulseAnim, statusMessages.length]);
 
-  if (!isVisible || !images) return null;
+  if (!isVisible || (!images && !singleImage)) return null;
 
-  const imageArray = [images.front, images.leftSide, images.rightSide, images.back];
+  const imageArray = images
+    ? [images.front, images.leftSide, images.rightSide, images.back]
+    : [];
   const gridSize = SCREEN_WIDTH * 0.85;
   const imageSize = (gridSize - 12) / 2; // 12px gap total
 
@@ -103,18 +119,26 @@ export default function AnalyzingOverlay({ images, isVisible }: AnalyzingOverlay
           }
         ]}
       >
-        {/* 2x2 Grid of Images */}
-        <View style={styles.imageGrid}>
-          {imageArray.map((uri, index) => (
-            <View key={index} style={[styles.imageWrapper, { width: imageSize, height: imageSize }]}>
-              <Image source={{ uri }} style={styles.image} />
-              <View style={styles.imageOverlay} />
-              <View style={styles.labelContainer}>
-                <Text style={styles.labelText}>{ANGLE_LABELS[index]}</Text>
+        {singleImage ? (
+          /* Single-photo mode (Create flow) */
+          <View style={styles.singleWrapper}>
+            <Image source={{ uri: singleImage }} style={styles.image} />
+            <View style={styles.imageOverlay} />
+          </View>
+        ) : (
+          /* 2x2 Grid of Images (Rate flow) */
+          <View style={styles.imageGrid}>
+            {imageArray.map((uri, index) => (
+              <View key={index} style={[styles.imageWrapper, { width: imageSize, height: imageSize }]}>
+                <Image source={{ uri }} style={styles.image} />
+                <View style={styles.imageOverlay} />
+                <View style={styles.labelContainer}>
+                  <Text style={styles.labelText}>{ANGLE_LABELS[index]}</Text>
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        )}
 
         {/* Scan line with gradient */}
         <Animated.View
@@ -138,7 +162,7 @@ export default function AnalyzingOverlay({ images, isVisible }: AnalyzingOverlay
           <View style={[styles.dot, statusIndex > 1 && styles.dotActive]} />
           <View style={[styles.dot, statusIndex > 3 && styles.dotActive]} />
         </View>
-        <Text style={styles.statusText}>{STATUS_MESSAGES[statusIndex]}</Text>
+        <Text style={styles.statusText}>{statusMessages[statusIndex % statusMessages.length]}</Text>
       </View>
     </View>
   );
@@ -167,6 +191,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 4,
     padding: 2,
+  },
+  singleWrapper: {
+    flex: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
   },
   imageWrapper: {
     borderRadius: 12,

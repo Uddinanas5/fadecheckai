@@ -458,6 +458,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
+    overflow: 'hidden',
   },
   imageWrapper: {
     width: IMAGE_SIZE,

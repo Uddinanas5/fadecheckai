@@ -82,7 +82,9 @@ export default function AIConsentModal({
             </View>
 
             <ScrollView
-              style={styles.scrollContent}
+              // RN-web's Modal focus-traps onto this ScrollView; kill the
+              // browser focus ring it draws (native platforms ignore this).
+              style={[styles.scrollContent, { outlineWidth: 0, outlineStyle: 'none' } as any]}
               showsVerticalScrollIndicator={false}
             >
               {/* Self-improvement agreement */}

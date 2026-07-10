@@ -3,19 +3,18 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'rea
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
-import { spacing, borderRadius, typography } from '../../constants/Styles';
+import { spacing, borderRadius, typography, softShadow } from '../../constants/Styles';
 import AnalyzingOverlay from '../../components/AnalyzingOverlay';
 import AIConsentModal, { useAIConsent } from '../../components/AIConsentModal';
 import { analyzeSinglePhoto } from '../../services/openai';
 
 const STEPS = [
-  { icon: 'camera', title: 'Add your photo', desc: 'A clear, front-facing selfie works best' },
-  { icon: 'sparkles', title: 'Get matched styles', desc: 'We suggest cuts that suit your features' },
-  { icon: 'color-wand', title: 'Try it on', desc: 'See a preview of you with the new look' },
+  { icon: 'camera', title: 'Add your photo', desc: 'A clear, front-facing selfie works best', color: Colors.pop.lime, ink: Colors.pop.limeInk },
+  { icon: 'sparkles', title: 'Get matched styles', desc: 'We suggest cuts that suit your features', color: Colors.pop.pink, ink: '#fff' },
+  { icon: 'color-wand', title: 'Try it on', desc: 'See a preview of you with the new look', color: Colors.pop.yellow, ink: Colors.pop.yellowInk },
 ] as const;
 
 export default function CreateScreen() {
@@ -130,40 +129,59 @@ export default function CreateScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView
-        contentContainerStyle={{ padding: spacing.lg, paddingBottom: insets.bottom + 120 }}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: insets.bottom + 130 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.eyebrow}>FADECHECK</Text>
-        <Text style={styles.title}>See it before{'\n'}you cut it</Text>
+        {/* Wordmark */}
+        <View style={styles.brandRow}>
+          <View style={styles.brandDot}>
+            <Ionicons name="cut" size={16} color="#fff" />
+          </View>
+          <Text style={styles.brand}>fadecheck</Text>
+        </View>
+
+        {/* Hero art slot — AI cartoon illustration drops in here */}
+        <View style={styles.hero}>
+          <View style={styles.heroStars}>
+            <Text style={styles.starA}>✦</Text>
+            <Text style={styles.starB}>✦</Text>
+          </View>
+          <View style={styles.heroArt}>
+            <Ionicons name="happy" size={72} color={Colors.pop.purpleInk} />
+            <Text style={styles.heroArtLabel}>your cartoon hero</Text>
+          </View>
+        </View>
+
+        <Text style={styles.title}>Find your{'\n'}next haircut ✂️</Text>
         <Text style={styles.subtitle}>
-          Upload a photo, get haircut ideas that suit you, and preview the look before you sit
-          in the chair.
+          Snap a selfie, get styles that actually suit you, and see the look on your face before
+          the barber touches it.
         </Text>
 
-        <View style={styles.stepsCard}>
+        {/* Steps as colorful sticker rows */}
+        <View style={styles.steps}>
           {STEPS.map((s, i) => (
-            <View key={s.title} style={[styles.step, i < STEPS.length - 1 && styles.stepDivider]}>
+            <View key={s.title} style={[styles.step, { backgroundColor: s.color }]}>
               <View style={styles.stepIcon}>
-                <Ionicons name={s.icon as any} size={20} color={Colors.accent.primary} />
+                <Ionicons name={s.icon as any} size={22} color={s.ink} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.stepTitle}>{s.title}</Text>
-                <Text style={styles.stepDesc}>{s.desc}</Text>
+                <Text style={[styles.stepTitle, { color: s.ink }]}>{s.title}</Text>
+                <Text style={[styles.stepDesc, { color: s.ink, opacity: 0.75 }]}>{s.desc}</Text>
               </View>
-              <Text style={styles.stepNum}>{i + 1}</Text>
+              <Text style={[styles.stepNum, { color: s.ink, opacity: 0.35 }]}>{i + 1}</Text>
             </View>
           ))}
         </View>
 
+        {/* Primary chunky pill */}
         <TouchableOpacity style={styles.primaryBtn} onPress={takePhoto} activeOpacity={0.9}>
-          <LinearGradient colors={Colors.gradient.button} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.primaryGradient}>
-            <Ionicons name="camera" size={20} color="#fff" />
-            <Text style={styles.primaryText}>Take a photo</Text>
-          </LinearGradient>
+          <Ionicons name="camera" size={22} color="#fff" />
+          <Text style={styles.primaryText}>Take a photo</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.secondaryBtn} onPress={pickFromLibrary} activeOpacity={0.85}>
-          <Ionicons name="images-outline" size={20} color={Colors.text.primary} />
+          <Ionicons name="images-outline" size={20} color={Colors.ink} />
           <Text style={styles.secondaryText}>Choose from library</Text>
         </TouchableOpacity>
 
@@ -174,7 +192,7 @@ export default function CreateScreen() {
 
         <Text style={styles.disclaimer}>
           Previews are AI-generated and for inspiration only — results may vary. Bring your
-          reference photos to a professional barber.
+          favourites to a real barber.
         </Text>
       </ScrollView>
 
@@ -190,63 +208,106 @@ export default function CreateScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background.primary },
-  eyebrow: { ...typography.label, color: Colors.accent.secondary, marginTop: spacing.md },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: spacing.sm },
+  brandDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 10,
+    backgroundColor: Colors.pop.purple,
+    justifyContent: 'center',
+    alignItems: 'center',
+    transform: [{ rotate: '-8deg' }],
+  },
+  brand: { fontSize: 20, fontWeight: '800', color: Colors.ink, letterSpacing: -0.5 },
+
+  hero: {
+    marginTop: spacing.lg,
+    height: 220,
+    borderRadius: borderRadius.xxl,
+    backgroundColor: Colors.pop.lime,
+    borderWidth: 2,
+    borderColor: Colors.ink,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...softShadow,
+  },
+  heroStars: { ...StyleSheet.absoluteFillObject },
+  starA: { position: 'absolute', top: 18, right: 26, fontSize: 26, color: Colors.pop.purple },
+  starB: { position: 'absolute', bottom: 22, left: 24, fontSize: 18, color: Colors.pop.pink },
+  heroArt: { alignItems: 'center', gap: 8 },
+  heroArtLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: Colors.pop.purpleInk,
+    opacity: 0.6,
+  },
+
   title: {
     fontSize: 40,
     fontWeight: '800',
-    letterSpacing: -1.5,
-    color: Colors.text.primary,
-    marginTop: spacing.sm,
-    lineHeight: 44,
+    letterSpacing: -1.4,
+    color: Colors.ink,
+    marginTop: spacing.lg,
+    lineHeight: 42,
   },
   subtitle: {
     ...typography.bodySecondary,
     fontSize: 15,
-    marginTop: spacing.md,
-    marginBottom: spacing.xl,
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
   },
-  stepsCard: {
-    backgroundColor: Colors.background.tertiary,
-    borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.glass.border,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  step: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md },
-  stepDivider: { borderBottomWidth: 1, borderBottomColor: Colors.glass.border },
-  stepIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(1,69,242,0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  stepTitle: { ...typography.h3, fontSize: 16 },
-  stepDesc: { ...typography.caption, fontSize: 13, marginTop: 2 },
-  stepNum: { ...typography.h2, color: 'rgba(255,255,255,0.12)', fontWeight: '800' },
-  primaryBtn: { borderRadius: borderRadius.lg, overflow: 'hidden', marginBottom: spacing.md },
-  primaryGradient: {
-    height: 56,
+
+  steps: { gap: spacing.sm, marginBottom: spacing.lg },
+  step: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-  },
-  primaryText: { color: '#fff', fontSize: 17, fontWeight: '600', letterSpacing: -0.3 },
-  secondaryBtn: {
-    height: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
+    padding: spacing.md,
     borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.glass.border,
+    borderWidth: 2,
+    borderColor: Colors.ink,
+  },
+  stepIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stepTitle: { fontSize: 16, fontWeight: '800', letterSpacing: -0.2 },
+  stepDesc: { fontSize: 13, fontWeight: '600', marginTop: 2 },
+  stepNum: { fontSize: 26, fontWeight: '800' },
+
+  primaryBtn: {
+    height: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    borderRadius: borderRadius.full,
+    backgroundColor: Colors.pop.purple,
+    borderWidth: 2,
+    borderColor: Colors.ink,
+    marginBottom: spacing.md,
+    ...softShadow,
+  },
+  primaryText: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: -0.2 },
+  secondaryBtn: {
+    height: 58,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    borderRadius: borderRadius.full,
+    borderWidth: 2,
+    borderColor: Colors.ink,
     backgroundColor: Colors.background.secondary,
   },
-  secondaryText: { color: Colors.text.primary, fontSize: 16, fontWeight: '600' },
+  secondaryText: { color: Colors.ink, fontSize: 16, fontWeight: '800' },
   ghostBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -254,7 +315,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: spacing.lg,
   },
-  ghostText: { color: Colors.accent.primary, fontSize: 15, fontWeight: '600' },
+  ghostText: { color: Colors.accent.primary, fontSize: 15, fontWeight: '800' },
   disclaimer: {
     ...typography.small,
     textAlign: 'center',

@@ -1,35 +1,49 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
 
-const ACCENT_BLUE = '#0145F2';
-
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  // Safe-area aware: base bar height + the device's bottom inset (0 on web),
-  // so labels are never clipped on devices without a home indicator.
-  const bottomPad = Math.max(insets.bottom, 10);
+  const bottomPad = Math.max(insets.bottom, 12);
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: Colors.background.secondary,
-          borderTopColor: Colors.glass.border,
-          borderTopWidth: 1,
-          height: 56 + bottomPad,
-          paddingBottom: bottomPad,
-          paddingTop: 8,
-        },
-        tabBarActiveTintColor: ACCENT_BLUE,
+        tabBarShowLabel: true,
+        tabBarActiveTintColor: Colors.ink,
         tabBarInactiveTintColor: Colors.text.tertiary,
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
-          letterSpacing: 0.3,
+          fontWeight: '800',
+          letterSpacing: 0.2,
+          marginTop: 2,
         },
+        // Floating, sticker-outlined bar
+        tabBarStyle: {
+          position: 'absolute',
+          left: 16,
+          right: 16,
+          bottom: bottomPad,
+          height: 64,
+          paddingTop: 8,
+          paddingBottom: 8,
+          borderRadius: 24,
+          backgroundColor: '#FFFFFF',
+          borderWidth: 2,
+          borderColor: Colors.ink,
+          borderTopWidth: 2,
+          borderTopColor: Colors.ink,
+          shadowColor: '#17130F',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.12,
+          shadowRadius: 16,
+          elevation: 8,
+          ...(Platform.OS === 'android' ? { paddingBottom: 8 } : {}),
+        },
+        tabBarItemStyle: { borderRadius: 18, marginHorizontal: 4 },
       }}
     >
       <Tabs.Screen

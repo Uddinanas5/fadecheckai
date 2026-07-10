@@ -6,11 +6,11 @@
     "orientation": "portrait",
     "icon": "./assets/images/Fadecheckailogo.png",
     "scheme": "fadecheck",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/images/Fadecheckailogo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0A0A0F"
+      "backgroundColor": "#FBF3E4"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -37,7 +37,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/Fadecheckailogo.png",
-        "backgroundColor": "#0A0A0F"
+        "backgroundColor": "#FBF3E4"
       },
       "package": "com.fadecheck.app",
       "permissions": [

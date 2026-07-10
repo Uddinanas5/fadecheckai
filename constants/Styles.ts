@@ -1,82 +1,73 @@
-// FadeCheck Design System v2: Typography & Spacing
+// FadeCheck Design System v3: Typography, spacing, chunky shapes.
 import { StyleSheet } from 'react-native';
 import Colors from './Colors';
 
 export const typography = {
-  // Hero display for main scores
+  // Hero display — big, bold, friendly
   hero: {
-    fontSize: 72,
+    fontSize: 46,
     fontWeight: '800' as const,
-    letterSpacing: -3,
+    letterSpacing: -1.5,
     color: Colors.text.primary,
   },
-  // Large display numbers
   display: {
-    fontSize: 56,
-    fontWeight: '700' as const,
-    letterSpacing: -2,
+    fontSize: 40,
+    fontWeight: '800' as const,
+    letterSpacing: -1.2,
     color: Colors.text.primary,
   },
-  // Page titles
   h1: {
-    fontSize: 32,
-    fontWeight: '700' as const,
-    letterSpacing: -1,
+    fontSize: 30,
+    fontWeight: '800' as const,
+    letterSpacing: -0.8,
     color: Colors.text.primary,
   },
-  // Section headers
   h2: {
-    fontSize: 24,
-    fontWeight: '600' as const,
-    letterSpacing: -0.5,
+    fontSize: 23,
+    fontWeight: '800' as const,
+    letterSpacing: -0.4,
     color: Colors.text.primary,
   },
-  // Card titles
   h3: {
     fontSize: 18,
-    fontWeight: '600' as const,
-    letterSpacing: -0.3,
+    fontWeight: '700' as const,
+    letterSpacing: -0.2,
     color: Colors.text.primary,
   },
-  // Body text
   body: {
     fontSize: 16,
-    fontWeight: '400' as const,
+    fontWeight: '500' as const,
     lineHeight: 24,
     color: Colors.text.primary,
   },
   bodySecondary: {
     fontSize: 16,
-    fontWeight: '400' as const,
+    fontWeight: '500' as const,
     lineHeight: 24,
     color: Colors.text.secondary,
   },
-  // Captions
   caption: {
     fontSize: 14,
-    fontWeight: '500' as const,
+    fontWeight: '600' as const,
     lineHeight: 20,
     color: Colors.text.secondary,
   },
-  // Small text
   small: {
     fontSize: 12,
-    fontWeight: '500' as const,
+    fontWeight: '600' as const,
     color: Colors.text.tertiary,
   },
-  // Labels - uppercase with generous spacing
   label: {
-    fontSize: 11,
-    fontWeight: '600' as const,
-    letterSpacing: 1.5,
+    fontSize: 12,
+    fontWeight: '800' as const,
+    letterSpacing: 1,
     textTransform: 'uppercase' as const,
     color: Colors.text.secondary,
   },
-  // Button text
   button: {
     fontSize: 17,
-    fontWeight: '600' as const,
-    letterSpacing: -0.3,
+    fontWeight: '800' as const,
+    letterSpacing: -0.2,
     color: Colors.text.primary,
   },
 };
@@ -90,30 +81,42 @@ export const spacing = {
   xxl: 48,
 };
 
+// Chunky, rounded — the funky look
 export const borderRadius = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,      // Buttons
-  xl: 24,      // Cards
-  xxl: 32,
+  xs: 8,
+  sm: 12,
+  md: 18,
+  lg: 22, // buttons (pill-ish)
+  xl: 28, // cards
+  xxl: 36,
   full: 9999,
 };
 
-// Glass card styling helper
-export const glassCard = {
-  backgroundColor: Colors.glass.surface,
+// Sticker-style card: white, big radius, soft warm shadow
+export const stickerCard = {
+  backgroundColor: Colors.background.secondary,
   borderRadius: borderRadius.xl,
   borderWidth: 1,
-  borderColor: Colors.glass.border,
+  borderColor: Colors.line,
   overflow: 'hidden' as const,
 };
 
-// Button heights
+// Soft playful drop shadow (iOS) — reuse via {...softShadow}
+export const softShadow = {
+  shadowColor: '#17130F',
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.10,
+  shadowRadius: 18,
+  elevation: 6,
+};
+
+// Backwards-compat alias
+export const glassCard = stickerCard;
+
 export const buttonHeight = {
-  primary: 56,
-  secondary: 48,
-  small: 40,
+  primary: 58,
+  secondary: 52,
+  small: 44,
 };
 
 export const globalStyles = StyleSheet.create({
@@ -129,52 +132,48 @@ export const globalStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  // Primary button - 56px height with gradient
   buttonPrimary: {
-    height: 56,
+    height: 58,
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  // Secondary button - outline style
   buttonSecondary: {
-    height: 56,
+    height: 58,
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.glass.border,
+    borderWidth: 2,
+    borderColor: Colors.ink,
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonText: {
-    color: Colors.text.primary,
+    color: Colors.text.inverse,
     fontSize: 17,
-    fontWeight: '600',
-    letterSpacing: -0.3,
+    fontWeight: '800',
+    letterSpacing: -0.2,
   },
   buttonTextSecondary: {
     color: Colors.text.primary,
     fontSize: 17,
-    fontWeight: '600',
-    letterSpacing: -0.3,
+    fontWeight: '800',
+    letterSpacing: -0.2,
   },
-  // Glass card style
   card: {
-    backgroundColor: Colors.background.tertiary,
+    backgroundColor: Colors.background.secondary,
     borderRadius: borderRadius.xl,
     borderWidth: 1,
-    borderColor: Colors.glass.border,
+    borderColor: Colors.line,
     padding: spacing.lg,
   },
-  // Elevated card (higher contrast)
   cardElevated: {
     backgroundColor: Colors.background.secondary,
     borderRadius: borderRadius.xl,
     borderWidth: 1,
-    borderColor: Colors.glass.border,
+    borderColor: Colors.line,
     padding: spacing.lg,
   },
 });

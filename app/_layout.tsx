@@ -35,7 +35,7 @@ export default function RootLayout() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <ActivityIndicator size="large" color="#A855F7" />
       </View>
     );
@@ -45,7 +45,7 @@ export default function RootLayout() {
   if (!hasCompletedOnboarding) {
     return (
       <View style={styles.container}>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <Onboarding onComplete={completeOnboarding} />
       </View>
     );
@@ -55,7 +55,7 @@ export default function RootLayout() {
   if (!hasCompletedFirstScan && showBeginScan) {
     return (
       <View style={styles.container}>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <BeginScan
           onBeginScan={() => {
             setShowBeginScan(false);
@@ -69,11 +69,11 @@ export default function RootLayout() {
   // Show main app
   return (
     <RevenueCatProvider>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: '#0D0D0D' },
+          contentStyle: { backgroundColor: '#FBF3E4' },
           animation: 'fade',
         }}
       >
@@ -124,11 +124,11 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: '#FBF3E4',
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: '#FBF3E4',
     justifyContent: 'center',
     alignItems: 'center',
   },

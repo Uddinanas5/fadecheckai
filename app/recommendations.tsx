@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../constants/Colors';
-import { spacing, borderRadius, typography } from '../constants/Styles';
+import { spacing, borderRadius, typography, softShadow } from '../constants/Styles';
 import StyleCard from '../components/StyleCard';
 import { recommendStyles } from '../services/recommend';
 import { getHaircutById } from '../constants/haircuts';
@@ -137,32 +137,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: Colors.background.tertiary,
+    backgroundColor: '#FFFFFF',
     borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.glass.border,
+    borderWidth: 2,
+    borderColor: Colors.ink,
     padding: spacing.md,
     marginBottom: spacing.md,
+    ...softShadow,
   },
   profileImage: {
     width: 56,
     height: 56,
     borderRadius: borderRadius.md,
-    backgroundColor: Colors.background.secondary,
+    backgroundColor: Colors.background.primary,
+    borderWidth: 2,
+    borderColor: Colors.ink,
   },
   profileImagePlaceholder: { justifyContent: 'center', alignItems: 'center' },
   profileLabel: { ...typography.label, color: Colors.text.secondary, marginBottom: 6 },
   chipRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
   chip: {
-    backgroundColor: 'rgba(1,69,242,0.15)',
+    backgroundColor: Colors.pop.purple,
     borderRadius: borderRadius.full,
-    paddingHorizontal: 10,
+    borderWidth: 2,
+    borderColor: Colors.ink,
+    paddingHorizontal: 12,
     paddingVertical: 4,
   },
   chipText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: Colors.accent.highlight,
+    fontWeight: '800',
+    color: '#fff',
     textTransform: 'capitalize',
   },
   intro: {
@@ -175,12 +180,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    height: 52,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(1,69,242,0.4)',
-    backgroundColor: 'rgba(1,69,242,0.08)',
+    height: 56,
+    borderRadius: borderRadius.full,
+    borderWidth: 2,
+    borderColor: Colors.ink,
+    backgroundColor: Colors.pop.lime,
     marginTop: spacing.sm,
+    ...softShadow,
   },
-  browseAllText: { fontSize: 16, fontWeight: '600', color: Colors.accent.primary },
+  browseAllText: { fontSize: 16, fontWeight: '800', color: Colors.pop.limeInk },
 });

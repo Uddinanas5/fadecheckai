@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
@@ -140,16 +140,11 @@ export default function CreateScreen() {
           <Text style={styles.brand}>fadecheck</Text>
         </View>
 
-        {/* Hero art slot — AI cartoon illustration drops in here */}
+        {/* Hero — AI-generated cartoon character */}
         <View style={styles.hero}>
-          <View style={styles.heroStars}>
-            <Text style={styles.starA}>✦</Text>
-            <Text style={styles.starB}>✦</Text>
-          </View>
-          <View style={styles.heroArt}>
-            <Ionicons name="happy" size={72} color={Colors.pop.purpleInk} />
-            <Text style={styles.heroArtLabel}>your cartoon hero</Text>
-          </View>
+          <Image source={require('../../assets/art/hero-create.png')} style={styles.heroImg} />
+          <Text style={styles.starA}>✦</Text>
+          <Text style={styles.starB}>✦</Text>
         </View>
 
         <Text style={styles.title}>Find your{'\n'}next haircut ✂️</Text>
@@ -222,28 +217,17 @@ const styles = StyleSheet.create({
 
   hero: {
     marginTop: spacing.lg,
-    height: 220,
+    height: 260,
     borderRadius: borderRadius.xxl,
-    backgroundColor: Colors.pop.lime,
+    backgroundColor: Colors.pop.yellow,
     borderWidth: 2,
     borderColor: Colors.ink,
     overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
     ...softShadow,
   },
-  heroStars: { ...StyleSheet.absoluteFillObject },
-  starA: { position: 'absolute', top: 18, right: 26, fontSize: 26, color: Colors.pop.purple },
-  starB: { position: 'absolute', bottom: 22, left: 24, fontSize: 18, color: Colors.pop.pink },
-  heroArt: { alignItems: 'center', gap: 8 },
-  heroArtLabel: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    color: Colors.pop.purpleInk,
-    opacity: 0.6,
-  },
+  heroImg: { width: '100%', height: '100%', resizeMode: 'cover' },
+  starA: { position: 'absolute', top: 16, right: 22, fontSize: 26, color: Colors.pop.pink },
+  starB: { position: 'absolute', bottom: 18, left: 20, fontSize: 18, color: Colors.pop.purple },
 
   title: {
     fontSize: 40,

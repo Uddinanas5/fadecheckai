@@ -39,75 +39,65 @@ const STYLES = [
 
 const W = 600;
 const H = 800;
+const INK = '#17130F';
 
-// Per-category accent pair (start, end) — a cohesive cool palette that gives the
-// catalog visual variety while staying on-brand.
+// Per-category vibrant "pop" background — matches the app's v3 funky palette.
 const CATEGORY_COLORS = {
-  Fade: ['#0145F2', '#38BDF8'],
-  Taper: ['#0EA5E9', '#22D3EE'],
-  Crop: ['#14B8A6', '#2DD4BF'],
-  Buzz: ['#64748B', '#94A3B8'],
-  Quiff: ['#6366F1', '#818CF8'],
-  Pompadour: ['#8B5CF6', '#A78BFA'],
-  Fringe: ['#0284C7', '#38BDF8'],
-  Curly: ['#2563EB', '#60A5FA'],
-  Classic: ['#475569', '#7DD3FC'],
-  Long: ['#4F46E5', '#93C5FD'],
+  Fade: '#7A5CFF',
+  Taper: '#FF4D9D',
+  Crop: '#B4EC2E',
+  Buzz: '#3B6BFF',
+  Quiff: '#14C7A8',
+  Pompadour: '#FF6A3D',
+  Fringe: '#FFD12E',
+  Curly: '#FF4D9D',
+  Classic: '#7A5CFF',
+  Long: '#14C7A8',
 };
+
+// Readable ink for a given background (dark ink on light pops, cream on dark).
+function inkOn(bg) {
+  const light = ['#B4EC2E', '#FFD12E', '#14C7A8'];
+  return light.includes(bg) ? INK : '#FFFFFF';
+}
 
 function escapeXml(s) {
   return s.replace(/[<>&'"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
 }
 
-// A clearer, brighter head/hair silhouette so cards read as "a haircut" even at
-// small thumbnail sizes. `variant` nudges the shape so gallery refs differ.
-function silhouette(variant) {
+// A friendly cartoon head silhouette (placeholder until AI art lands).
+function silhouette(variant, fg) {
   const cx = 300;
-  const headTop = 235 - variant * 6;
+  const headTop = 250 - variant * 6;
   const headCy = headTop + 150;
-  const hairR = 172 + variant * 5;
+  const hairR = 168 + variant * 5;
   return `
-    <!-- hair mass -->
-    <path d="M${cx - hairR} ${headCy}
-             a${hairR} ${hairR} 0 0 1 ${hairR * 2} 0
-             q0 40 -30 60 q-${hairR - 30} -70 -${(hairR - 30) * 2} 0 q-30 -20 -30 -60 Z"
-          fill="url(#hair)" opacity="0.9"/>
-    <!-- face -->
-    <ellipse cx="${cx}" cy="${headCy + 40}" rx="118" ry="150" fill="#0B0B12" opacity="0.92"/>
-    <!-- fade shading on the sides -->
-    <path d="M${cx - 150} ${headCy + 40} q30 -110 150 -120 q120 10 150 120 l0 40 q-150 -90 -300 0 Z"
-          fill="url(#hair)" opacity="0.55"/>
-    <!-- neck -->
-    <rect x="${cx - 55}" y="${headCy + 150}" width="110" height="120" rx="30" fill="#0B0B12" opacity="0.9"/>
+    <g opacity="0.9">
+      <!-- hair mass -->
+      <path d="M${cx - hairR} ${headCy}
+               a${hairR} ${hairR} 0 0 1 ${hairR * 2} 0
+               q0 44 -34 64 q-${hairR - 34} -72 -${(hairR - 34) * 2} 0 q-34 -20 -34 -64 Z"
+            fill="${fg}"/>
+      <!-- face -->
+      <ellipse cx="${cx}" cy="${headCy + 46}" rx="112" ry="142" fill="${fg}" opacity="0.55"/>
+      <!-- neck/shoulders -->
+      <path d="M${cx - 120} ${headCy + 230} q120 -70 240 0 l0 60 l-240 0 Z" fill="${fg}" opacity="0.75"/>
+    </g>
   `;
 }
 
 function svgFor(name, category, label, variant) {
-  const [c1, c2] = CATEGORY_COLORS[category] || ['#0145F2', '#38BDF8'];
+  const bg = CATEGORY_COLORS[category] || '#7A5CFF';
+  const ink = inkOn(bg);
+  const fg = ink === '#FFFFFF' ? 'rgba(255,255,255,0.85)' : 'rgba(23,19,15,0.82)';
+  const star = ink === '#FFFFFF' ? '#FFD12E' : '#7A5CFF';
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1">
-      <stop offset="0%" stop-color="#171722"/>
-      <stop offset="100%" stop-color="#070710"/>
-    </linearGradient>
-    <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="${c1}"/>
-      <stop offset="100%" stop-color="${c2}"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.5" cy="0.34" r="0.65">
-      <stop offset="0%" stop-color="${c1}" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="${c1}" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <rect width="${W}" height="${H}" fill="url(#bg)"/>
-  <rect width="${W}" height="${H}" fill="url(#glow)"/>
-  ${silhouette(variant)}
-  <rect x="0" y="${H - 210}" width="${W}" height="210" fill="#05050A" fill-opacity="0.55"/>
-  <rect x="36" y="${H - 176}" width="${W - 72}" height="140" rx="24" fill="#12121A" fill-opacity="0.82" stroke="#FFFFFF" stroke-opacity="0.10"/>
-  <text x="60" y="${H - 128}" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="${c2}" letter-spacing="3">${escapeXml(category.toUpperCase())}</text>
-  <text x="60" y="${H - 86}" font-family="Helvetica, Arial, sans-serif" font-size="40" font-weight="800" fill="#EDF1F5">${escapeXml(name)}</text>
-  <text x="60" y="${H - 52}" font-family="Helvetica, Arial, sans-serif" font-size="19" font-weight="500" fill="#9CA3AF">${escapeXml(label)}</text>
+  <rect width="${W}" height="${H}" fill="${bg}"/>
+  <text x="70" y="120" font-family="Helvetica, Arial, sans-serif" font-size="44" fill="${star}">✦</text>
+  <text x="500" y="220" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="${star}">✦</text>
+  <text x="80" y="${H - 90}" font-family="Helvetica, Arial, sans-serif" font-size="26" fill="${star}">✦</text>
+  ${silhouette(variant, fg)}
 </svg>`;
 }
 

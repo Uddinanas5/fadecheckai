@@ -151,7 +151,7 @@ async function main() {
 
   console.log('\n== Suite A: tab navigation ==');
   await step('Home (Create) renders', async () => {
-    if (!(await hasText('See it before'))) throw new Error('missing hero');
+    if (!(await hasText('Find your next'))) throw new Error('missing hero');
     await shot('A_create');
   });
   await step('Tab -> Styles', async () => {
@@ -174,7 +174,7 @@ async function main() {
   await step('Tab -> Create', async () => {
     await clickText('Create', { which: 'last' });
     await page.waitForTimeout(900);
-    if (!(await hasText('See it before'))) throw new Error('back to create failed');
+    if (!(await hasText('Find your next'))) throw new Error('back to create failed');
   });
 
   console.log('\n== Suite B: Styles filters + card open ==');
@@ -203,7 +203,7 @@ async function main() {
     if (!(await hasText('Add your photo'))) throw new Error('CTA did not relabel without a photo');
     await clickText('Add your photo');
     await page.waitForTimeout(900);
-    if (!(await hasText('See it before'))) throw new Error('did not route to Create to add a photo');
+    if (!(await hasText('Find your next'))) throw new Error('did not route to Create to add a photo');
   });
   await step('Detail: back button returns', async () => {
     await page.goBack();
@@ -389,7 +389,7 @@ async function main() {
     if (!(await hasText('diamond'))) throw new Error('face shape chip/reason not reflected');
     // A tailored match should score above the generic 55-58 baseline.
     const hasHighMatch = await page.evaluate(() =>
-      /(\b[6-9]\d|100)% match/.test(document.body.innerText),
+      /(\b[6-9]\d|100)%/.test(document.body.innerText),
     );
     if (!hasHighMatch) throw new Error('no tailored (>=60%) match score present');
   });

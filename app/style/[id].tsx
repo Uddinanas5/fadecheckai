@@ -18,7 +18,9 @@ import Colors, { popFor } from '../../constants/Colors';
 import { spacing, borderRadius, typography, softShadow } from '../../constants/Styles';
 import { getHaircutById } from '../../constants/haircuts';
 
-const { width: SCREEN_W } = Dimensions.get('window');
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
+// Cap the gallery so it never swallows a small screen (SE-class phones).
+const GALLERY_H = Math.min(SCREEN_W * (4 / 3), SCREEN_H * 0.55);
 
 export default function StyleDetailScreen() {
   const router = useRouter();
@@ -134,7 +136,7 @@ const styles = StyleSheet.create({
   center: { justifyContent: 'center', alignItems: 'center', gap: spacing.md },
   errorText: { ...typography.body, color: Colors.text.secondary },
   link: { color: Colors.accent.primary, fontWeight: '800' },
-  galleryImage: { width: SCREEN_W, aspectRatio: 3 / 4, backgroundColor: Colors.background.secondary },
+  galleryImage: { width: SCREEN_W, height: GALLERY_H, resizeMode: 'cover', backgroundColor: Colors.background.secondary },
   backButton: {
     position: 'absolute',
     left: spacing.md,

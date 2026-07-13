@@ -43,7 +43,7 @@ export default function TabLayout() {
           shadowRadius: 16,
           elevation: 8,
         },
-        tabBarItemStyle: { borderRadius: 16, marginHorizontal: 3, overflow: 'hidden' },
+        tabBarItemStyle: { borderRadius: 16, marginHorizontal: 3 },
       }}
     >
       <Tabs.Screen

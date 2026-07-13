@@ -47,7 +47,13 @@ export function Screen({
   return (
     <View style={[kit.screen, { paddingTop: insets.top }, style]}>
       <ScrollView
-        contentContainerStyle={{ padding: pad, paddingBottom: insets.bottom + bottomSpace }}
+        contentContainerStyle={{
+          padding: pad,
+          paddingBottom: insets.bottom + bottomSpace,
+          width: '100%',
+          maxWidth: 560,
+          alignSelf: 'center',
+        }}
         showsVerticalScrollIndicator={false}
       >
         {children}
